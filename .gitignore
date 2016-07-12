@@ -3,3 +3,5 @@
 *.aux
 *.blg
 *.pdf
+*.ps
+*.graffle
