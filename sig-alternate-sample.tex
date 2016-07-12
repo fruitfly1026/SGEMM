@@ -46,8 +46,23 @@
 % For tracking purposes - this is V2.0 - May 2012
 
 \documentclass{sig-alternate-05-2015}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{eqnarray}
 
+\usepackage{graphicx}
+\usepackage{algorithm}
+%\usepackage{algorithmic}
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{diagbox}
 
+\graphicspath{{./Figures/}}
+\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}
 \begin{document}
 
 % Copyright
@@ -78,15 +93,9 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Alternate {\ttlit ACM} SIG Proceedings Paper in LaTeX
-Format\titlenote{(Produces the permission block, and
-copyright information). For use with
-SIG-ALTERNATE.CLS. Supported by ACM.}}
-\subtitle{[Extended Abstract]
-\titlenote{A full version of this paper is available as
-\textit{Author's Guide to Preparing ACM SIG Proceedings Using
-\LaTeX$2_\epsilon$\ and BibTeX} at
-\texttt{www.acm.org/eaddress.htm}}}
+\title{Demystifying Microarchitecture in GPU to Tune SGEMM Performance}
+\subtitle{}
+
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -112,106 +121,27 @@ SIG-ALTERNATE.CLS. Supported by ACM.}}
 % without further effort on your part as the last section in
 % the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{8} %  in this sample file, there are a *total*
-% of EIGHT authors. SIX appear on the 'first-page' (for formatting
-% reasons) and the remaining two appear in the \additionalauthors section.
-%
-\author{
-% You can go ahead and credit any number of authors here,
-% e.g. one 'row of three' or two rows (consisting of one row of three
-% and a second row of one, two or three).
-%
-% The command \alignauthor (no curly braces needed) should
-% precede each author name, affiliation/snail-mail address and
-% e-mail address. Additionally, tag each line of
-% affiliation/address with \affaddr, and tag the
-% e-mail address with \email.
-%
-% 1st. author
-\alignauthor
-Ben Trovato\titlenote{Dr.~Trovato insisted his name be first.}\\
-       \affaddr{Institute for Clarity in Documentation}\\
-       \affaddr{1932 Wallamaloo Lane}\\
-       \affaddr{Wallamaloo, New Zealand}\\
-       \email{trovato@corporation.com}
-% 2nd. author
-\alignauthor
-G.K.M. Tobin\titlenote{The secretary disavows
-any knowledge of this author's actions.}\\
-       \affaddr{Institute for Clarity in Documentation}\\
-       \affaddr{P.O. Box 1212}\\
-       \affaddr{Dublin, Ohio 43017-6221}\\
-       \email{webmaster@marysville-ohio.com}
-% 3rd. author
-\alignauthor Lars Th{\o}rv{\"a}ld\titlenote{This author is the
-one who did all the really hard work.}\\
-       \affaddr{The Th{\o}rv{\"a}ld Group}\\
-       \affaddr{1 Th{\o}rv{\"a}ld Circle}\\
-       \affaddr{Hekla, Iceland}\\
-       \email{larst@affiliation.org}
-\and  % use '\and' if you need 'another row' of author names
-% 4th. author
-\alignauthor Lawrence P. Leipuner\\
-       \affaddr{Brookhaven Laboratories}\\
-       \affaddr{Brookhaven National Lab}\\
-       \affaddr{P.O. Box 5000}\\
-       \email{lleipuner@researchlabs.org}
-% 5th. author
-\alignauthor Sean Fogarty\\
-       \affaddr{NASA Ames Research Center}\\
-       \affaddr{Moffett Field}\\
-       \affaddr{California 94035}\\
-       \email{fogartys@amesres.org}
-% 6th. author
-\alignauthor Charles Palmer\\
-       \affaddr{Palmer Research Laboratories}\\
-       \affaddr{8600 Datapoint Drive}\\
-       \affaddr{San Antonio, Texas 78229}\\
-       \email{cpalmer@prl.com}
-}
-% There's nothing stopping you putting the seventh, eighth, etc.
-% author on the opening page (as the 'third row') but we ask,
-% for aesthetic reasons that you place these 'additional authors'
-% in the \additional authors block, viz.
-\additionalauthors{Additional authors: John Smith (The Th{\o}rv{\"a}ld Group,
-email: {\texttt{jsmith@affiliation.org}}) and Julius P.~Kumquat
-(The Kumquat Consortium, email: {\texttt{jpkumquat@consortium.net}}).}
-\date{30 July 1999}
-% Just remember to make sure that the TOTAL number of authors
-% is the number that will appear on the first page PLUS the
-% number that will appear in the \additionalauthors section.
-
 \maketitle
 \begin{abstract}
-This paper provides a sample of a \LaTeX\ document which conforms,
-somewhat loosely, to the formatting guidelines for
-ACM SIG Proceedings. It is an {\em alternate} style which produces
-a {\em tighter-looking} paper and was designed in response to
-concerns expressed, by authors, over page-budgets.
-It complements the document \textit{Author's (Alternate) Guide to
-Preparing ACM SIG Proceedings Using \LaTeX$2_\epsilon$\ and Bib\TeX}.
-This source file has been written with the intention of being
-compiled under \LaTeX$2_\epsilon$\ and BibTeX.
-
-The developers have tried to include every imaginable sort
-of ``bells and whistles", such as a subtitle, footnotes on
-title, subtitle and authors, as well as in the text, and
-every optional component (e.g. Acknowledgments, Additional
-Authors, Appendices), not to mention examples of
-equations, theorems, tables and figures.
-
-To make best use of this sample document, run it through \LaTeX\
-and BibTeX, and compare this source code with the printed
-output produced by the dvi file. A compiled PDF version
-is available on the web page to help you with the
-`look and feel'.
+In this paper, we present a thorough experience on tuning single precision general matrix multiplication(SGEMM)
+in assembly level on Kepler GK110 architecture. First, we propose a methodology to demistify GPU's
+microarchitecture-level optimizations. Based on the our own assembler KeplerAs, we debunk the
+mystery of three performance-critical factors of microarchitecture,
+which are control code pattern, register bank mapping and instruction throughput. Second, we tune
+SGEMM performance by applying a comprehensive optimization which is never done in either CUDA or
+PTX. The optimization strategies go through the architecture hierarchy including maximizing FFMA
+throughput (core), eliminating register bank conflict (register), reducing global memory
+transactions (shared memory), selecting data path to global memory (off-chip memory).
+The optimized SGEMM TN, NN achieve an maximal floating-point efficiency of $88\%$ and $83\%$, which are $25\%$ and
+$12\%$ higher than Cublas's $63\%$ and $71\%$ respectively.
+This work will facilitate performance tuning of other core kernels on GPUs.
 \end{abstract}
 
 
 %
 % The code below should be generated by the tool at
 % http://dl.acm.org/ccs.cfm
-% Please copy and paste the code instead of the example below. 
+% Please copy and paste the code instead of the example below.
 %
 \begin{CCSXML}
 <ccs2012>
@@ -235,7 +165,7 @@ is available on the web page to help you with the
   <concept_desc>Networks~Network reliability</concept_desc>
   <concept_significance>100</concept_significance>
  </concept>
-</ccs2012>  
+</ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Computer systems organization~Embedded systems}
@@ -256,353 +186,586 @@ is available on the web page to help you with the
 % We no longer use \terms command
 %\terms{Theory}
 
-\keywords{ACM proceedings; \LaTeX; text tagging}
+\keywords{SGEMM; Assembler; GPU; Performance}
 
 \section{Introduction}
-The \textit{proceedings} are the records of a conference.
-ACM seeks to give these conference by-products a uniform,
-high-quality appearance.  To do this, ACM has some rigid
-requirements for the format of the proceedings documents: there
-is a specified format (balanced  double columns), a specified
-set of fonts (Arial or Helvetica and Times Roman) in
-certain specified sizes (for instance, 9 point for body copy),
-a specified live area (18 $\times$ 23.5 cm [7" $\times$ 9.25"]) centered on
-the page, specified size of margins (1.9 cm [0.75"]) top, (2.54 cm [1"]) bottom
-and (1.9 cm [.75"]) left and right; specified column width
-(8.45 cm [3.33"]) and gutter size (.83 cm [.33"]).
+Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is implemented as a basic routine of Level-3 in BLAS library~\cite{}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn more and more effort on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
 
-The good news is, with only a handful of manual
-settings\footnote{Two of these, the {\texttt{\char'134 numberofauthors}}
-and {\texttt{\char'134 alignauthor}} commands, you have
-already used; another, {\texttt{\char'134 balancecolumns}}, will
-be used in your very last run of \LaTeX\ to ensure
-balanced column heights on the last page.}, the \LaTeX\ document
-class file handles all of this for you.
+As GPU provides more peak FLOP/S over CPU contemporarily, people tend to adopt GPUs to accelerate their floating-points intensive applications. In fact, SGEMM's performance highly relies on low level microarchitecture features. Hardware vendors also provide BLAS libraries tuned on their own processors, i.e. MKL/ACML for multicore x86 CPUs, CUBLAS/CLMath for GPUs. However, we always witness improvement of the third-party tuned implementations over these vendors' libraries. For multicore CPUs, based on the hand tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases. Although there is lack of an OpenBLAS-like library on GPUs, we observe that several on-going efforts~\cite{} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes, too. Figure~\ref{} compares the maximal floating-point efficiencies achieved by SGEMMs in CUBLAS and third-party implementations. The third-parties improve performance by $xx\%$, $xx\%$ and $xx\%$ on G80, Fermi and Maxwell CUDA architectures, respectively. Unfortunately, there is no such a performance tuning work for SGEMM on Kepler architecture, which is the most popular architecture in current Tesla GPUs market. This work attempts to explore improvement space of floating-point efficiency of SGEMM on Kepler GPU.
 
-The remainder of this document is concerned with showing, in
-the context of an ``actual'' document, the \LaTeX\ commands
-specifically available for denoting the structure of a
-proceedings paper, rather than with giving rigorous descriptions
-or explanations of such commands.
+However, there remain two issues to be addressed for accomplishing the microarchitecture based performance tuning on each generation of GPUs.
+\begin{itemize}
+\item {\em There is lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.} Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal way, only is the abstract model CUDA is encouraged. A major reason is the significant changes of each generation of GPU architecture. For example, the recent ISA is totally different from that of the first generation of GPU. The ISA is evolving to the trend where the graphics features are becoming less and less. Other microarchitectural details like register bank conflict and floating-point instructions dual issue are also different between two generations of GPUs. Fortunately, people have made some initial progress on such performance tuning tools due to the pursuit of extreme performance. These efforts are involved with either benchmarking~\cite{} or disassembler~\cite{} on a specific GPU architecture. We attempt to develop a methodology that provides a systematic way to identify microarchitecture by benchmarking, automatically decode instruction formats and generate ISA-compatible executable codes.
 
-\section{The {\secit Body} of The Paper}
-Typically, the body of a paper is organized
-into a hierarchical structure, with numbered or unnumbered
-headings for sections, subsections, sub-subsections, and even
-smaller sections.  The command \texttt{{\char'134}section} that
-precedes this paragraph is part of such a
-hierarchy.\footnote{This is the second footnote.  It
-starts a series of three footnotes that add nothing
-informational, but just give an idea of how footnotes work
-and look. It is a wordy one, just so you see
-how a longish one plays out.} \LaTeX\ handles the numbering
-and placement of these headings for you, when you use
-the appropriate heading commands around the titles
-of the headings.  If you want a sub-subsection or
-smaller part to be unnumbered in your output, simply append an
-asterisk to the command name.  Examples of both
-numbered and unnumbered headings will appear throughout the
-balance of this sample document.
+\item {\em There is lack of a comprehensive understanding of SGEMM's performance in terms of low level GPU microarchitecture.} Due to the lack of bare-metal tools on GPUs, most of SGEMM analysis are circumscribed at the levels of either CUDA  or PTX. Unfortunately, these analysis cannot directly diagnose neither compiler deficiency nor hardware defect. In fact, by observing the disassembled code of SGEMM in CUDA, we find that the generated control code is
+very inefficient in exploiting FFMA dual issue. This means NVCC generated code does not
+utilize shared $64$ cores on $192$ core SM, leaving them idle at most of time. A side effect of the limitation leads to a bias estimation of performance bound. We present a thorough analysis of performance which goes through the whole architecture hierarchy including instruction throughput, register allocation, shared memory transactions and global memory. The understanding of microarchitecture optimization help build a robust performance model of SGEMM.
 
-Because the entire article is contained in
-the \textbf{document} environment, you can indicate the
-start of a new paragraph with a blank line in your
-input file; that is why this sentence forms a separate paragraph.
 
-\subsection{Type Changes and {\subsecit Special} Characters}
-We have already seen several typeface changes in this sample.  You
-can indicate italicized words or phrases in your text with
-the command \texttt{{\char'134}textit}; emboldening with the
-command \texttt{{\char'134}textbf}
-and typewriter-style (for instance, for computer code) with
-\texttt{{\char'134}texttt}.  But remember, you do not
-have to indicate typestyle changes when such changes are
-part of the \textit{structural} elements of your
-article; for instance, the heading of this subsection will
-be in a sans serif\footnote{A third footnote, here.
-Let's make this a rather short one to
-see how it looks.} typeface, but that is handled by the
-document class file. Take care with the use
-of\footnote{A fourth, and last, footnote.}
-the curly braces in typeface changes; they mark
-the beginning and end of
-the text that is to be in the different typeface.
+\end{itemize}
 
-You can use whatever symbols, accented characters, or
-non-English characters you need anywhere in your document;
-you can find a complete list of what is
-available in the \textit{\LaTeX\
-User's Guide}\cite{Lamport:LaTeX}.
+In this paper we crack instruction encoding by performing a tough reverse engineering work, and build assembler to generate CUDA binary file for ISA-compatible assembly codes. Basically, due to the compatible grammar with CUDA {\tt cuobjdump}, we use CUDA toolchains to compile CUDA codes to {\tt cubin} file and then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the base of generated code instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that demystify lots of GPU microarchitecture details such as instruction issue, warp schedule, register bank distribution and control code. It's helpful to understand and optimize performance of SGEMM. We apply a collection of optimizations to incrementally improve SGEMM performance one by one. More specifically, we make the following contributions:
+\begin{itemize}
+\item We propose an approach to reverse engineering approach to crack instruction encoding of GPU architecture, especially for control codes that orchestrate instruction scheduling. An assembler is developed to directly tune the assembly codes generated by CUDA compiler.
+\item We design a bunch of benchmarks to reveal microarchitectural features which are undocumented by NVIDIA. They are important to understand and tune performance of GPU programs.
+\item We implement the highest performance SGEMM routines on NVIDIA Kepler by applying the demystified microarchitecture-level optimizations. The achieved maximal floating-point efficiency is xx and xx on two GPUs, respectively.
+\end{itemize}
 
-\subsection{Math Equations}
-You may want to display math equations in three distinct styles:
-inline, numbered or non-numbered display.  Each of
-the three are discussed in the next sections.
+Note that this work demonstrates the effectiveness on NVIDIA Kepler architecture. However, the approach is general for other NVDIA GPU architectures by minor  adjustments of instruction solver and benchmarking implementation. The demystified microarchitecture-specific optimizations are further applied performance tuning on other NVIDIA GPU architectures. The rest of this paper is organized as follows.
+\section{Background}
+Since we seek to establish an assembly-level optimization approach to SGEMM, this section introduces some CUDA binary utilities which are used in our work. Besides, we highlight the tunable factors that determine SGEMM performance on GPU architecture.
 
-\subsubsection{Inline (In-text) Equations}
-A formula that appears in the running text is called an
-inline or in-text formula.  It is produced by the
-\textbf{math} environment, which can be
-invoked with the usual \texttt{{\char'134}begin. . .{\char'134}end}
-construction or with the short form \texttt{\$. . .\$}. You
-can use any of the symbols and structures,
-from $\alpha$ to $\omega$, available in
-\LaTeX\cite{Lamport:LaTeX}; this section will simply show a
-few examples of in-text equations in context. Notice how
-this equation: \begin{math}\lim_{n\rightarrow \infty}x=0\end{math},
-set here in in-line math style, looks slightly different when
-set in display style.  (See next section).
+\subsection{CUDA Binary Utilities}
+\label{sec:cuda}
 
-\subsubsection{Display Equations}
-A numbered display equation -- one set off by vertical space
-from the text and centered horizontally -- is produced
-by the \textbf{equation} environment. An unnumbered display
-equation is produced by the \textbf{displaymath} environment.
+A CUDA binary file is an ELF-formatted file generated by CUDA compiler {\tt nvcc}. It is also called {\em cubin} file, which can be either embedded into the host executable file or generated separately by using the "{\em -cubin}" option of {\tt nvcc}. In order to check {\em cubin} files, CUDA toolkit introduces three binary tools and documents on ISAs of several generations of GPUs from GT200 to Maxwell architecture. These binary tools only provide very limited functionalities to users. For instance, both {\tt cuobjdump} and {\tt nvdiasm} disassemble {\em cubin} files to {\em sass} ones, which are readable assembly codes for examining possible performance issues in GPU programs. For each instruction in the executable code sections, the tools list its address in hexadecimal, name in string and encoded number in hexadecimal. For example, an {\tt IADD} instruction might be printed as follows: \\\\
+$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~~~/* 0x4800000000201c03 */$\\\\
+Unfortunately, these tools do not enable us to directly modify the assembly codes for tuning performance. What we can do is to refine CUDA C codes after examining the read-only assembly codes iteratively. In fact, an assembler is required to manipulate assembly codes. Although NVIDIA doesn't release its internal assembler and instruction encoding format, the printed third field--encoded number, combining with the released ISA reference~\cite{}, provides clue to crack instruction format (in Section~\ref{sec:assembler}).
 
-Again, in either environment, you can use any of the symbols
-and structures available in \LaTeX; this section will just
-give a couple of examples of display equations in context.
-First, consider the equation, shown as an inline equation above:
-\begin{equation}\lim_{n\rightarrow \infty}x=0\end{equation}
-Notice how it is formatted somewhat differently in
-the \textbf{displaymath}
-environment.  Now, we'll enter an unnumbered equation:
-\begin{displaymath}\sum_{i=0}^{\infty} x + 1\end{displaymath}
-and follow it with another numbered equation:
-\begin{equation}\sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f\end{equation}
-just to demonstrate \LaTeX's able handling of numbering.
 
-\subsection{Citations}
-Citations to articles \cite{bowman:reasoning,
-clark:pct, braams:babel, herlihy:methodology},
-conference proceedings \cite{clark:pct} or
-books \cite{salas:calculus, Lamport:LaTeX} listed
-in the Bibliography section of your
-article will occur throughout the text of your article.
-You should use BibTeX to automatically produce this bibliography;
-you simply need to insert one of several citation commands with
-a key of the item cited in the proper location in
-the \texttt{.tex} file \cite{Lamport:LaTeX}.
-The key is a short reference you invent to uniquely
-identify each work; in this sample document, the key is
-the first author's surname and a
-word from the title.  This identifying key is included
-with each item in the \texttt{.bib} file for your article.
+\subsection{Performance Factors of SGEMM }
+It's well-known that the primary factors of SGEMM performance are the blocking parameters for exploiting data reuse through memory hierarchy. For an instance of GPU, they are shared memory blocking factor and register blocking factor. For the purpose of completeness, we describe a blocking algorithm which is similar with that in other literatures~\cite{magma}~\cite{nervana_sgemm_wiki}~\cite{lai}~\cite{tan}.
 
-The details of the construction of the \texttt{.bib} file
-are beyond the scope of this sample document, but more
-information can be found in the \textit{Author's Guide},
-and exhaustive details in the \textit{\LaTeX\ User's
-Guide}\cite{Lamport:LaTeX}.
+Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on result matrix $C$.
+Each thread block of $tx*ty$ threads is responsible to compute a $bm*bn$ block of submatrix $C$,
+where $bm, bn$ is number of rows and columns of submatrix $C$, respectively.
+In order to compute $bm*bn$ block of submatrix $C$, we need $bm*bk$ submatrix from A and $bk*bn$
+sub-matrix from B.
+In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and $M*N$ grids of $bm*bk$, $bk*bn$ and $bm*bn$ blocks, respectively, where
+$M=\Bigl\lfloor \frac{m+bm-1}{bm} \Bigr\rfloor$,
+$K=\Bigl\lfloor \frac{k+bk-1}{bk} \Bigr\rfloor$,
+$N=\Bigl\lfloor \frac{n+bn-1}{bn} \Bigr\rfloor$.
 
-This article shows only the plainest form
-of the citation command, using \texttt{{\char'134}cite}.
-This is what is stipulated in the SIGS style specifications.
-No other citation format is endorsed or supported.
+\begin{algorithm}
+      \caption{SGEMM blocking algorithm}\label{gemm}
+  \begin{algorithmic}[1]
+      \State The size of thread block: $tx*ty$
+      \State Register: accum[$rx*ry$], rA[$2*rx$], rB[$2*ry$]
+      \State load one $bm*bk$ block of A into smA[$bk$][$bm$]
+      \State load one $bk*bn$ block of B into smB[$bk$][$bn$]
+      \Do
+      \For {i = 1 to $bk$ } \Comment Unrolling for loop
+      \State load one column of A in smA into rA[0 . . . $rx$]
+      \State load one row of B in smB into rB[0 . . . $ry$]
+      \State accum[0 . . . $rx$][0 . . .$ry$]+ = rA[0 . . . $rx$]* rB[0 . . . $ry$]
+      \EndFor
+      \State load one $bm*bk$ block of A into smA[$bk$][$bm$]
+      \State load one $bk*bn$ block of B into smB[$bk$][$bn$]
+      \State bar.sync
+      \doWhile {pointer in B is out of range}
+      \State merge accum[0 . . . $rx$][0 . . . $ry$] with $bm*bn$ block of C.
+  \end{algorithmic}
+\end{algorithm}
 
-\subsection{Tables}
-Because tables cannot be split across pages, the best
-placement for them is typically the top of the page
-nearest their initial cite.  To
-ensure this proper ``floating'' placement of tables, use the
-environment \textbf{table} to enclose the table's contents and
-the table caption.  The contents of the table itself must go
-in the \textbf{tabular} environment, to
-be aligned properly in rows and columns, with the desired
-horizontal and vertical rules.  Again, detailed instructions
-on \textbf{tabular} material
-is found in the \textit{\LaTeX\ User's Guide}.
+According to the blocking algorithm, SGEMM performance is affected by the hierachical memory blocking and unrolling factors in the inner loops. Table~\ref{tab:reg} estimates data movement volume through register, shared memory and global memory. The tuning of these factors is conducted in two folds which are memory bandwidth and latency. In fact, with the estimations in Table~\ref{tab:reg} it is relatively easy to tune proper parameters to eliminate bound of memory bandwidth~\cite{magma}~\cite{tan}. The difficulty is latency, which is closely related to specific microarchitecture such as instruction sequence, instruction type and so on. However, the microarchitectural optimizations depends on the availability of an assembler and deep understanding of microarchitectural features.
 
-Immediately following this sentence is the point at which
-Table 1 is included in the input file; compare the
-placement of the table here with the table in the printed
-dvi output of this document.
-
-\begin{table}
+\begin{table}[!t]
+\caption{Data movement volume in the blocking algorithm}
 \centering
-\caption{Frequency of Special Characters}
-\begin{tabular}{|c|c|l|} \hline
-Non-English or Math&Frequency&Comments\\ \hline
-\O & 1 in 1,000& For Swedish names\\ \hline
-$\pi$ & 1 in 5& Common in math\\ \hline
-\$ & 4 in 5 & Used in business\\ \hline
-$\Psi^2_1$ & 1 in 40,000& Unexplained usage\\
-\hline\end{tabular}
+\scalebox{1.0} {
+\begin{tabular}{|c||c|}
+\hline
+Data Path& Data Volume\\
+\hline
+global2reg (LDG)& $bm*bk/rx + bn*bk/ry$\\
+\hline
+reg2shared (STS)& $bm*bk/rx + bn*bk/ry$\\
+\hline
+shared2reg (LDS)& $bm*bk + bn*bk$\\
+\hline
+\end{tabular}
+}
+\label{tab:reg}
 \end{table}
 
-To set a wider table, which takes up the whole width of
-the page's live area, use the environment
-\textbf{table*} to enclose the table's contents and
-the table caption.  As with a single-column table, this wide
-table will ``float" to a location deemed more desirable.
-Immediately following this sentence is the point at which
-Table 2 is included in the input file; again, it is
-instructive to compare the placement of the
-table here with the table in the printed dvi
-output of this document.
+\section{Demystifying Microarchitecture Feature}
+\label{sec:assembler}
 
+\subsection{Methodology}
+We propose a methodology to demystify GPU microarchitecture features and correlate them with performance. The workflow consists of three components.  The first one is CUDA binary tools, which are leveraged to generate assembly codes for sample programs or libraries. A sample program is synthetic CUDA file which is targeted to generate some specific instructions. A library might provide a high coverage of instruction sets. For example, the CUBLAS library contains almost all instructions used in SGEMM routine. As introduced in section~\ref{sec:cuda} these generated assembly files ({\em sass}) provide instruction encoded number to be cracked.
 
-\begin{table*}
-\centering
-\caption{Some Typical Commands}
-\begin{tabular}{|c|c|l|} \hline
-Command&A Number&Comments\\ \hline
-\texttt{{\char'134}alignauthor} & 100& Author alignment\\ \hline
-\texttt{{\char'134}numberofauthors}& 200& Author enumeration\\ \hline
-\texttt{{\char'134}table}& 300 & For tables\\ \hline
-\texttt{{\char'134}table*}& 400& For wider tables\\ \hline\end{tabular}
-\end{table*}
-% end the environment with {table*}, NOTE not {table}!
+The instruction solver takes the assembly files as input to decode 64-bits binary representation of each instruction. We design a set of algorithms to solve all fields of the binary instruction. These fields include {\em register, predicate, address, immediate, constant} and {\em opcode}. The solver retrieves the undocumented ISA specification, which is used to implement an native assembler. Then, we design a rigorous microbenchmark and leverage the assembler to tune code at assembly language level. In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.
 
-\subsection{Figures}
-Like tables, figures cannot be split across pages; the
-best placement for them
-is typically the top or the bottom of the page nearest
-their initial cite.  To ensure this proper ``floating'' placement
-of figures, use the environment
-\textbf{figure} to enclose the figure and its caption.
-
-This sample document contains examples of \textbf{.eps} files to be
-displayable with \LaTeX.  If you work with pdf\LaTeX, use files in the
-\textbf{.pdf} format.  Note that most modern \TeX\ system will convert
-\textbf{.eps} to \textbf{.pdf} for you on the fly.  More details on
-each of these is found in the \textit{Author's Guide}.
-
-\begin{figure}
-\centering
-\includegraphics{fly}
-\caption{A sample black and white graphic.}
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.45]{methodology}
+\caption{A schematic diagram of demystifying GPU microarchitecture features by leveraging CUDA binary tools. The back arrows represents the workflow of instruction solver while the red ones represents that of benchmarking to find out correlation between microarchitecture and performance.}
+\label{fig:workflow}
+\end{center}
 \end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[height=1in, width=1in]{fly}
-\caption{A sample black and white graphic
-that has been resized with the \texttt{includegraphics} command.}
+\subsection{Instruction Solver}
+
+\subsubsection{Fixed Length Field}
+\subsubsection{Variable Length Opcode}
+\subsubsection{Modifier}
+%LD.E
+
+\subsection{Correlating Microarchitecture with Performance}
+With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we correlate microarchitecture with performance variants that guide performance optimizations in real applications. The correlation is presented as several meaningful observations, which are categorized into four microarchitectural features of {\tt control} function, {\tt register} allocation, {\tt arithmetic} throughput and {\tt memory} operation.
+
+\begin{figure}[htbp]
+\begin{center}
+%\includegraphics[scale=0.7]{ctrl}
+\caption{Different control codes regulate {\tt FFMA} throughput.}
+\label{fig:control}
+\end{center}
 \end{figure}
 
+{\em {\bf Observation 1--[Control]}: The execution sequence of instructions is regulated by control codes. Both warp scheduling and issue mode are tunable by setting control codes.}
 
-As was the case with tables, you may want a figure
-that spans two columns.  To do this, and still to
-ensure proper ``floating'' placement of tables, use the environment
-\textbf{figure*} to enclose the figure and its caption.
-and don't forget to end the environment with
-{figure*}, not {figure}!
+Starting with the Kepler architecture NVIDIA has been moving some control logic off of the chip and into kernel instructions which are determined by the assembler. This evolution provides programmer a chance to make globally optimal decisions on scheduling and other control aspects if an assembler is available. The disassembly code indicates that every 64 bits control code controls $7$ instructions. We identify that both higher $6$ bits and lower 2 bits are {\em opcode} of control code, and the middle 56 bits are used to control the execution of $7$ instructions, each of which is assigned $8$ control bits.
 
-\begin{figure*}
+For the eight control bits, we identify their meanings by examining CUBLAS disassembly codes and tuning a {\tt FFMA} throughput microbhenchmark. We observe that the $7$th bit of the control code of {\tt TLD} instruction is $1$, which indicates a texture dependency barrier due to weak consistent memory model. It's verified that some illegal values are loaded if this bit is not set. Similarly, we discover that the $5$th bit means shared memory dependency barrier, the $4$th bit means global memory dependency barrier. Figure~\ref{} shows that {\tt FFMA} throughput varies with all control bit values from 0 to 255. As shown in this figure, the throughput linearly decreases with the increasing values represented by the $0-3$ bits. That implies that these $4$ bits set the number of stall cycles before issuing the instruction. Further, the microbenchmarking reveal some specific patterns of control codes:
+
+\begin{itemize}
+\item When the control bits are set to be $0x40$, the scheduler suspends a warp of the instructions for 32 cycles.
+\item $0x04$ means dual issue mode. If two consecutive instructions is controlled by $0x04$ and $0x05$, the throughput can reach the maximum. Single issue control code is $0x00$.
+\item $0x20|n$ means a warp is suspended for $n$ cycles before issuing the next instruction, where $n$ is number between 0 and 15.
+\end{itemize}
+
+
+{\em {\bf Observation 2--[Register]}: Irrespective of single- or dual-issue mode, register bank conflict is only caused by source operands, and degrades instruction throughput by up to $17\%$.}
+
+For CUDA programming model it is well-known that shared memory bank conflict is an important performance factor. In fact, recent researches~\cite{} noticed that register bank conflicts are nontrivial to performance.  In order to probe register bank conflict, our microbenchmark measures instruction throughput for different combination of {\tt FFMA} register operands. Table~\ref{tab:th} shows an example of the combination which results in variance of efficiency. The numbers in the fifth column represent the number of registers conflict in the same bank. This experiment is conducted in single-issue mode by setting control code to be $0x20$. The theoretical efficiency is $128/192=66.67\%$. In fact, we observe that both single- and dual-issue mode produce the same variance of instruction throughput. Besides, from the experimental results we observe that:
+\begin{itemize}
+\item Destination operand will not contribute to bank conflict, no matter which bank is assigned to it.
+\item When source operands have 2-way conflict, the throughput will drop by 2.33\% in single issue
+    mode. When source operands have 3-way conflicts, the throughput will drop by 17.17\%.
+
+ \item On Kepler architecture, our microbenchmark finds out a proper distribution of registers for eliminating bank conflict. The distribution is summarized in Table~\ref{tab:reg}, which confirms the follow the rule~\cite{}: \\
+ bank0$\Leftarrow$($Rindex \% 8 < 4$ \&\& $Rindex \% 2 == 0$) \\
+ bank2$\Leftarrow$($Rindex \% 8 < 4$ \&\&
+$Rindex \% 2 == 1$) \\
+bank1$\Leftarrow$($Rindex \% 8 > 4$ \&\& $Rindex \%2 == 0$) \\
+bank3$\Leftarrow$($Rindex \% 8 < 4$ \&\&
+$Rindex\% 2 == 1$)\\
+where $Rindex$ is the register number. This rule will guide the performance tuning in the following SGEMM implementation.
+
+\end{itemize}
+
+\begin{table}[htbp]
+\caption{The efficiency of instruction throughput varies with difference register bank distribution. {\it Inst} : instruction pattern, {\it Th/SM}: the instruction throughput per SM, {\it Eff}: efficiency of throughput.}
 \centering
-\includegraphics{flies}
-\caption{A sample black and white graphic
-that needs to span two columns of text.}
-\end{figure*}
+\scalebox{1.0} {
+\begin{tabular}{|c||c|c|c|}
+\hline
+Inst &Th/SM&Eff&Conflicts \\
+\hline
+{\tt FFMA R5,R4,R1,R0}&127.50&66.40\%&0\\
+\hline
+{\tt FFMA R2,R4,R1,R0}&127.50&66.40\%&0\\
+\hline
+{\tt FFMA R5,R2,R1,R0}&119.18&62.07\%&2\\
+\hline
+{\tt FFMA R3,R2,R1,R0}&119.18&62.07\%&2\\
+\hline
+{\tt FFMA R5,R9,R3,R1}&94.52&49.23\%&3\\
+\hline
+{\tt FFMA R11,R9,R3,R1}&94.52&49.23\%&3\\
+\hline
+{\tt FMUL R4,R1,R0}&127.50&66.40\%&0\\
+\hline
+{\tt FMUL R4,R2,R0}&119.17&62.06\%&2\\
+\hline
+\end{tabular}
+}
+\label{tab:th}
+\end{table}
 
 
-\begin{figure}
+\begin{table}[htbp]
+\caption{Register distribution for zero bank conflict.}
 \centering
-\includegraphics[height=1in, width=1in]{rosette}
-\caption{A sample black and white graphic that has
-been resized with the \texttt{includegraphics} command.}
-\vskip -6pt
+\scalebox{1.0} {
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
+\hline
+Bank0&0&2&8&10&16&18&24&26&... \\
+\hline
+Bank1&1&3&9&11&17&19&25&27&... \\
+\hline
+Bank2&4&6&12&14&20&22&28&30&... \\
+\hline
+Bank3&5&7&13&15&21&23&29&31&...\\
+\hline
+\end{tabular}
+}
+\label{tab:reg}
+\end{table}
+
+{\em {\bf Observation 3--[Arithmetic]}: With a proper control code and register allocation, {\tt FFMA} instruction throughput can approach the theoretical peak in dual issue mode.}
+
+It's very intricate to tune instruction execution to improve instruction throughput. The previous work report a maximal throughput of {\tt FFMA} on a SM is $132$, which is much less than the theoretical throughput $192$ on Kepler. Our microbenchmarks reveal several key points of optimization to approach theoretical peak on Kepler. First, the control code must be set properly to dual issue adjacent instructions. Second, the ratio and interval of dual issue {\tt FFMA} instructions must be tuned into a specific pattern. Since each warp of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict. The ratio of dual issue and single issue should be $2:2$, and with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn. Third, the first instruction of the core loop needs to be aligned. This restriction is caused by the aligned position of control code in the instruction sequence. Last, {\tt FFMA} dual issue requires 6 register banks. Instruction order has to be adjusted to fully use Kepler's operand collector mechanism to avoid register bank conflicts. As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput  to be $190$, which is very close to the theoretical peak $192$.
+
+\begin{table}[htbp]
+\caption{Floating-point instruction throughput on Kepler}
+\centering
+\scalebox{1.} {
+\begin{tabular}{|c||c|c|c|}
+\hline
+Inst name&operation&single issue&dual issue\\
+\hline
+FFMA&c=a*b+c&127.52&190.35 \\
+\hline
+FMUL&c=a*b&127.52&190.35 \\
+\hline
+FADD&c=a+b&127.52&192\\
+\hline
+\end{tabular}
+}
+\label{tab:ffma}
+\end{table}
+
+
+{\em {\bf Observation 4--[Memory]}: $128$ bit shared memory load is not as effient as $64$ bit load in bandwith, latency
+and impact on FFMA throughput}
+
+We test bandwith, because SGEMM has a minimum requrement of shared memory bandwith as we will talk later. We test latency
+because we will use it in instruction reordering. We test impact on other instructions, because we hope {\tt LDS} will not
+reduce {\tt FFMA} throughput.
+In CUDA document, it is said that {\tt LDS.128} requires $2$ shared memory transactions.
+Programer may think the wider bit width of {\tt LDS}, the higher bandwith will achieve. In contract, on Kepler $64$ bit
+$LDS$ wins. We benchmark bandwith of {\tt LDS} when no bank conflict occurs in a warp using {\tt LDS.32}, {\tt LDS.64}
+and {\tt LDS.128}.
+The theoretical shared memory bandwith peak for each SM can be calculated as $Bandwidth=f_{core}*Width*Warpsize$ in
+bytes, in which $f_{core}$ means frequency of CUDA core, $Width$ is bank width, Warpsize is warp size. This formular
+means if no bank conflict among a warp, then shared memory can be loaded at same clock cycle. On Kepler,
+$f_{core}=706HZ$, $Width$ can be $4$ or $8$ due to two bank width configure, $Warpsize$ is $32$, hence the peak bandwith is $188GB/s$.
+Table~\ref{} is the result of sequential memory access bankwidth when no bank conflict occurs. This table shows that
+{\tt LDS.64} is best of all when timing stream data.
+Latency of each instruction is shown in Table~\ref{}, {\tt LDS.128} is longer than {\tt LDS.64}, latency of {\tt LDS.32}
+and {\tt LDS.64} is the same.
+We test the impact on {\tt FFMA} throughput, two {\tt LDS.64} will have 1.80\% influce, one {\tt LDS.128} instruction has
+3.63\% influence on FFMA throughput.
+
+\begin{table}[!t]
+\caption{Bankwidth}
+\centering
+\scalebox{1.0} {
+\begin{tabular}{|c||c|c|c|}
+\hline
+    &# of instructions& time & bandwith\\
+\hline
+    32& 4N & 90.83 & 70.92\\
+\hline
+    64& 2N & 56.67 & 113.68 \\
+\hline
+    128& N & 120.59 & 53.42 \\
+\hline
+\end{tabular}
+}
+\label{tab:reg}
+\end{table}
+
+\begin{table}[!t]
+\caption{Broadcast Bankwidth}
+\centering
+\scalebox{1.0} {
+\begin{tabular}{|c||c|c|c|}
+\hline
+    &# of instructions& time & bandwith\\
+\hline
+    32& 4N &  & 70.99\\
+\hline
+    64& 2N &  & 116.96 \\
+\hline
+    128& N &  & 105.50 \\
+\hline
+\end{tabular}
+}
+\label{tab:reg}
+\end{table}
+
+\begin{table}[!t]
+\caption{Latency}
+\centering
+\scalebox{1.0} {
+\begin{tabular}{|c||c|}
+    \hline
+    width & latency(cycles) \\
+\hline
+    LDS.32 & 42\\
+\hline
+    LDS.64 & 42\\
+\hline
+    LDS.128 & 55\\
+\hline
+\end{tabular}
+}
+\label{tab:reg}
+\end{table}
+% global memory
+We benchmarked bandwidth and latency of {\tt LD}  and {\tt LDG}. Unlike shared memory, which is SM independent, globlal
+memory is Card wise. Since six $64-bit$ memory controlers is distributed on
+GK110 and a block of thread only resides on a SM at a time, so blocks of threads must be abundant in order to make full use of six memory controlers.
+{\tt LDG} instruction is a global memory load that uses the texture path.
+We have $26$ blocks of threads and $512$ threads each block when testing bandwith. Each thread access $4$ words, then
+with a stride of $4*blockDim.x*gridDim.x$. We write basic logic in CUDA, extract assembly by our assembler, and then
+modify according to different load instructions. $32$, $64$ and $128$ load instruction can be generated by using vector
+type, for example int4. We find CUDA compiler can not generate {\tt LDG.E.128} nor {\tt LDG.E.64}. It can only generate
+{\tt LD.E}, {\tt LD.E.64}, {\tt LD.E.128}. So we must modify in assembly level in order to test other cases.
+{\tt TEXDEPENDBAR} is needed before access data by {\tt LDG} instruction. The bandwith data is shown in Figure~\ref{}.
+Global memory bandwith of {\tt LDG} is better than that of {\tt LD}.
+We also tested the latency of combination of load width and two load instructions.
+Since latency is independent of number of threads, we set thread to be (1,1,1) and block(1,1,1).
+In order to create data dependency, we let the value of $ith$ position, to be next position to access. That is, we set
+dataIn[i] = (i+stride)\%N. In kernel, we  repeate $256$ times, (j=my\_array[j]), calculate the average latency of $256$ instructions.
+This also requires working on assemlby code, because NVCC is not always generate all the cases.
+
+\section{Applying Optimizations to SGEMM }
+\label{sec:optimization}
+The demystified GPU microarchitecture features provides additional space to tune performance-critical kernels. We apply a series of incremental optimizations to improve SGEMM efficiency on Kepler architecture. The optimization strategies go through architectural hierarchy from core and register to memory. All the optimization strategies are inspired by our microbenchmark's observations.
+\begin{itemize}
+\item At core level, we orchestrate {\tt FFMA} instruction executions by a more efficient instruction scheduling pattern with respect to the proper control code.
+\item At register level, we meticulously map operands to registers so that  bank conflicts are avoided in the inner loop iteration.
+\item At memory level, we select appropriate shared memory load/store width and global memory data path to mitigate latencies.
+\end{itemize}
+
+\subsection{Instruction Scheduling}
+It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all the time. However, for each SM on Kepler architecture, 64 cores share $4$ schedulers, each of which issues instructions to 32 cores as a warp. As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of 2 dual issues (4 {\tt FFMA}s) and 2 single issues ((2 {\tt FFMA}s)). As shown in Figure~\ref{}, the instructions in lines 2-3 and lines 6-7 are respectively grouped as two dual-issues. The other two instructions in line 10 and line 13 are two single issues in terms of floating-point instruction execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUDA compiler generated codes.
+
+
+\begin{algorithm}
+      \caption{NVCC generated assembly code}\label{nvcc}
+  \begin{algorithmic}[1]
+      \footnotesize
+        \State /*0x08dc109c14801410*/
+        \State [
+        \State /*0348*/ FFMA R28, R41, R15, R28; /*0xcc007000079ca472*/
+        \State /*0350*/ LDS.128 R12, [0x40];     /*0x7a700000201ffc32*/
+        \State ]
+        \State /*0358*/ FFMA R39, R41, R9, R39; /*0xcc009c00049ca49e*/
+        \State /*0360*/ FFMA R29, R41, R10, R29; /*0xcc007400051ca476*/
+        \State /*0368*/ FFMA R32, R41, R11, R32; /*0xcc008000059ca482*/
+        \State [
+        \State /*0370*/ LDS.128 R8, [0x50]; /*0x7a700000281ffc22*/
+        \State /*0378*/ IADD R4.CC, R4, R21; /*0xe08400000a9c1012*/
+    \State ]
+  \end{algorithmic}
+\end{algorithm}
+
+
+
+\begin{algorithm}
+      \caption{The optimized assembly code }\label{nvcc}
+  \begin{algorithmic}[1]
+      \footnotesize
+        \State [
+        \State -:-:D:-:04      FFMA R27, R150, R146, R27;
+        \State -:-:D:-:05      FFMA R6, R149, R146, R6;
+        \State ]
+        \State [
+        \State -:-:D:-:04      FFMA R7, R148, R147, R7;
+        \State -:-:D:-:05      FFMA R2, R149, R147, R2;
+        \State ]
+        \State [
+        \State -:-:D:-:04      FFMA R3, R148, R146, R3;
+        \State -:-:-:-:00      LDS.64 R168, [R222+0x400];
+        \State ]
+        \State -:-:D:-:05      FFMA R9, R148, R152, R9;
+
+        \State ]
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[htbp]
+\begin{center}
+%\includegraphics[scale=0.5]{order}
+\caption{{\tt FFMA}s instructions scheduling for calculating a $8\times 8$ subblock of matrix C.}
+\label{fig:order}
+\end{center}
 \end{figure}
 
-\subsection{Theorem-like Constructs}
-Other common constructs that may occur in your article are
-the forms for logical constructs like theorems, axioms,
-corollaries and proofs.  There are
-two forms, one produced by the
-command \texttt{{\char'134}newtheorem} and the
-other by the command \texttt{{\char'134}newdef}; perhaps
-the clearest and easiest way to distinguish them is
-to compare the two in the output of this sample document:
+Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{}, which illustrates the order of 144 {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
 
-This uses the \textbf{theorem} environment, created by
-the\linebreak\texttt{{\char'134}newtheorem} command:
-\newtheorem{theorem}{Theorem}
-\begin{theorem}
-Let $f$ be continuous on $[a,b]$.  If $G$ is
-an antiderivative for $f$ on $[a,b]$, then
-\begin{displaymath}\int^b_af(t)dt = G(b) - G(a).\end{displaymath}
-\end{theorem}
+Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $c_{22}, c_{21}, c_{30}, c_{31}, c_{20}, c_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 7 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
-The other uses the \textbf{definition} environment, created
-by the \texttt{{\char'134}newdef} command:
-\newdef{definition}{Definition}
-\begin{definition}
-If $z$ is irrational, then by $e^z$ we mean the
-unique number which has
-logarithm $z$: \begin{displaymath}{\log e^z = z}\end{displaymath}
-\end{definition}
 
-Two lists of constructs that use one of these
-forms is given in the
-\textit{Author's  Guidelines}.
- 
-There is one other similar construct environment, which is
-already set up
-for you; i.e. you must \textit{not} use
-a \texttt{{\char'134}newdef} command to
-create it: the \textbf{proof} environment.  Here
-is a example of its use:
-\begin{proof}
-Suppose on the contrary there exists a real number $L$ such that
+After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to assure
+corretness of the program without losing performance. In order to tolerate instruction latency, we need to keep distance of dependent instructions to be larger than the latency. The distance can be approximately computed as
 \begin{displaymath}
-\lim_{x\rightarrow\infty} \frac{f(x)}{g(x)} = L.
+distance = \frac{4\times\#instructions}{7}
 \end{displaymath}
-Then
+In a schedule block, there are $7$ instructions which cost $4$ clocks to be issued in dual issue mode. In other word, if we want to have interleave
+two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. Besides, the remained number of slots to insert these instructions is estimated as follows:
+
 \begin{displaymath}
-l=\lim_{x\rightarrow c} f(x)
-= \lim_{x\rightarrow c}
-\left[ g{x} \cdot \frac{f(x)}{g(x)} \right ]
-= \lim_{x\rightarrow c} g(x) \cdot \lim_{x\rightarrow c}
-\frac{f(x)}{g(x)} = 0\cdot L = 0,
+\#slots = \frac{bm\times bn\times unroll}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
 \end{displaymath}
-which contradicts our assumption that $l\neq 0$.
-\end{proof}
 
-Complete rules about using these environments and using the
-two different creation commands are in the
-\textit{Author's Guide}; please consult it for more
-detailed instructions.  If you need to use another construct,
-not listed therein, which you want to have the same
-formatting as the Theorem
-or the Definition\cite{salas:calculus} shown above,
-use the \texttt{{\char'134}newtheorem} or the
-\texttt{{\char'134}newdef} command,
-respectively, to create it.
+According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The schedule slots are illustrated in two dimension as shown in Table~\ref{}.
+Note that we use double buffers to hide latency of {\tt LDG} from global memory, which costs $200$ clock cycles.
+Every $4$ loop requires $2$ {\tt LDG}s to load data from global memory to registers, $4$ {\tt STS}s to store data from registers to shared memory. There is a read after write (RAW) dependency between {\tt
+LDG} and {\tt STS}. The simple model estimates that $\frac{200\times 7}{4} = 350$ are needed instructions between them. As shown in Table~\ref{}, we put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and position $P[65][2]$, respectively. Thus, the number of instructions between them are $143-77 + 144\times 2 +
+65=419$, resulting in a distance of $\frac{4\times 419}{7}=239$ clocks, which is enough to hide latency of {\tt LDG}s.
 
-\subsection*{A {\secit Caveat} for the \TeX\ Expert}
-Because you have just been given permission to
-use the \texttt{{\char'134}newdef} command to create a
-new form, you might think you can
-use \TeX's \texttt{{\char'134}def} to create a
-new command: \textit{Please refrain from doing this!}
-Remember that your \LaTeX\ source code is primarily intended
-to create camera-ready copy, but may be converted
-to other forms -- e.g. HTML. If you inadvertently omit
-some or all of the \texttt{{\char'134}def}s recompilation will
-be, to say the least, problematic.
+The arrangement of {\tt LDS}s, which load data from shared memory for double buffers of both $A$ and $B$, follows the same way with {\tt LDG}s.
+A {\tt LDS} has a latency of $40$ clock cycles, $\frac{40\times 7}{4}=70$ instructions are needed to interleave {\tt LDS} and {\tt
+FFMA}. As shown in Table~\ref{}, {\tt LDS} in $P[11][3]$ read data from {\tt STS} in position $P[65][2]$, the distance is more than $40$ clock
+cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {\tt LDS} to make sure that data in shared memory is ready. Other instructions like {\tt XOR},
+{\tt IADD}, {\tt ISETP} are inserted according to data dependency, there is almost no performance loss due to little latency.
 
-\section{Conclusions}
-This paragraph will end the body of this sample document.
-Remember that you might still have Acknowledgments or
-Appendices; brief samples of these
-follow.  There is still the Bibliography to deal with; and
-we will make a disclaimer about that here: with the exception
-of the reference to the \LaTeX\ book, the citations in
-this paper are to articles which have nothing to
-do with the present subject and are used as
-examples only.
-%\end{document}  % This is where a 'short' article might terminate
+\begin{table}[!t]
+\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers.}
+\label{tab:position}
+\captionsetup{font=scriptsize}
+\centering
+\scalebox{0.78} {
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+    \diagbox[width=4em, height=3em, trim=1]{slot}{unroll} & 0 &1 &2 &3 \\
+    \hline
+    5 & ISET P0 & IADD trackA0 & & XOR readBs \\
+    \hline
+    11 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    17 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    23 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    29 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    35& IADD K, -4 & IADD trackA1 & TEXDEPBAR & \\
+    \hline
+    41 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    47 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    53 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    59 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    65 & & &STS.64 writeS & ISETP P2 \\
+    \hline
+    71 & & & & \\
+    \hline
+    77 & & IADD trackB0 & & LDG trackA \\
+    \hline
+    83 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    89 &ISETP P3 & & &\\
+    \hline
+    95 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
+    \hline
+    101 & & & STS.64 loadB0 & LDG trackB \\
+    \hline
+    107 & & & STS.64 loadB2 & XOR writeS \\
+    \hline
+    113 & & & & \\
+    \hline
+    119 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    125 & & & XOR readAs & \\
+    \hline
+    131 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
+    \hline
+    137 & & & & \\
+    \hline
+    143 & & IADD trackB1 & BAR.SYNC & BAR Loop \\
+    \hline
+\end{tabular}
+}
 
-%ACKNOWLEDGMENTS are optional
-\section{Acknowledgments}
-This section is optional; it is a location for you
-to acknowledge grants, funding, editing assistance and
-what have you.  In the present case, for example, the
-authors would like to thank Gerald Murray of ACM for
-his help in codifying this \textit{Author's Guide}
-and the \textbf{.cls} and \textbf{.tex} files that it describes.
+\end{table}
 
+\subsection{Register Allocation}
+
+To allocate register for $A$ column, $B$ row and $C$ submatrix, we have three considerations: correctness, no bank
+conflict and allocate register index tightly.
+{\tt LDG.128} restricts $4$ words alignment restriction for register.
+Nvidia GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, result is writen to
+RN+1, RN+2, RN+3. There is undocumented restriction: N\%4==0, otherwise illegal instruction error will be reported.
+It's not hard to understand this restriction, $4$ words align for LDG.128 make hardware logic simpler saving die area.
+Since we will use $LDG.128$ to load $A$ and $B$, there are $2$ bank allocation choices due to N\%4==0 restriction and
+bank distribution of Kepler. We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
+$B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure, we have 2 choices left for $C$.
+$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$
+$\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$
+We have $2i\times2$ bank patterns for SGEMM, we choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
+$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively as shown in Figure.
+To allocate actual register index, we choose continuous register index so that register index do not get too big to
+exceed 255 restriction. From figure, we can verify that C[i][j], A[i] and B[j] have different banks, for example
+C[0][1]'s color is white, A[0]'s color is green and B[1]'s color is red, hence no bank conflicts.
+
+\subsection{Memory Movment}
+% We recommend abbrvnat bibliography style.
+The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
+$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
+We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
+$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
+Similarly, the minimum shared memory requirement
+$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
+For each SM, minimum bandwith requres $20$GB/s.
+In choosing which load instruction to use, we consider two aspects: bandwidth,
+latency, numbers of instructions requirement and effect on FFMA throughput.
+{\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
+{\tt LDG.128} has higher bandwith and similar latency with $LDG.64$, we prefer {\tt LDG.128} in our implementation.
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.45]{reg}
+\caption{Register bank allocation: number in the cell is register number. Double buffering column
+    $A$ and row $B$. Leftest two columns are registers allocated to one column of $A$ sub-matrix, the
+top two rows are registers allocated to one row of sub-matrix $B$, others are registers for
+sub-matrix $C$. Green cells means bank0, blue cell means bank1, gray cell means bank2, red cell
+means bank3.}
+\label{fig:reg}
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.45]{order}
+\caption{FFMA order: the numbers in the cells mean FFMA executing order, not register number.
+Dashed ellipses across two cells mean two FFMA instructions are executed at same clock cycle. }
+\label{fig:order}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.65]{tn_prof}
+    \caption{Evaluation of each optimization method}
+\label{fig:th_prof}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{block}
+    \caption{Evaluation of different blocking size}
+\label{fig:block}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{sgemm_tn}
+\caption{Cublas vs. our optimized SGEMM }
+\label{fig:sgemm_tn}
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{lds_bandwidth}
+    \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
+\label{fig:lds_bw}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{lds_broadcast_bandwidth}
+    \caption{ Broadcast bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
+\label{fig:lds_brd_bw}
+\end{center}
+\end{figure}
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
@@ -618,51 +781,4 @@ and the \textbf{.cls} and \textbf{.tex} files that it describes.
 %
 %APPENDICES are optional
 %\balancecolumns
-\appendix
-%Appendix A
-\section{Headings in Appendices}
-The rules about hierarchical headings discussed above for
-the body of the article are different in the appendices.
-In the \textbf{appendix} environment, the command
-\textbf{section} is used to
-indicate the start of each Appendix, with alphabetic order
-designation (i.e. the first is A, the second B, etc.) and
-a title (if you include one).  So, if you need
-hierarchical structure
-\textit{within} an Appendix, start with \textbf{subsection} as the
-highest level. Here is an outline of the body of this
-document in Appendix-appropriate form:
-\subsection{Introduction}
-\subsection{The Body of the Paper}
-\subsubsection{Type Changes and  Special Characters}
-\subsubsection{Math Equations}
-\paragraph{Inline (In-text) Equations}
-\paragraph{Display Equations}
-\subsubsection{Citations}
-\subsubsection{Tables}
-\subsubsection{Figures}
-\subsubsection{Theorem-like Constructs}
-\subsubsection*{A Caveat for the \TeX\ Expert}
-\subsection{Conclusions}
-\subsection{Acknowledgments}
-\subsection{Additional Authors}
-This section is inserted by \LaTeX; you do not insert it.
-You just add the names and information in the
-\texttt{{\char'134}additionalauthors} command at the start
-of the document.
-\subsection{References}
-Generated by bibtex from your ~.bib file.  Run latex,
-then bibtex, then latex twice (to resolve references)
-to create the ~.bbl file.  Insert that ~.bbl file into
-the .tex source file and comment out
-the command \texttt{{\char'134}thebibliography}.
-% This next section command marks the start of
-% Appendix B, and does not continue the present hierarchy
-\section{More Help for the Hardy}
-The sig-alternate.cls file itself is chock-full of succinct
-and helpful comments.  If you consider yourself a moderately
-experienced to expert user of \LaTeX, you may find reading
-it useful but please remember not to change it.
-%\balancecolumns % GM June 2007
-% That's all folks!
 \end{document}
