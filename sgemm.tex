@@ -437,44 +437,21 @@ Latency of each instruction is shown in Table~\ref{}, {\tt LDS.128} is longer th
 and {\tt LDS.64} is the same.
 We test the impact on {\tt FFMA} throughput, two {\tt LDS.64} will have 1.80\% influce, one {\tt LDS.128} instruction has
 3.63\% influence on FFMA throughput.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{lds_bandwidth}
+    \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
+\label{fig:lds_bw}
+\end{center}
+\end{figure}
 
-\begin{table}[!t]
-\caption{Bankwidth}
-\centering
-\scalebox{1.0} {
-\begin{tabular}{|c||c|c|c|}
-\hline
-    &# of instructions& time & bandwith\\
-\hline
-    32& 4N & 90.83 & 70.92\\
-\hline
-    64& 2N & 56.67 & 113.68 \\
-\hline
-    128& N & 120.59 & 53.42 \\
-\hline
-\end{tabular}
-}
-\label{tab:reg}
-\end{table}
-
-\begin{table}[!t]
-\caption{Broadcast Bankwidth}
-\centering
-\scalebox{1.0} {
-\begin{tabular}{|c||c|c|c|}
-\hline
-    &# of instructions& time & bandwith\\
-\hline
-    32& 4N &  & 70.99\\
-\hline
-    64& 2N &  & 116.96 \\
-\hline
-    128& N &  & 105.50 \\
-\hline
-\end{tabular}
-}
-\label{tab:reg}
-\end{table}
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{lds_broadcast_bandwidth}
+    \caption{ Broadcast bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
+\label{fig:lds_brd_bw}
+\end{center}
+\end{figure}
 
 \begin{table}[!t]
 \caption{Latency}
@@ -686,22 +663,6 @@ $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectivel
 To allocate actual register index, we choose continuous register index so that register index do not get too big to
 exceed 255 restriction. From figure, we can verify that C[i][j], A[i] and B[j] have different banks, for example
 C[0][1]'s color is white, A[0]'s color is green and B[1]'s color is red, hence no bank conflicts.
-
-\subsection{Memory Movment}
-% We recommend abbrvnat bibliography style.
-The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
-$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
-We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
-$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
-Similarly, the minimum shared memory requirement
-$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
-For each SM, minimum bandwith requres $20$GB/s.
-In choosing which load instruction to use, we consider two aspects: bandwidth,
-latency, numbers of instructions requirement and effect on FFMA throughput.
-{\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
-{\tt LDG.128} has higher bandwith and similar latency with $LDG.64$, we prefer {\tt LDG.128} in our implementation.
-
-
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.45]{reg}
@@ -723,6 +684,31 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 \end{center}
 \end{figure}
 
+\subsection{Memory Movment}
+% We recommend abbrvnat bibliography style.
+The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
+$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
+We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
+$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
+Similarly, the minimum shared memory requirement
+$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
+For each SM, minimum bandwith requres $20$GB/s.
+In choosing which load instruction to use, we consider two aspects: bandwidth,
+latency, numbers of instructions requirement and effect on FFMA throughput.
+{\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
+{\tt LDG.128} has higher bandwith and similar latency with $LDG.64$, we prefer {\tt LDG.128} in our implementation.
+\section{Evaluation}
+\subsection{Experiment Setup}
+\subsection{Overall performance}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{sgemm_tn}
+\caption{Cublas vs. our optimized SGEMM }
+\label{fig:sgemm_tn}
+\end{center}
+\end{figure}
+\subsection{Performance Analysis}
 
 \begin{figure}[htbp]
 \begin{center}
@@ -731,7 +717,6 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 \label{fig:th_prof}
 \end{center}
 \end{figure}
-
 
 \begin{figure}[htbp]
 \begin{center}
@@ -742,30 +727,6 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 \end{figure}
 
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{sgemm_tn}
-\caption{Cublas vs. our optimized SGEMM }
-\label{fig:sgemm_tn}
-\end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{lds_bandwidth}
-    \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
-\label{fig:lds_bw}
-\end{center}
-\end{figure}
-
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{lds_broadcast_bandwidth}
-    \caption{ Broadcast bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
-\label{fig:lds_brd_bw}
-\end{center}
-\end{figure}
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
