@@ -590,7 +590,7 @@ cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {
 \scalebox{0.78} {
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-    \diagbox[width=4em, height=3em, trim=1]{slot}{unroll} & 0 &1 &2 &3 \\
+    \diagbox[width=4em, height=3em]{slot}{unroll} & 0 &1 &2 &3 \\
     \hline
     5 & ISET P0 & IADD trackA0 & & XOR readBs \\
     \hline
@@ -697,10 +697,16 @@ In choosing which load instruction to use, we consider two aspects: bandwidth,
 latency, numbers of instructions requirement and effect on FFMA throughput.
 {\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
 {\tt LDG.128} has higher bandwith and similar latency with $LDG.64$, we prefer {\tt LDG.128} in our implementation.
-\section{Evaluation}
-\subsection{Experiment Setup}
-\subsection{Overall performance}
 
+
+\section{Evaluation}
+In this section, we evaluate our optimized SGEMM, estimate the upper bound of SGEMM and quantitatively analysis the penalty factors of SGEMM.
+\subsection{Experiment Setup}
+
+\subsection{Overall performance}
+Figure~\ref{fig:sgemm_tn} is the performance comparison of Cublas's SGEMM and our optimized SGEMM.g
+Our optimized is $3104$ Gflop/s and efficiency is $3104/3520=88\%$. Cublas's TN is $2216$ Gflop/s,
+efficiency is $2216/3520=63\%$. Our SGEMM TN implementation is 25\% higher than Cublas's TN.g
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{sgemm_tn}
@@ -709,15 +715,48 @@ latency, numbers of instructions requirement and effect on FFMA throughput.
 \end{center}
 \end{figure}
 \subsection{Performance Analysis}
+\subsubsection{Register Blocking Size Choosing}
+Register blocking size is restricted by instruction cache, shared memory size, registers per thread,
+maxmum number of threads in one block. We will explain these restriction one by one by our performance model.
+In order to cover latency of shared memory, software pipelining using double
+buffers is an efficient way. ~\ref{f_sharedmem}g
+Each thread needs $rx*ry$ to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
+submatrix and a row of $B$ submatrix in current loop, anther $rx$ and $ry$ are used for prefetching $A$ and $B$ from shared memory to
+registers for next loop. The total number of registers should be less than $255$ in Kepler architecture as shown in Equation~\ref{f_register}.
+We have the following equations.
+\begin{equation}g
+    rx*ry + rx *2 + ry*2 < 255
+\label{f_register}
+\end{equation}g
+In this function, we find maximum square matrix for $rx, ry$ is $12*12$, other register blocking options could be $8*8$, $12*16$.
+Bigger register blocking has higher data reuse ration, so as compute/memory ratio. But SM may have
+lower occupancy due to limited registers per SM. In our implementation, we use $12*12$ blocking,
+regsiters by LD and FFMA is $12*12+4*12=192$, total registers are $236$.
+In this way, the max threads in block is  $65536/236=277$ in Equation~\ref{f:reg_sm}.
+To make the program easier to design, we choose blocking size to be $256$. The more threads in a
+thread block helps global memory access due to higher possibility of coalesced memory access.
+\begin{equation}g
+    (rx*ry + 2*rx + 2*ry)*tx*ty < SM_{reg}
+    \label{f:reg_sm}
+\end{equation}g
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of each optimization method}
-\label{fig:th_prof}
-\end{center}
-\end{figure}
+Algorithm~\ref{sgemm} demonstrates memory flow of SGEMM. First, global memory to register, register to shared
+memory, then shared memory to register,  at last register to global memory.
+We first analyze memory access volume and computation based on block of threads.
+Each block of threads need to compute a $bm*bn$ submatrix of $C$ by multiply $A_{bm,bk} and B_{bk,
+bn}$. In blocking algorithm, we compute partial result of $bm*bn$ submatrix $C$ by multiply $A_{bm,bk} and
+B_{bk,bn}$.  We need $bm*bk$ of A and $bn*bk$ of B.
+Total global volume is $GMem= bm*bk + bn*bk$ words
+In the view of each thread, each thread needs to load  $\frac{bm*bk}{rx}$ of $A$ andg
+$\frac{bn*bk}{ry}$ of $B$, which $rx$, $ry$ is register blocking size.
+For Kepler its bandwidth is $3.004*2*384/8$= 277.4 GB/s
+With ECC on, the bandwidth will be reduced with a ratio.
+The upper bound of SGEMM bounded by global memory bandwidth can be modeled asg
+$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
 
+
+Figure~\ref{fig:fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
+$8\times8$ in that, it has high computation memory ratio.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{block}
@@ -726,6 +765,17 @@ latency, numbers of instructions requirement and effect on FFMA throughput.
 \end{center}
 \end{figure}
 
+Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
+As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
+Every version will apply instruction scheduling.
+Dual-issue achives boosts perfomance most.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.65]{tn_prof}
+    \caption{Evaluation of each optimization method}
+\label{fig:th_prof}
+\end{center}
+\end{figure}
 
 %
 % The following two commands are all you need in the
