@@ -686,13 +686,6 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 
 \subsection{Memory Movment}
 % We recommend abbrvnat bibliography style.
-The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
-$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
-We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
-$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
-Similarly, the minimum shared memory requirement
-$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
-For each SM, minimum bandwith requres $20$GB/s.
 In choosing which load instruction to use, we consider two aspects: bandwidth,
 latency, numbers of instructions requirement and effect on FFMA throughput.
 {\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
@@ -702,11 +695,62 @@ latency, numbers of instructions requirement and effect on FFMA throughput.
 \section{Evaluation}
 In this section, we evaluate our optimized SGEMM, estimate the upper bound of SGEMM and quantitatively analysis the penalty factors of SGEMM.
 \subsection{Experiment Setup}
+\begin{table}[!t]
+\caption{K20 Specification}
+\centering
+\scalebox{1.0} {
+\begin{tabular}{|c||c|}
+\hline
+Metric& Value\\
+\hline
+SPs/SM &192\\
+\hline
+    SMs&13\\
+\hline
+Cores &2496\\
+\hline
+Frequency(MHz)&705\\
+\hline
+Memory Bus Width&320\\
+\hline
+Memory frequency&2600 Mhz\\
+\hline
+Bandwidth(GB/s)&208.0\\
+\hline
+Single FLOPS&3520\\
+\hline
+warp schedular per SM&4\\
+\hline
+dispatch unit/SM&8\\
+\hline
+Max registers/thread&256 \\
+\hline
+32-bit registers/SM&64K\\
+\hline
+LD/ST unit&32 \\
+\hline
+shared memory&48KB\\
+\hline
+L1 cache&16KB or 48KB\\
+\hline
+    L2 cache&1536KB\\
+\hline
+\end{tabular}
+}
+\label{table:k20}
+\end{table}
+Our platform is K20m GPU, the configuration of K20 GPU is shown in Table~\ref{table:k20}.
+Cuda driver and Cublas is $7.0$ version. We benchmark different size of matrix from $768\times768$ to $12288\times12288$.
 
-\subsection{Overall performance}
+\subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} is the performance comparison of Cublas's SGEMM and our optimized SGEMM.g
 Our optimized is $3104$ Gflop/s and efficiency is $3104/3520=88\%$. Cublas's TN is $2216$ Gflop/s,
-efficiency is $2216/3520=63\%$. Our SGEMM TN implementation is 25\% higher than Cublas's TN.g
+efficiency is $2216/3520=63\%$. Our SGEMM TN implementation is 25\% higher than Cublas's TN.
+We can see the performance increase with matrix size, it's due to load balance and epilog overhead of storing $C$
+matrix.
+Numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Kepler has $13$ SMs in
+total, matrix of size $768x768$ will have severe load imbalance problem. Other matrices have more thread blocks, load balance
+problem is serious.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{sgemm_tn}
@@ -714,8 +758,46 @@ efficiency is $2216/3520=63\%$. Our SGEMM TN implementation is 25\% higher than 
 \label{fig:sgemm_tn}
 \end{center}
 \end{figure}
+
 \subsection{Performance Analysis}
+
+\subsubsection{Profiling of Each Optimization Method}
+Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
+As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
+Every version will apply instruction scheduling.
+Dual-issue achives boosts perfomance most.
+conf-ld32-single
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.65]{tn_prof}
+    \caption{Evaluation of each optimization method: {\tt conf} is register conflict, {\tt noconf} is no register bank conflict,
+    {\tt single} is {\tt FFMA} single issue, {\tt LD} is using {\tt LD} as load instruction, {\tt LDG} is use {\tt LDG}
+    as load instruction, 32-bit {\tt LD} instruction, {\tt dual} is {\tt FFMA} dual-issue.}
+\label{fig:th_prof}
+\end{center}
+\end{figure}
+{\bf conf/noconf:} Register for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
+FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Optimization with no register bank
+conflict(noconf) is using register allocate pattern described in section~\ref{}. No instruction scheduling change
+between conf and nonconf version.
+
+\textbf{ld/ldg+N:} {\tt LD} is load instruction used in implenetation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed
+before using the data. Since change in instruction number, instruction scheduling is needed.
+Kepler has an L1 data cache, but it is designed for local rather than global memory access.
+
+{\bf single/dual:} Single issue is controled by setting control code to $0x00$. Dual issue is  using dual issue pattern
+we described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment. No instruction
+scheduling change betwen single/dual.
+
+Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
+Register bank conflict elimating imporves around $10\%$. wider load instruction improves $27\%\sim35\%$, texture cached
+load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$. In most cases, the bigger matrix
+size, the more improves except {\tt LDG} and {\tt LD}.
+
+
 \subsubsection{Register Blocking Size Choosing}
+
 Register blocking size is restricted by instruction cache, shared memory size, registers per thread,
 maxmum number of threads in one block. We will explain these restriction one by one by our performance model.
 In order to cover latency of shared memory, software pipelining using double
@@ -727,7 +809,7 @@ We have the following equations.
 \begin{equation}g
     rx*ry + rx *2 + ry*2 < 255
 \label{f_register}
-\end{equation}g
+\end{equation}
 In this function, we find maximum square matrix for $rx, ry$ is $12*12$, other register blocking options could be $8*8$, $12*16$.
 Bigger register blocking has higher data reuse ration, so as compute/memory ratio. But SM may have
 lower occupancy due to limited registers per SM. In our implementation, we use $12*12$ blocking,
@@ -735,14 +817,7 @@ regsiters by LD and FFMA is $12*12+4*12=192$, total registers are $236$.
 In this way, the max threads in block is  $65536/236=277$ in Equation~\ref{f:reg_sm}.
 To make the program easier to design, we choose blocking size to be $256$. The more threads in a
 thread block helps global memory access due to higher possibility of coalesced memory access.
-\begin{equation}g
-    (rx*ry + 2*rx + 2*ry)*tx*ty < SM_{reg}
-    \label{f:reg_sm}
-\end{equation}g
 
-Algorithm~\ref{sgemm} demonstrates memory flow of SGEMM. First, global memory to register, register to shared
-memory, then shared memory to register,  at last register to global memory.
-We first analyze memory access volume and computation based on block of threads.
 Each block of threads need to compute a $bm*bn$ submatrix of $C$ by multiply $A_{bm,bk} and B_{bk,
 bn}$. In blocking algorithm, we compute partial result of $bm*bn$ submatrix $C$ by multiply $A_{bm,bk} and
 B_{bk,bn}$.  We need $bm*bk$ of A and $bn*bk$ of B.
@@ -754,9 +829,10 @@ With ECC on, the bandwidth will be reduced with a ratio.
 The upper bound of SGEMM bounded by global memory bandwidth can be modeled asg
 $compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
 
-
-Figure~\ref{fig:fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
-$8\times8$ in that, it has high computation memory ratio.
+Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
+$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. In terms of
+optimization methods, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
+space to do instruction scheduling, the overhead of {\tt LDS} can be eliminated.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{block}
@@ -765,22 +841,58 @@ $8\times8$ in that, it has high computation memory ratio.
 \end{center}
 \end{figure}
 
-Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
-As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
-Every version will apply instruction scheduling.
-Dual-issue achives boosts perfomance most.
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of each optimization method}
-\label{fig:th_prof}
-\end{center}
-\end{figure}
+\subsubsection{Upper Bound Analysis}
+We anlysis the possible upper bound factor of SGEMM: {\tt LDS}, {\tt LDG} and {\tt FFMA} throughput.
+In section~\ref{}, {\tt LDS} theoretical bandwidth is xxx, the maximize we could achive is $160GB/s$.
+The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
+$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
+We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
+$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
+Similarly, the minimum shared memory requirement
+$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
+For each SM, minimum bandwith requres $20$GB/s.
+The bandwidth we could achiev is higher than requirement, so bandwidth of shared width and global memory is not bottleneck.
 
+The best performance we could achive is $88\%$ efficiency.
+As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$.
+The loss is about $2.33\%$. These loss may comes from overhead of warp scheduler in FFMA dual issue
+mode. LDS has no penalty. With register double buffering, we can eliminate all the influence of LDS or STS.
+With $12x12$ register blocking, unroll $4$ times, there will be $144*4=576$ FFMA instructions in the loop.
+With our designed FFMA dual issue pattern, every $6$ FFMA needs $4$ clock cycles in the pipeline.
+It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits LDG instruction are needed.
+Each LDG has $10$ clock penalty, the total LDG penalty will be $2*10/384 = 5.2\%$.
+Other penalty is about 13\%-5.2\%-2.33\%=5.5\%. It comes from synchronization and writing $C$ matrix in the block.
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
+\section{Related Work}
+GEMM is a basic low level function of BLAS, its performance depends on architecture heavily.
+There are lots of excellent research work on it.
+Volkov et.al.\cite{volkov}
+presented a fast implementation on G80 architecture. A
+blocking algorithm was used to exploit locality in shared
+memory. They also presented detailed benchmarks of the
+GPU memory system, kernel start-up costs, and arithmetic
+throughput. However, we present a performance modeling
+and a detailed analysis on the rationality of choosing an
+optimal blocking factor, and an experience on instruction
+scheduling as well.
+Nath et.al.~\cite{magma} has developed a dense
+linear algebra library MAGMA for heterogeneous architectures of multi-core+GPU. The library contains a DGEMM
+routines optimized for Fermi. MAGMA adopts a similar
+idea of double-buffering by prefetching data into extra registers instead of shared memory. MAGMA’s performance
+is almost the same as CUBLAS3.2.
+Wong et.al.~\cite{wong}  performed a comprehensive benchmarking work on GT200.
+Tan et.al.~\cite{tan} implemented fast DGEMM by using assembly level optimization, such as
+software pipeling, use of vector memory operations, register blocking, instruction order schedualing, double-buffering.
+Lai~\cite{lai} present performance analysis and optimization work of SGEMM on fermi and
+GTX680 GPU architecture.
+Scott Gray~\cite{nervana_sgemm_wiki} present optimization of SGEMM and other kernels used in
+convolutional neural network.
+Mei~\cite{mei} benchark memory hierachy of fermi, Kepler and Maxwell GPU, which including cache,
+shared memory etc.
+\section{Conclusion}
 \bibliographystyle{abbrv}
 \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 % You must have a proper ".bib" file
