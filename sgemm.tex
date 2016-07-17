@@ -1,51 +1,13 @@
-% This is "sig-alternate.tex" V2.1 April 2013
-% This file should be compiled with V2.5 of "sig-alternate.cls" May 2012
-%
-% This example file demonstrates the use of the 'sig-alternate.cls'
-% V2.5 LaTeX2e document class file. It is for those submitting
-% articles to ACM Conference Proceedings WHO DO NOT WISH TO
-% STRICTLY ADHERE TO THE SIGS (PUBS-BOARD-ENDORSED) STYLE.
-% The 'sig-alternate.cls' file will produce a similar-looking,
-% albeit, 'tighter' paper resulting in, invariably, fewer pages.
-%
-% ----------------------------------------------------------------------------------------------------------------
-% This .tex file (and associated .cls V2.5) produces:
-%       1) The Permission Statement
-%       2) The Conference (location) Info information
-%       3) The Copyright Line with ACM data
-%       4) NO page numbers
-%
-% as against the acm_proc_article-sp.cls file which
-% DOES NOT produce 1) thru' 3) above.
-%
-% Using 'sig-alternate.cls' you have control, however, from within
-% the source .tex file, over both the CopyrightYear
-% (defaulted to 200X) and the ACM Copyright Data
-% (defaulted to X-XXXXX-XX-X/XX/XX).
-% e.g.
-% \CopyrightYear{2007} will cause 2007 to appear in the copyright line.
-% \crdata{0-12345-67-8/90/12} will cause 0-12345-67-8/90/12 to appear in the copyright line.
-%
-% ---------------------------------------------------------------------------------------------------------------
-% This .tex source is an example which *does* use
-% the .bib file (from which the .bbl file % is produced).
-% REMEMBER HOWEVER: After having produced the .bbl file,
-% and prior to final submission, you *NEED* to 'insert'
-% your .bbl file into your source .tex file so as to provide
-% ONE 'self-contained' source file.
-%
-% ================= IF YOU HAVE QUESTIONS =======================
-% Questions regarding the SIGS styles, SIGS policies and
-% procedures, Conferences etc. should be sent to
-% Adrienne Griscti (griscti@acm.org)
-%
-% Technical questions _only_ to
-% Gerald Murray (murray@hq.acm.org)
-% ===============================================================
-%
-% For tracking purposes - this is V2.0 - May 2012
 
 \documentclass{sig-alternate-05-2015}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{subfigure}
@@ -62,66 +24,35 @@
 \usepackage{diagbox}
 
 \graphicspath{{./Figures/}}
+
 \algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}
+
 \begin{document}
 
-% Copyright
 \setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\setcopyright{usgov}
-%\setcopyright{usgovmixed}
-%\setcopyright{cagov}
-%\setcopyright{cagovmixed}
 
-
-% DOI
-\doi{10.475/123_4}
-
-% ISBN
-\isbn{123-4567-24-567/08/06}
-
-%Conference
-\conferenceinfo{PLDI '13}{June 16--19, 2013, Seattle, WA, USA}
-
+\conferenceinfo{XXXX 'XX}{Month d--d, 20yy, City, ST, Country}
 \acmPrice{\$15.00}
 
-%
-% --- Author Metadata here ---
-\conferenceinfo{WOODSTOCK}{'97 El Paso, Texas USA}
-%\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
-%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
-% --- End of Author Metadata ---
+% Uncomment one of the following two, if you are not going for the
+% traditional copyright transfer agreement.
+
+%\exclusivelicense                % ACM gets exclusive license to publish,
+                                  % you retain copyright
+
+%\permissiontopublish             % ACM gets nonexclusive license to publish
+                                  % (paid open-access papers,
+                                  % short abstracts)
+
+%\titlebanner{}        % These are ignored unless
+%\preprintfooter{}   % 'preprint' option specified.
 
 \title{Demystifying Microarchitecture in GPU to Tune SGEMM Performance}
 \subtitle{}
 
-%
-% You need the command \numberofauthors to handle the 'placement
-% and alignment' of the authors beneath the title.
-%
-% For aesthetic reasons, we recommend 'three authors at a time'
-% i.e. three 'name/affiliation blocks' be placed beneath the title.
-%
-% NOTE: You are NOT restricted in how many 'rows' of
-% "name/affiliations" may appear. We just ask that you restrict
-% the number of 'columns' to three.
-%
-% Because of the available 'opening page real-estate'
-% we ask you to refrain from putting more than six authors
-% (two rows with three columns) beneath the article title.
-% More than six makes the first-page appear very cluttered indeed.
-%
-% Use the \alignauthor commands to handle the names
-% and affiliations for an 'aesthetic maximum' of six authors.
-% Add names, affiliations, addresses for
-% the seventh etc. author(s) as the argument for the
-% \additionalauthors command.
-% These 'additional authors' will be output/set for you
-% without further effort on your part as the last section in
-% the body of your article BEFORE References or any Appendices.
 
 \maketitle
+
 \begin{abstract}
 In this paper, we present a thorough experience on tuning single precision general matrix multiplication(SGEMM)
 in assembly level on Kepler GK110 architecture. First, we propose a methodology to demistify GPU's
@@ -137,56 +68,15 @@ $12\%$ higher than Cublas's $63\%$ and $71\%$ respectively.
 This work will facilitate performance tuning of other core kernels on GPUs.
 \end{abstract}
 
+%\category{CR-number}{subcategory}{third-level}
 
-%
-% The code below should be generated by the tool at
-% http://dl.acm.org/ccs.cfm
-% Please copy and paste the code instead of the example below.
-%
-\begin{CCSXML}
-<ccs2012>
- <concept>
-  <concept_id>10010520.10010553.10010562</concept_id>
-  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010575.10010755</concept_id>
-  <concept_desc>Computer systems organization~Redundancy</concept_desc>
-  <concept_significance>300</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010553.10010554</concept_id>
-  <concept_desc>Computer systems organization~Robotics</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
- <concept>
-  <concept_id>10003033.10003083.10003095</concept_id>
-  <concept_desc>Networks~Network reliability</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
-</ccs2012>
-\end{CCSXML}
+% general terms are not compulsory anymore,
+% you may leave them out
+%\terms
+%term1, term2
 
-\ccsdesc[500]{Computer systems organization~Embedded systems}
-\ccsdesc[300]{Computer systems organization~Redundancy}
-\ccsdesc{Computer systems organization~Robotics}
-\ccsdesc[100]{Networks~Network reliability}
-
-
-%
-% End generated code
-%
-
-%
-%  Use this command to print the description
-%
-\printccsdesc
-
-% We no longer use \terms command
-%\terms{Theory}
-
-\keywords{SGEMM; Assembler; GPU; Performance}
+\keywords
+SGEMM, Assembler, GPU, Performance
 
 \section{Introduction}
 Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is implemented as a basic routine of Level-3 in BLAS library~\cite{}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn more and more effort on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
@@ -212,6 +102,7 @@ In this paper we crack instruction encoding by performing a tough reverse engine
 \end{itemize}
 
 Note that this work demonstrates the effectiveness on NVIDIA Kepler architecture. However, the approach is general for other NVDIA GPU architectures by minor  adjustments of instruction solver and benchmarking implementation. The demystified microarchitecture-specific optimizations are further applied performance tuning on other NVIDIA GPU architectures. The rest of this paper is organized as follows.
+
 \section{Background}
 Since we seek to establish an assembly-level optimization approach to SGEMM, this section introduces some CUDA binary utilities which are used in our work. Besides, we highlight the tunable factors that determine SGEMM performance on GPU architecture.
 
@@ -267,11 +158,11 @@ According to the blocking algorithm, SGEMM performance is affected by the hierac
 \hline
 Data Path& Data Volume\\
 \hline
-global2reg (LDG)& $bm*bk/rx + bn*bk/ry$\\
+global$\Rightarrow$regitster ({\tt LDG})& $\frac{bm*\times bk}{rx} + \frac{bn\times bk}{ry}$\\
 \hline
-reg2shared (STS)& $bm*bk/rx + bn*bk/ry$\\
+register$\Rightarrow$shared ({\tt STS})& $\frac{bm\times bk}{rx} + \frac{bn\times bk}{ry}$\\
 \hline
-shared2reg (LDS)& $bm*bk + bn*bk$\\
+shared$\Rightarrow$register ({\tt LDS})& $bm\times bk + bn\times bk$\\
 \hline
 \end{tabular}
 }
@@ -405,11 +296,11 @@ It's very intricate to tune instruction execution to improve instruction through
 \hline
 Inst name&operation&single issue&dual issue\\
 \hline
-FFMA&c=a*b+c&127.52&190.35 \\
+{\tt FFMA} &c=a*b+c&127.52&190.35 \\
 \hline
-FMUL&c=a*b&127.52&190.35 \\
+{\tt FMUL} &c=a*b&127.52&190.35 \\
 \hline
-FADD&c=a+b&127.52&192\\
+{\tt FADD} &c=a+b&127.52&192\\
 \hline
 \end{tabular}
 }
@@ -417,26 +308,14 @@ FADD&c=a+b&127.52&192\\
 \end{table}
 
 
-{\em {\bf Observation 4--[Memory]}: $128$ bit shared memory load is not as effient as $64$ bit load in bandwith, latency
-and impact on FFMA throughput}
+{\em {\bf Observation 4--[Memory]}: For achieving higher memory bandwidth, shared memory prefers to 64-bits load instruction {\tt LDS.64} while global memory prefers to 128-bits load instruction {\tt LDG.E.128} with texture path.}
 
-We test bandwith, because SGEMM has a minimum requrement of shared memory bandwith as we will talk later. We test latency
-because we will use it in instruction reordering. We test impact on other instructions, because we hope {\tt LDS} will not
-reduce {\tt FFMA} throughput.
-In CUDA document, it is said that {\tt LDS.128} requires $2$ shared memory transactions.
-Programer may think the wider bit width of {\tt LDS}, the higher bandwith will achieve. In contract, on Kepler $64$ bit
-$LDS$ wins. We benchmark bandwith of {\tt LDS} when no bank conflict occurs in a warp using {\tt LDS.32}, {\tt LDS.64}
-and {\tt LDS.128}.
-The theoretical shared memory bandwith peak for each SM can be calculated as $Bandwidth=f_{core}*Width*Warpsize$ in
-bytes, in which $f_{core}$ means frequency of CUDA core, $Width$ is bank width, Warpsize is warp size. This formular
-means if no bank conflict among a warp, then shared memory can be loaded at same clock cycle. On Kepler,
-$f_{core}=706HZ$, $Width$ can be $4$ or $8$ due to two bank width configure, $Warpsize$ is $32$, hence the peak bandwith is $188GB/s$.
-Table~\ref{} is the result of sequential memory access bankwidth when no bank conflict occurs. This table shows that
-{\tt LDS.64} is best of all when timing stream data.
-Latency of each instruction is shown in Table~\ref{}, {\tt LDS.128} is longer than {\tt LDS.64}, latency of {\tt LDS.32}
-and {\tt LDS.64} is the same.
-We test the impact on {\tt FFMA} throughput, two {\tt LDS.64} will have 1.80\% influce, one {\tt LDS.128} instruction has
-3.63\% influence on FFMA throughput.
+For the GPU memory hierarchy we focus on the programmer controllable memory resources--shared memory and global memory. On NVIDIA GPU architecture, there are different memory access widths (i.e., 32-bits,64-bits,128-bits) and paths (i.e., normal cache or texture cache). In fact, both NVIDIA document and previous works~\cite{} pointed out that wider instructions have longer pipeline latencies, which are also measured in our microbenchmark. In addition, we identify several bandwidth issues for memory optimization.
+
+Intuitively, a wider load operation achieves higher bandwidth. We benchmark bandwidth of shared memory operations {\tt LDS} with different widths, i.e., {\tt LDS.32}, {\tt LDS.64}
+and {\tt LDS.128}. The operations are specially arranged so that no shared memory bank conflict occurs in a warp. In the experiment, the amount of data are projected to the number of load instructions. For exmaple, if the data are loaded by $N$ {\tt LDS.128} instructions, then either $2N$ {\tt LDS.64} or $2N$ {\tt LDS.64} instructions are required. Figure~\ref{} compares the sequential memory access bandwidth with increasing volume of data. As shown in the figure, {\tt LDS.64} achieves the highest bandwidth $113GB/s$, which is about $60\%$ of the peak bandwidth\footnote{The theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth=f_{core}*Width*Warpsize$ in
+bytes, where $f_{core}$ is frequency of CUDA core, $Width$ is bank width, $Warpsize$ is warp size.}.
+
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{lds_bandwidth}
@@ -453,41 +332,9 @@ We test the impact on {\tt FFMA} throughput, two {\tt LDS.64} will have 1.80\% i
 \end{center}
 \end{figure}
 
-\begin{table}[!t]
-\caption{Latency}
-\centering
-\scalebox{1.0} {
-\begin{tabular}{|c||c|}
-    \hline
-    width & latency(cycles) \\
-\hline
-    LDS.32 & 42\\
-\hline
-    LDS.64 & 42\\
-\hline
-    LDS.128 & 55\\
-\hline
-\end{tabular}
-}
-\label{tab:reg}
-\end{table}
 % global memory
-We benchmarked bandwidth and latency of {\tt LD}  and {\tt LDG}. Unlike shared memory, which is SM independent, globlal
-memory is Card wise. Since six $64-bit$ memory controlers is distributed on
-GK110 and a block of thread only resides on a SM at a time, so blocks of threads must be abundant in order to make full use of six memory controlers.
-{\tt LDG} instruction is a global memory load that uses the texture path.
-We have $26$ blocks of threads and $512$ threads each block when testing bandwith. Each thread access $4$ words, then
-with a stride of $4*blockDim.x*gridDim.x$. We write basic logic in CUDA, extract assembly by our assembler, and then
-modify according to different load instructions. $32$, $64$ and $128$ load instruction can be generated by using vector
-type, for example int4. We find CUDA compiler can not generate {\tt LDG.E.128} nor {\tt LDG.E.64}. It can only generate
-{\tt LD.E}, {\tt LD.E.64}, {\tt LD.E.128}. So we must modify in assembly level in order to test other cases.
-{\tt TEXDEPENDBAR} is needed before access data by {\tt LDG} instruction. The bandwith data is shown in Figure~\ref{}.
-Global memory bandwith of {\tt LDG} is better than that of {\tt LD}.
-We also tested the latency of combination of load width and two load instructions.
-Since latency is independent of number of threads, we set thread to be (1,1,1) and block(1,1,1).
-In order to create data dependency, we let the value of $ith$ position, to be next position to access. That is, we set
-dataIn[i] = (i+stride)\%N. In kernel, we  repeate $256$ times, (j=my\_array[j]), calculate the average latency of $256$ instructions.
-This also requires working on assemlby code, because NVCC is not always generate all the cases.
+There are two paths to global memory. One is from global memory to normal cache (L1 or L2), which is executed by {\tt LD} instruction. The other one is from global memory to texture cache, which is executed by {\tt LDG} instruction. Our microbenchmark launches $26$ thread blocks with $512$ threads, and specifies that each thread access $4$ words with a stride of $4*blockDim.x*gridDim.x$. As shown in  Figure~\ref{}, {\tt LDG} achieves higher bandwidth than {\tt LD}.
+
 
 \section{Applying Optimizations to SGEMM }
 \label{sec:optimization}
@@ -555,7 +402,7 @@ It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all
 
 Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{}, which illustrates the order of 144 {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
 
-Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $c_{22}, c_{21}, c_{30}, c_{31}, c_{20}, c_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 7 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
+Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 7 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
 
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to assure
@@ -590,7 +437,7 @@ cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {
 \scalebox{0.78} {
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-    \diagbox[width=4em, height=3em]{slot}{unroll} & 0 &1 &2 &3 \\
+\diagbox[width=4em, height=3em]{slot}{unroll} & 0 &1 &2 &3 \\
     \hline
     5 & ISET P0 & IADD trackA0 & & XOR readBs \\
     \hline
@@ -651,9 +498,9 @@ To allocate register for $A$ column, $B$ row and $C$ submatrix, we have three co
 conflict and allocate register index tightly.
 {\tt LDG.128} restricts $4$ words alignment restriction for register.
 Nvidia GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, result is writen to
-RN+1, RN+2, RN+3. There is undocumented restriction: N\%4==0, otherwise illegal instruction error will be reported.
-It's not hard to understand this restriction, $4$ words align for LDG.128 make hardware logic simpler saving die area.
-Since we will use $LDG.128$ to load $A$ and $B$, there are $2$ bank allocation choices due to N\%4==0 restriction and
+$RN+1$, $RN+2$, $RN+3$. There is undocumented restriction: $N\%4==0$, otherwise illegal instruction error will be reported.
+It's not hard to understand this restriction, $4$ words align for {\tt LDG.128} make hardware logic simpler saving die area.
+Since we will use {\tt LDG.128} to load $A$ and $B$, there are $2$ bank allocation choices due to $N\%4==0$ restriction and
 bank distribution of Kepler. We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
 $B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure, we have 2 choices left for $C$.
 $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$
@@ -661,8 +508,9 @@ $\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$
 We have $2i\times2$ bank patterns for SGEMM, we choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
 $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively as shown in Figure.
 To allocate actual register index, we choose continuous register index so that register index do not get too big to
-exceed 255 restriction. From figure, we can verify that C[i][j], A[i] and B[j] have different banks, for example
-C[0][1]'s color is white, A[0]'s color is green and B[1]'s color is red, hence no bank conflicts.
+exceed 255 restriction. From figure, we can verify that $C_{ij}$, $A_i$ and $B_j$ have different banks, for example
+$C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, hence no bank conflicts.
+
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.45]{reg}
@@ -685,16 +533,18 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 \end{figure}
 
 \subsection{Memory Movment}
-% We recommend abbrvnat bibliography style.
-In choosing which load instruction to use, we consider two aspects: bandwidth,
-latency, numbers of instructions requirement and effect on FFMA throughput.
-{\tt LDS.64} has fewer impact on {\tt FFMA} throughput and high bandwith, so we choose it in SGEMM optimization.
-{\tt LDG.128} has higher bandwith and similar latency with $LDG.64$, we prefer {\tt LDG.128} in our implementation.
+According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} operation reduces the numbers to be 3.
+
+Second, it is another story for shared memory. The shared memory transaction size of 256 bytes forces that any shared memory request will be split into multiple transactions of 256 bytes. By inspecting the inner loop, we cannot control when the second transactions happen so that it is difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s. As for {\tt LDS.64}, it's determinable to avoid register bank since a transaction just happens at the position of {\tt LDS.64}.
+
 
 
 \section{Evaluation}
-In this section, we evaluate our optimized SGEMM, estimate the upper bound of SGEMM and quantitatively analysis the penalty factors of SGEMM.
-\subsection{Experiment Setup}
+
+In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA CUBLAS. The $12\sim 25\%$ improvement shows that the microarchitectural optimization makes sense of tuning SGEMM on GPUs.   We further present a quantitative analysis of the effect of each individual optimization strategy and an estimation of the upper bound performance.
+
+The experiments are conducted on NVIDIA K20m GPU, which hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
+
 \begin{table}[!t]
 \caption{K20 Specification}
 \centering
@@ -739,29 +589,38 @@ L1 cache&16KB or 48KB\\
 }
 \label{table:k20}
 \end{table}
-Our platform is K20m GPU, the configuration of K20 GPU is shown in Table~\ref{table:k20}.
-Cuda driver and Cublas is $7.0$ version. We benchmark different size of matrix from $768\times768$ to $12288\times12288$.
+
 
 \subsection{Overall Performance}
-Figure~\ref{fig:sgemm_tn} is the performance comparison of Cublas's SGEMM and our optimized SGEMM.g
-Our optimized is $3104$ Gflop/s and efficiency is $3104/3520=88\%$. Cublas's TN is $2216$ Gflop/s,
-efficiency is $2216/3520=63\%$. Our SGEMM TN implementation is 25\% higher than Cublas's TN.
-We can see the performance increase with matrix size, it's due to load balance and epilog overhead of storing $C$
-matrix.
-Numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Kepler has $13$ SMs in
-total, matrix of size $768x768$ will have severe load imbalance problem. Other matrices have more thread blocks, load balance
-problem is serious.
+Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
+Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS.
+
+As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768x768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.
+
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{sgemm_tn}
-\caption{Cublas vs. our optimized SGEMM }
+\caption{Performance comparison of CUBLAS and the optimized SGEMM }
 \label{fig:sgemm_tn}
 \end{center}
 \end{figure}
 
 \subsection{Performance Analysis}
 
-\subsubsection{Profiling of Each Optimization Method}
+\subsubsection{Profiling Microarchitectural Optimization}
+In order to examine performance gain of different optimization strategies, we construct several implementation with incrementally applying the microarchitectural optimizations.
+
+{\it Baseline:}~~Register for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
+FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts.
+
+{\it +Reg:}~~
+
+{\it +LDS64:}~~
+
+{\it +LDG128:}~~
+
+{\it +InstSched:}~~
+
 Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
 As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
 Every version will apply instruction scheduling.
@@ -777,6 +636,7 @@ conf-ld32-single
 \label{fig:th_prof}
 \end{center}
 \end{figure}
+
 {\bf conf/noconf:} Register for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
 FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Optimization with no register bank
 conflict(noconf) is using register allocate pattern described in section~\ref{}. No instruction scheduling change
@@ -798,41 +658,20 @@ size, the more improves except {\tt LDG} and {\tt LD}.
 
 \subsubsection{Register Blocking Size Choosing}
 
-Register blocking size is restricted by instruction cache, shared memory size, registers per thread,
-maxmum number of threads in one block. We will explain these restriction one by one by our performance model.
-In order to cover latency of shared memory, software pipelining using double
-buffers is an efficient way. ~\ref{f_sharedmem}g
-Each thread needs $rx*ry$ to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
-submatrix and a row of $B$ submatrix in current loop, anther $rx$ and $ry$ are used for prefetching $A$ and $B$ from shared memory to
-registers for next loop. The total number of registers should be less than $255$ in Kepler architecture as shown in Equation~\ref{f_register}.
-We have the following equations.
-\begin{equation}g
-    rx*ry + rx *2 + ry*2 < 255
+Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block.
+In order to hide latency of shared memory, software pipelining using double
+buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
+submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for prefetching $A$ and $B$ from shared memory to
+registers for next loop. Since the total number of registers should be less than $255$ in Kepler architecture, we have the following equations.
+\begin{equation}
+    rx\times ry + rx\times 2 + ry\times 2 < 255
 \label{f_register}
 \end{equation}
-In this function, we find maximum square matrix for $rx, ry$ is $12*12$, other register blocking options could be $8*8$, $12*16$.
-Bigger register blocking has higher data reuse ration, so as compute/memory ratio. But SM may have
-lower occupancy due to limited registers per SM. In our implementation, we use $12*12$ blocking,
-regsiters by LD and FFMA is $12*12+4*12=192$, total registers are $236$.
-In this way, the max threads in block is  $65536/236=277$ in Equation~\ref{f:reg_sm}.
-To make the program easier to design, we choose blocking size to be $256$. The more threads in a
-thread block helps global memory access due to higher possibility of coalesced memory access.
+First, this function implies that the optimal solution should be in the case of $rx=ry$. Because the maximal number of register per thread is 255 and data load must be aligned with 128-bits, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
+$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
+space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The register number allows us to launch $256$ threads in a block. Each block of threads computes a $bm\times bn$ submatrix of $C$ by multiply $A_{bm,bk}$ and $B_{bk,
+bn}$.
 
-Each block of threads need to compute a $bm*bn$ submatrix of $C$ by multiply $A_{bm,bk} and B_{bk,
-bn}$. In blocking algorithm, we compute partial result of $bm*bn$ submatrix $C$ by multiply $A_{bm,bk} and
-B_{bk,bn}$.  We need $bm*bk$ of A and $bn*bk$ of B.
-Total global volume is $GMem= bm*bk + bn*bk$ words
-In the view of each thread, each thread needs to load  $\frac{bm*bk}{rx}$ of $A$ andg
-$\frac{bn*bk}{ry}$ of $B$, which $rx$, $ry$ is register blocking size.
-For Kepler its bandwidth is $3.004*2*384/8$= 277.4 GB/s
-With ECC on, the bandwidth will be reduced with a ratio.
-The upper bound of SGEMM bounded by global memory bandwidth can be modeled asg
-$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
-
-Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
-$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. In terms of
-optimization methods, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
-space to do instruction scheduling, the overhead of {\tt LDS} can be eliminated.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{block}
@@ -842,26 +681,22 @@ space to do instruction scheduling, the overhead of {\tt LDS} can be eliminated.
 \end{figure}
 
 \subsubsection{Upper Bound Analysis}
-We anlysis the possible upper bound factor of SGEMM: {\tt LDS}, {\tt LDG} and {\tt FFMA} throughput.
-In section~\ref{}, {\tt LDS} theoretical bandwidth is xxx, the maximize we could achive is $160GB/s$.
-The upper bound of SGEMM bounded by global memory bandwidth can be modeled as
-$compuate memory ratio =  bm*bn*bk/(bm*bk*rx + bn*bk*ry)> actural flops/ bandwidth $
-We could compute the minimum bandwidth requirement in order to acheive peak $3520$ Gflops.
-$3520/x = 192*192*2*4/(2*192*4)=192/1$, the global minimum bandwith requirement is $65$ GB/s.
-Similarly, the minimum shared memory requirement
-$M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s$
-For each SM, minimum bandwith requres $20$GB/s.
-The bandwidth we could achiev is higher than requirement, so bandwidth of shared width and global memory is not bottleneck.
+We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. The upper bound of global memory bandwidth can be modeled as:
+\begin{displaymath}
+\frac{bm*bn*bk}{bm*bk*rx + bn*bk*ry} > \frac{actual~flops}{bandwidth}
+\end{displaymath}
+According to parameters in our SGEMM implementation, $65$GB/s is the minimal requirement of global memory bandwidth to achieve peak $3520$ Gflops. Similarly, the minimum shared memory requirement is estimated as: (CHONGXIE!!!!!!)
+\begin{displaymath}
+M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s
+\end{displaymath}
+For each SM, the minimum bandwidth requirement is $20$GB/s.
+The microbenchmark indicates that the bandwidth we could achieve is higher than requirement, so bandwidth of shared width and global memory is not bottleneck.
 
-The best performance we could achive is $88\%$ efficiency.
-As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$.
-The loss is about $2.33\%$. These loss may comes from overhead of warp scheduler in FFMA dual issue
-mode. LDS has no penalty. With register double buffering, we can eliminate all the influence of LDS or STS.
-With $12x12$ register blocking, unroll $4$ times, there will be $144*4=576$ FFMA instructions in the loop.
-With our designed FFMA dual issue pattern, every $6$ FFMA needs $4$ clock cycles in the pipeline.
-It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits LDG instruction are needed.
-Each LDG has $10$ clock penalty, the total LDG penalty will be $2*10/384 = 5.2\%$.
-Other penalty is about 13\%-5.2\%-2.33\%=5.5\%. It comes from synchronization and writing $C$ matrix in the block.
+The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
+With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
+With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
+It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
+Each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} penalty will be $2*10/384 = 5.2\%$. Other penalty comes from synchronization and writing $C$ matrix in the block.
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
@@ -892,16 +727,24 @@ Scott Gray~\cite{nervana_sgemm_wiki} present optimization of SGEMM and other ker
 convolutional neural network.
 Mei~\cite{mei} benchark memory hierachy of fermi, Kepler and Maxwell GPU, which including cache,
 shared memory etc.
-\section{Conclusion}
-\bibliographystyle{abbrv}
-\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
-% You must have a proper ".bib" file
-%  and remember to run:
-% latex bibtex latex latex
-% to resolve all references
-%
-% ACM needs 'a single self-contained file'!
-%
-%APPENDICES are optional
-%\balancecolumns
+
+
+
+
+
+% We recommend abbrvnat bibliography style.
+
+\bibliographystyle{abbrvnat}
+
+% The bibliography should be embedded for final submission.
+
+\bibliography{ref}
+
 \end{document}
+
+%                       Revision History
+%                       -------- -------
+%  Date         Person  Ver.    Change
+%  ----         ------  ----    ------
+
+%  2013.06.29   TU      0.1--4  comments on permission/copyright notices
