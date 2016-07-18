@@ -610,46 +610,40 @@ As the figure shows, the overall trend is that performance increases with bigger
 \subsubsection{Profiling Microarchitectural Optimization}
 In order to examine performance gain of different optimization strategies, we construct several implementation with incrementally applying the microarchitectural optimizations.
 
-{\it Baseline:}~~Register for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
-FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts.
+{\it Baseline:} The baseline SGEMM implementation apply state of art SGEMM optimization like register blocking, global
+memory double buffer , shared memory double buffer and unrolling, but will not optimize in assembly level optimization.
+For example, baseline use default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} to load data from global memory.
+Register allocation for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
+FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
+issue optimization either.
 
-{\it +Reg:}~~
+{\it +Reg:}
+Optimization with no register bank conflict is using register allocation pattern described in section~\ref{}. No
+instruction scheduling change between this version and baseline version.
 
-{\it +LDS64:}~~
+{\it +LDS64:}
 
-{\it +LDG128:}~~
+{\it +LD128:} Use wider global load instruction.
+Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be
+L1-cached, it may be L2-cached.
 
-{\it +InstSched:}~~
+{\it +LDG128:} {\tt LD} is load instruction used in implenetation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed
+before using the data. Since change in instruction number, instruction scheduling is needed.
 
-Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
-As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
-Every version will apply instruction scheduling.
-Dual-issue achives boosts perfomance most.
-conf-ld32-single
+{\it +Dual:} Single issue is controled by setting control code to $0x00$. Dual issue is  using dual issue pattern
+we described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment. No instruction
+scheduling change betwen single/dual.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of each optimization method: {\tt conf} is register conflict, {\tt noconf} is no register bank conflict,
-    {\tt single} is {\tt FFMA} single issue, {\tt LD} is using {\tt LD} as load instruction, {\tt LDG} is use {\tt LDG}
-    as load instruction, 32-bit {\tt LD} instruction, {\tt dual} is {\tt FFMA} dual-issue.}
+    \caption{Evaluation of each optimization method}
 \label{fig:th_prof}
 \end{center}
 \end{figure}
 
-{\bf conf/noconf:} Register for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
-FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Optimization with no register bank
-conflict(noconf) is using register allocate pattern described in section~\ref{}. No instruction scheduling change
-between conf and nonconf version.
-
-\textbf{ld/ldg+N:} {\tt LD} is load instruction used in implenetation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed
-before using the data. Since change in instruction number, instruction scheduling is needed.
-Kepler has an L1 data cache, but it is designed for local rather than global memory access.
-
-{\bf single/dual:} Single issue is controled by setting control code to $0x00$. Dual issue is  using dual issue pattern
-we described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment. No instruction
-scheduling change betwen single/dual.
-
+Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
+As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
 Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
 Register bank conflict elimating imporves around $10\%$. wider load instruction improves $27\%\sim35\%$, texture cached
 load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$. In most cases, the bigger matrix
@@ -681,18 +675,28 @@ bn}$.
 \end{figure}
 
 \subsubsection{Upper Bound Analysis}
-We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. The upper bound of global memory bandwidth can be modeled as:
+We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, shared
+memory, global memory and computation power. In register blocking loop, each thread compute $bm*bn*bk$, read $bm*bk$
+and $bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{displaymath}
-\frac{bm*bn*bk}{bm*bk*rx + bn*bk*ry} > \frac{actual~flops}{bandwidth}
+    \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} < \frac{Gflop/s}{bandwidth}
 \end{displaymath}
-According to parameters in our SGEMM implementation, $65$GB/s is the minimal requirement of global memory bandwidth to achieve peak $3520$ Gflops. Similarly, the minimum shared memory requirement is estimated as: (CHONGXIE!!!!!!)
+According to parameters in our SGEMM implementation, $bm=bn=192$, $bk=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
+requirement for global memory bandwidth in order to achieve peak $3520$ Gflops.
+For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be read from shared memory, in which $tx$,
+$ty$ is block dimension, $rx$, $ry$ is register blocking size. The computation is $bm*bn*bk$. Based on computation
+shared memory ration,
 \begin{displaymath}
-M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s
+%M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s
+    \frac{2*bm*bk*bn}{4*tx*ty*(rx*bk + ry *bk)}  = \frac{Gflop/s}{bandwidth}
 \end{displaymath}
-For each SM, the minimum bandwidth requirement is $20$GB/s.
-The microbenchmark indicates that the bandwidth we could achieve is higher than requirement, so bandwidth of shared width and global memory is not bottleneck.
 
-The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
+For Kepler device, the minimum bandwidth requirement is $1173$GB/s, and for each SM of Kepler, bandwidth requirement is
+$1173/13=90$ GB/s.
+The hardware can provide $200$GB/s global memory bandwidth and $2349$GB shared memory bandwidth, which is
+higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
+
+The loss to peak performance can be explained as the following reasons. As we have shown in Section, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
 With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
 With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
@@ -702,33 +706,37 @@ Each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} penalty will be $2*10
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
 \section{Related Work}
-GEMM is a basic low level function of BLAS, its performance depends on architecture heavily.
-There are lots of excellent research work on it.
-Volkov et.al.\cite{volkov}
-presented a fast implementation on G80 architecture. A
-blocking algorithm was used to exploit locality in shared
-memory. They also presented detailed benchmarks of the
-GPU memory system, kernel start-up costs, and arithmetic
-throughput. However, we present a performance modeling
-and a detailed analysis on the rationality of choosing an
-optimal blocking factor, and an experience on instruction
-scheduling as well.
-Nath et.al.~\cite{magma} has developed a dense
-linear algebra library MAGMA for heterogeneous architectures of multi-core+GPU. The library contains a DGEMM
-routines optimized for Fermi. MAGMA adopts a similar
-idea of double-buffering by prefetching data into extra registers instead of shared memory. MAGMA’s performance
-is almost the same as CUBLAS3.2.
-Wong et.al.~\cite{wong}  performed a comprehensive benchmarking work on GT200.
-Tan et.al.~\cite{tan} implemented fast DGEMM by using assembly level optimization, such as
-software pipeling, use of vector memory operations, register blocking, instruction order schedualing, double-buffering.
-Lai~\cite{lai} present performance analysis and optimization work of SGEMM on fermi and
-GTX680 GPU architecture.
-Scott Gray~\cite{nervana_sgemm_wiki} present optimization of SGEMM and other kernels used in
-convolutional neural network.
-Mei~\cite{mei} benchark memory hierachy of fermi, Kepler and Maxwell GPU, which including cache,
-shared memory etc.
+We list related work about assember, microbenchmarking and SGEMM optimization on GPU.
+Since assembler is a machine-specific assembler and incompatible instruction encoding in Nvidia
+GPUs. Each GPU architecture needs its own assembler to be built.
+Gray built MaxAs~\cite{maxas} assembler for Maxwell architecture by reverse engeenring the encoding of Maxwell GPU.
+Hou's Asfermi~\cite{asfermi}, Bernstein's cudaasm-qhasm~\cite{bernstein2012usable} are assemblers for fermi architure.
+Decuda~\cite{decuda} is for G80 architecture.
+Envyas inside Envytools~\cite{envytools} support PTX instruction translated to binary 64 bit
+instructions, however it does not support assemble all the 64 bit binary code into a cubin so that
+it can be used by driver API. Besides its grammar is not compatible with cuobjdump.
+However there is no Kepler assembler available. Our work is a remedy for the history blank.
+We also provides reverse engeering methods, which will benefit the future GPU architecture and assembler.
 
+Wong et.al.~\cite{wong} performed a comprehensive benchmarking work on GT200 and provided pipeline latency data and
+memory feature. Mei~\cite{mei} benchmarked memory hierachy
+of fermi, Kepler and Maxwell GPU, which including cache, shared memory etc. However neither of them benchmarked
+vectorized load instruction like {\tt LD} and {\tt LDS}. Due to lack of considering vectorized load instructions and too
+less instruction inside loop, Mei's conclusion is incorrect. Neither of them considered dual issue features of
+arithemtic instructions.
 
+Volkov et.al.\cite{volkov} presented a fast implementation on G80 architecture. A blocking algorithm was used to exploit locality in shared
+memory. They also presented detailed benchmarks of the GPU memory system, kernel start-up costs, and arithmetic
+throughput. However, we present a performance modeling and a detailed analysis on the rationality of choosing an optimal
+blocking factor, and an experience on instruction scheduling as well.
+Nath et.al.~\cite{magma} has developed a dense linear algebra library MAGMA for heterogeneous architectures of multi-core+GPU. The library contains a DGEMM routines optimized for Fermi. MAGMA adopts a similar idea of double-buffering by prefetching data into extra registers instead of shared memory. MAGMA’s performance is almost the same as CUBLAS3.2.
+Tan et.al.~\cite{tan} implemented fast DGEMM by using assembly level optimization, such as software pipeling, use of
+vector memory operations, register blocking, instruction order schedualing, double-buffering.
+Lai~\cite{lai} presented performance analysis and optimization work of SGEMM on fermi and GTX680 GPU architecture, which
+is closest to our work. However, he does not consider dual issue which can boost performance by 50\%, and his conclusion is misleading.
+Scott Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM and other kernels used in convolutional neural
+network in assembly on Maxwell GPU. Since Maxwell does not support FFMA dual issue, the optimization is much easier than
+Kepler.
 
 
 
