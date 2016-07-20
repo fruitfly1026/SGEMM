@@ -186,6 +186,41 @@ The instruction solver takes the assembly files as input to decode 64-bits binar
 \end{figure}
 
 \subsection{Instruction Solver}
+GPU instruction is composed of  serval fields: opcode, register, immediate, predicate register, modifiers. Encoding of some fields can be infered by their names, for example, R5's encoding could be 101, 0x9's encoding could be 1001. For this kind of fields, we could use similar method to determine their position and length. Encoding of some fields are mnemonic symbols, such as opcode, we can not infer encoding of FFMA by its name.
+\subsubsection{Fixed Length Field}
+
+\begin{algorithm}
+      \caption{Solver}\label{integer_solver}
+  \begin{algorithmic}[1]
+      \State currpos=\{\}
+      \State prepos=\{0,1,2,...63\}
+      \State input: instmap
+      \State output: pos, length
+      \While {lenght(currpos) != 1}
+      \State inst=instmap[random()]
+      \If {inst.src1type == immediate}
+      \State instencode=inst->encode64bit
+      \State immbin = completecode(imm)
+      \State pos = 0
+      \While {pos + length(immbin) < 64}
+      \If {strcmp(immbin,instencode+pos,length(immbin)}
+      \State pushback(currpos, pos)
+      \EndIf
+      \EndWhile
+      \State currpos = intersect (curpos, prepos)
+      \State prepos = currpos
+      \State currpos=\{\}
+      \EndIf
+      \EndWhile
+      \State return curpos[0]
+  \end{algorithmic}
+\end{algorithm}
+
+For fields whose encoding can be infered by its name, such as immediate, register index, predicate register, address etc., we can use Algorithm~\ref{} to solve it.
+First, we random pick instruction that have these fileds, express field in binary. Second, we match field binary in $64$
+bit instruction, and find possible candidate. There may be more than one instructions. Third, we merge current candidate
+with previous candidate, if length of candidate is $1$ and return, else set current candidate to previous candidate, current candidate to null, random pick next instruction. repeat second step.
+
 
 \subsubsection{Fixed Length Field}
 \subsubsection{Variable Length Opcode}
@@ -197,7 +232,7 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 
 \begin{figure}[htbp]
 \begin{center}
-%\includegraphics[scale=0.7]{ctrl}
+%\includegraphics[scale=1.0]{table}
 \caption{Different control codes regulate {\tt FFMA} throughput.}
 \label{fig:control}
 \end{center}
@@ -513,7 +548,7 @@ $C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, henc
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.45]{reg}
+\includegraphics[scale=0.55]{reg}
 \caption{Register bank allocation: number in the cell is register number. Double buffering column
     $A$ and row $B$. Leftest two columns are registers allocated to one column of $A$ sub-matrix, the
 top two rows are registers allocated to one row of sub-matrix $B$, others are registers for
@@ -525,7 +560,7 @@ means bank3.}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.45]{order}
+\includegraphics[scale=0.6]{order}
 \caption{FFMA order: the numbers in the cells mean FFMA executing order, not register number.
 Dashed ellipses across two cells mean two FFMA instructions are executed at same clock cycle. }
 \label{fig:order}
@@ -533,9 +568,9 @@ Dashed ellipses across two cells mean two FFMA instructions are executed at same
 \end{figure}
 
 \subsection{Memory Movment}
-According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} operation reduces the numbers to be 3.
+According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} operation reduces the numbers to be 3. 
 
-Second, it is another story for shared memory. The shared memory transaction size of 256 bytes forces that any shared memory request will be split into multiple transactions of 256 bytes. By inspecting the inner loop, we cannot control when the second transactions happen so that it is difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s. As for {\tt LDS.64}, it's determinable to avoid register bank since a transaction just happens at the position of {\tt LDS.64}.
+Second, it is another story for shared memory. The shared memory transaction size of 256 bytes forces that any shared memory request will be split into multiple transactions of 256 bytes. By inspecting the inner loop, we cannot control when the second transactions happen so that it is difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s. As for {\tt LDS.64}, it's determinable to avoid register bank since a transaction just happens at the position of {\tt LDS.64}. 
 
 
 
@@ -593,9 +628,9 @@ L1 cache&16KB or 48KB\\
 
 \subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
-Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS.
+Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS. 
 
-As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768x768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.
+As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768x768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.  
 
 \begin{figure}[htbp]
 \begin{center}
@@ -608,36 +643,31 @@ As the figure shows, the overall trend is that performance increases with bigger
 \subsection{Performance Analysis}
 
 \subsubsection{Profiling Microarchitectural Optimization}
-In order to examine performance gain of different optimization strategies, we construct several implementation with incrementally applying the microarchitectural optimizations.
+In order to examine performance gain of different optimization strategies, we construct several intermediate implementations by incrementally applying the microarchitectural optimizations. 
 
-{\it Baseline:} The baseline SGEMM implementation apply state of art SGEMM optimization like register blocking, global
-memory double buffer , shared memory double buffer and unrolling, but will not optimize in assembly level optimization.
+{\it Baseline:}~~The baseline involves conventional optimizations including register blocking, global
+memory double buffer, shared memory double buffer and unrolling, rather than assembly level optimization.
 For example, baseline use default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} to load data from global memory.
-Register allocation for $C$ is allocated oderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
+Register allocation for $C$ is allocated orderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
 FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
 issue optimization either.
 
-{\it +Reg:}
-Optimization with no register bank conflict is using register allocation pattern described in section~\ref{}. No
+{\it +Reg:}~~The register allocation pattern described in section~\ref{} is applied to eliminate register bank conflict. No
 instruction scheduling change between this version and baseline version.
 
-{\it +LDS64:}
+{\it +LD128:}~~Use wider global load instruction.
+Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be L1-cached, it may be L2-cached.
 
-{\it +LD128:} Use wider global load instruction.
-Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be
-L1-cached, it may be L2-cached.
+{\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed before using the data. 
 
-{\it +LDG128:} {\tt LD} is load instruction used in implenetation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed
-before using the data. Since change in instruction number, instruction scheduling is needed.
-
-{\it +Dual:} Single issue is controled by setting control code to $0x00$. Dual issue is  using dual issue pattern
-we described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment. No instruction
-scheduling change betwen single/dual.
+{\it +InstSched:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the pattern described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of each optimization method}
+    \caption{Evaluation of each optimization method: {\tt conf} is register conflict, {\tt noconf} is no register bank conflict,
+    {\tt single} is {\tt FFMA} single issue, {\tt LD} is using {\tt LD} as load instruction, {\tt LDG} is use {\tt LDG}
+    as load instruction, 32-bit {\tt LD} instruction, {\tt dual} is {\tt FFMA} dual-issue.}
 \label{fig:th_prof}
 \end{center}
 \end{figure}
@@ -649,10 +679,9 @@ Register bank conflict elimating imporves around $10\%$. wider load instruction 
 load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$. In most cases, the bigger matrix
 size, the more improves except {\tt LDG} and {\tt LD}.
 
-
 \subsubsection{Register Blocking Size Choosing}
 
-Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block.
+Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block. 
 In order to hide latency of shared memory, software pipelining using double
 buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
 submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for prefetching $A$ and $B$ from shared memory to
@@ -664,7 +693,7 @@ registers for next loop. Since the total number of registers should be less than
 First, this function implies that the optimal solution should be in the case of $rx=ry$. Because the maximal number of register per thread is 255 and data load must be aligned with 128-bits, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
 $8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
 space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The register number allows us to launch $256$ threads in a block. Each block of threads computes a $bm\times bn$ submatrix of $C$ by multiply $A_{bm,bk}$ and $B_{bk,
-bn}$.
+bn}$. 
 
 \begin{figure}[htbp]
 \begin{center}
@@ -687,16 +716,15 @@ For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be rea
 $ty$ is block dimension, $rx$, $ry$ is register blocking size. The computation is $bm*bn*bk$. Based on computation
 shared memory ration,
 \begin{displaymath}
-%M/unroll*reg_block*blockdim*gridx*gridy*2*bytes/time = 271GB/s
     \frac{2*bm*bk*bn}{4*tx*ty*(rx*bk + ry *bk)}  = \frac{Gflop/s}{bandwidth}
 \end{displaymath}
 
-For Kepler device, the minimum bandwidth requirement is $1173$GB/s, and for each SM of Kepler, bandwidth requirement is
+On Kepler GPU the minimum bandwidth requirement is $1173$GB/s, and for each SM of Kepler, bandwidth requirement is
 $1173/13=90$ GB/s.
-The hardware can provide $200$GB/s global memory bandwidth and $2349$GB shared memory bandwidth, which is
+The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth, which is
 higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
 
-The loss to peak performance can be explained as the following reasons. As we have shown in Section, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
+The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
 With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
 With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
@@ -737,6 +765,8 @@ is closest to our work. However, he does not consider dual issue which can boost
 Scott Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM and other kernels used in convolutional neural
 network in assembly on Maxwell GPU. Since Maxwell does not support FFMA dual issue, the optimization is much easier than
 Kepler.
+
+
 
 
 
