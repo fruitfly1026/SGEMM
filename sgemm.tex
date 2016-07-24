@@ -220,12 +220,77 @@ For fields whose encoding can be infered by its name, such as immediate, registe
 First, we random pick instruction that have these fileds, express field in binary. Second, we match field binary in $64$
 bit instruction, and find possible candidate. There may be more than one instructions. Third, we merge current candidate
 with previous candidate, if length of candidate is $1$ and return, else set current candidate to previous candidate, current candidate to null, random pick next instruction. repeat second step.
-
-
-\subsubsection{Fixed Length Field}
 \subsubsection{Variable Length Opcode}
+Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags based on syntax on Nvidia
+PTX manual, generate encoding by using NVDIA toolchain.
+Then, We can find the minimum opcode by strip out operand mask. Flags can be found by strip out opcode and operand mask.
+This method is fast, but due to the uncompleteness of Nvidia document, we can not find out all the opcode and
+instruction flags.
+Other method is using brute force to emulate possible binary combinations after striping out operand mask.
+Normally, each instruction have $3$ operand, we have $64-8*3-4=36$ bits left to probe. We prunch the search space by
+recognize possible position that represent opcode.  However, by random probling bit
+by bit, we find opcode is at top $10$ bit and lower $2$ bit represent opcode and other bits represent flags. We only emulate these bit.
+The space is acceptable. Then we find the minimal opcode without any flags. The method allow use to find instructions
+that are not listed on NVIDIA document, such as {\tt ALD}.
+
+\begin{algorithm}
+      \caption{Solver}\label{opcode}
+  \begin{algorithmic}[1]
+      \State for each instruction in PTX generated database
+      \For {i=0; i < num\_inst; i++} 
+      \For {j=0; j < 64; j ++}
+      \If {isoperand(encode[i][j] == 0) and encode[i][j]== 0}
+      \State newcode = setbit(j, 1)
+      \State newinst=nvdisasm(newcode)
+      \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
+      \State pushback(j)
+      \EndIf
+      \EndIf
+      \EndFor
+      \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+      \caption{minime opcode}\label{opcode}
+  \begin{algorithmic}[1]
+      \State generate all combinations
+      \State group by opcode, then operand
+      \State sort the 12 bit binary 
+      \State find the value with minimze value
+  \end{algorithmic}
+\end{algorithm}
+
 \subsubsection{Modifier}
-%LD.E
+Modifiers (also called flags) are complex than the above, because its position is spanned along the left bits and one instruction may have
+more than one kinds of modifers, for example {\tt LD} has u8, u16, 32, 64, 128 width information and also CG, LU cache
+information. By stricking out opcode and oprand mask, we have around $24$ bits left. Based on our observation, we find
+default value for modifier is $0$, modifier only happen when at least one bit is set. We can find the modifier possible position
+by greedily set the lefted bit one by one, the time complexity is O(24) instead of $O(2^{24})$. The bit is typically less
+than $10$ bit. After finding the candidate, we enumerate these bit, and group each kind.
+
+\begin{algorithm}
+      \caption{Solver}\label{opcode}
+  \begin{algorithmic}[1]
+      \If {bit[i] == 0 and isop(bit[i] == 0) and isoprand(bit[i])}
+      \State newcode = setbit(i, 1)
+      \State newinst=nvdisasm(newcode)
+      \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
+      \State pushback(i)
+      \EndIf
+      \EndIf
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+      \caption{findflagkind}\label{opcode}
+  \begin{algorithmic}[1]
+      \State sort each field alphabatly
+      \For each kind 
+      \State merge all positions
+      \EndFor
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{Correlating Microarchitecture with Performance}
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we correlate microarchitecture with performance variants that guide performance optimizations in real applications. The correlation is presented as several meaningful observations, which are categorized into four microarchitectural features of {\tt control} function, {\tt register} allocation, {\tt arithmetic} throughput and {\tt memory} operation.
