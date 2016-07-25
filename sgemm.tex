@@ -149,7 +149,7 @@ shared$\Rightarrow$register ({\tt LDS})& $bm\times bk + bn\times bk$\\
 \label{sec:assembler}
 
 \subsection{Methodology}
-We propose a methodology to demystify GPU microarchitecture features and correlate them with performance. The workflow consists of three components: CUDA binary tools, sample programs, and libraries. We leverage CUDA binary tools to generate assembly codes for sample programs or libraries. A sample program is a synthetic CUDA file targeted to generate some specific instructions. A library might provide a high coverage of instruction sets. For example, the CUBLAS library contains almost all instructions used in SGEMM routines. As introduced in section~\ref{sec:cuda}, these generated assembly files ({\em sass}) provide a instruction encoded number to be cracked.
+We propose a methodology to demystify GPU microarchitecture features and correlate them with performance. The workflow consists of three components: CUDA binary tools, a instruction solver, and a rigorous microbhenchmark. We leverage CUDA binary tools to generate assembly codes for sample programs or libraries. A sample program is a synthetic CUDA file targeted to generate some specific instructions. A library might provide a high coverage of instruction sets. For example, the CUBLAS library contains almost all instructions used in SGEMM routines. As introduced in section~\ref{sec:cuda}, these generated assembly files ({\em sass}) provide a instruction encoded number to be cracked.
 
 The instruction solver takes the assembly files as input to decode 64-bits binary representation of each instruction. We design a set of algorithms to solve all fields of the binary instruction. These fields include {\em register, predicate, address, immediate, constant} and {\em opcode}. The solver retrieves the undocumented ISA specification, which is used to implement an native assembler. Then, we design a rigorous microbenchmark and leverage the assembler to tune code at assembly language level. In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.
 
@@ -162,9 +162,9 @@ The instruction solver takes the assembly files as input to decode 64-bits binar
 \end{figure}
 
 \subsection{Instruction Solver}
-The instruction is composed of $3$ main fields: {\tt opcode}, {\tt operands} and {\tt modifiers}.
+An instruction is composed of three main fields: {\tt opcode}, {\tt operands} and {\tt modifiers}.
 %{\tt Operand} is composed of source operand and destination operand. Each kind of
-Operand can be registers, constant memory, global  memory, shared memory, immediate, predicate register and so on.
+Operands can be registers, constant memory, global memory, shared memory, immediate, or predicate register.
 The encoding of operands can be inferred by their names. For instance, encoding of register operand {\tt R5} could be
 inferred as $101$ by its binary, immediate $0x9$'s encoding could be $1001$. Besides, these fields are fixed length. For this kind of
 fields, we could use Algorithm~\ref{} to determine their positions and lengths and hence encoding.
@@ -176,14 +176,14 @@ Encodings of opcode and modifier are mnemonic symbols, we can not infer encoding
 specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
 modifier for {\tt LD} and {\tt LDG} are at different postions. So we deal with modifier for each instruction seperately.
 
-\subsubsection{Operand:Fixed Length Field}
+\subsubsection{Operands:Fixed Length Field}
 \begin{algorithm}
       \caption{Solver}\label{integer_solver}
   \begin{algorithmic}[1]
+	  \State \textbf{input:} instmap
+      \State output: pos, length
       \State currpos=\{\}
       \State prepos=\{0,1,2,...63\}
-      \State input: instmap
-      \State output: pos, length
       \While {lenght(currpos) != 1}
       \State inst=instmap[random()]
       \If {inst.src1type == immediate}
