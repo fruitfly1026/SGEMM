@@ -188,8 +188,8 @@ Each instruction can specify modifiers~\cite{}, modifier defines different behav
 {\tt LD} instruction has type-size modifiers, such as .u8, .s8, .u16, .32, .64 and .128. {\tt LD} also has cache operation
 modifier, such as .ca(cache at all level) and .cg(cache at global level).
 Encodings of opcode and modifier are mnemonic symbols, we can not infer encoding by their names. Modifiers are instruction
-specific, the same kind of modifier can be different encodings for different instructions.  So we deal with modifier for
-each instruction seperately.
+specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
+modifier for {\tt LD} and {\tt LDG} are at different postions. So we deal with modifier for each instruction seperately.
 
 \subsubsection{Operand:Fixed Length Field}
 \begin{algorithm}
@@ -218,12 +218,17 @@ each instruction seperately.
       \State return curpos[0]
   \end{algorithmic}
 \end{algorithm}
-The basic idea of Algorithm~\ref{} is that match binary encoding of operand in $64$ instruction encoding until the
-postion is unique.
-First, we random pick instruction that have these fileds, express field in binary. Second, we match field binary in $64$
-bit instruction, and find possible positions. There may be more than one instructions. Third, we intersect current candidate
+The basic idea of Algorithm~\ref{} is that match binary encoding of operand in $64$ instruction encoding and find
+position until the postion is unique. All input can from disassembly code of NVIDIA CUBLAS library or generated from PTX.
+First, random pick up instruction that has the filed we want to probe, and express field in binary by its name. Second, we match field binary in $64$
+bit instruction encoding, and find possible positions. More than one positions may be found. Third, we intersect current candidate
 with previous candidate, if number of candidate is $1$, we find the postion. Otherwise, set current candidate to previous candidate,
 current candidate to null, random pick next instruction. repeat second step.
+
+After finding the operand position, we need to infer or veritify the length of operand encoding. Some can be easier
+inferred, for example, there are $256=2^{8}$ registers for each thread, we could infer length of register operand to $8$.
+Some are difficult ot infer, such as immediate or script note of constant memory. One way is set the bit from the
+postion one by one to check whether operand value is grown as we expected.
 
 \subsubsection{Opcode}
 Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags
@@ -263,19 +268,6 @@ flags. By stricking out opcode and oprand mask, we have around $24$ bits left. B
 default value for modifier is $0$, modifier only happen when at least one bit is set. We can find the modifier possible position
 by greedily set the reminding bit one by one, the time complexity is $O(2^{10})$ instead of $O(2^{24})$. The bit is typically less
 than $10$ bit. After finding the candidate, we enumerate these bit, and group each kind.
-
-\begin{algorithm}
-      \caption{Solver}\label{opcode}
-  \begin{algorithmic}[1]
-      \If {bit[i] == 0 and isop(bit[i] == 0) and isoprand(bit[i])}
-      \State newcode = setbit(i, 1)
-      \State newinst=nvdisasm(newcode)
-      \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
-      \State pushback(i)
-      \EndIf
-      \EndIf
-  \end{algorithmic}
-\end{algorithm}
 
 \subsection{Correlating Microarchitecture with Performance}
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we correlate microarchitecture with performance variants that guide performance optimizations in real applications. The correlation is presented as several meaningful observations, which are categorized into four microarchitectural features of {\tt control} function, {\tt register} allocation, {\tt arithmetic} throughput and {\tt memory} operation.
