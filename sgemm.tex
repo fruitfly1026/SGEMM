@@ -274,7 +274,7 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 \begin{center}
 \includegraphics[scale=0.5]{ctrl}
 \caption{Different control codes regulate {\tt FFMA} throughput.}
-\label{fig:control_thoughput}
+\label{fig:control_throughput}
 \end{center}
 \end{figure}
 
@@ -472,7 +472,7 @@ operand collector mechanism~\cite{collector}. Operand collector is storage eleme
 provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused
 in the subsequent instructions. The assembly code in Algorithm~\ref{fig:order} lists the instructions to calculate
 $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in
-Figure~\ref{fig:ffma}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
+Figure~\ref{fig:reg}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
 \begin{table}[!t]
 \caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers.}
@@ -753,7 +753,7 @@ $1173/13=90$ GB/s.
 The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth, which is
 higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
 
-The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:kepleras}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
+The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:assembler}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
 With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
 With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
