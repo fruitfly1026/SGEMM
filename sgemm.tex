@@ -191,6 +191,7 @@ modifier for {\tt LD} and {\tt LDG} are at different postions. So we deal with m
 \subsubsection{Operand:Fixed Length Field}
 \begin{algorithm}
       \caption{Solver}\label{integer_solver}
+      \label{algo:int_solver}
   \begin{algorithmic}[1]
       \State currpos=\{\}
       \State prepos=\{0,1,2,...63\}
@@ -236,12 +237,12 @@ instruction modifiers.
 Other method is using brute force to emulate possible binary combinations after striping out operand mask.
 Normally, each instruction have $3$ register operand, and one $4-bit$ predicat register, we have $64-8*3-4=36$ bits left to probe.
 It's still a large space,  we can prunt the search space by recognize possible position that representation by
-algoirthm~\ref{}. By random probling bit by bit, we find opcode is at top $10$ bit and lower $2$ bit represent opcode and other bits represent flags. We only
+algoirthm~\ref{algo:opcode}. By random probling bit by bit, we find opcode is at top $10$ bit and lower $2$ bit represent opcode and other bits represent flags. We only
 emunarate these bits.The space is acceptable. Then we find the minimal opcode without any flags. The method allow use to find instructions
 that are not listed on NVIDIA document, such as {\tt ALD}.
 
 \begin{algorithm}
-      \caption{Solver}\label{opcode}
+      \caption{Opcode Solver}\label{algo:opcode}
   \begin{algorithmic}[1]
       \State for each instruction in PTX generated database
       \For {i=0; i < num\_inst; i++}
@@ -273,7 +274,7 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 \begin{center}
 \includegraphics[scale=0.5]{ctrl}
 \caption{Different control codes regulate {\tt FFMA} throughput.}
-\label{fig:control}
+\label{fig:control_thoughput}
 \end{center}
 \end{figure}
 
@@ -281,7 +282,7 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 \begin{center}
 \includegraphics[scale=0.5]{ctrl_latency}
 \caption{Different control codes regulate {\tt FFMA} latency.}
-\label{fig:control}
+\label{fig:control_latency}
 \end{center}
 \end{figure}
 
@@ -289,7 +290,7 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 \begin{center}
 \includegraphics[scale=0.5]{pattern}
     \caption{Control codes pattern regulate peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
-\label{fig:control}
+\label{fig:pattern}
 \end{center}
 \end{figure}
 
@@ -297,7 +298,11 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 
 Starting with the Kepler architecture NVIDIA has been moving some control logic off of the chip and into kernel instructions which are determined by the assembler. This evolution provides programmer a chance to make globally optimal decisions on scheduling and other control aspects if an assembler is available. The disassembly code indicates that every 64 bits control code controls $7$ instructions. We identify that both higher $6$ bits and lower 2 bits are {\em opcode} of control code, and the middle 56 bits are used to control the execution of $7$ instructions, each of which is assigned $8$ control bits.
 
-For the eight control bits, we identify their meanings by examining CUBLAS disassembly codes and tuning a {\tt FFMA} throughput microbhenchmark. We observe that the $7$th bit of the control code of {\tt TLD} instruction is $1$, which indicates a texture dependency barrier due to weak consistent memory model. It's verified that some illegal values are loaded if this bit is not set. Similarly, we discover that the $5$th bit means shared memory dependency barrier, the $4$th bit means global memory dependency barrier. Figure~\ref{} shows that {\tt FFMA} throughput varies with all control bit values from 0 to 255. As shown in this figure, the throughput linearly decreases with the increasing values represented by the $0-3$ bits. That implies that these $4$ bits set the number of stall cycles before issuing the instruction. Further, the microbenchmarking reveal some specific patterns of control codes:
+For the eight control bits, we identify their meanings by examining CUBLAS disassembly codes and tuning a {\tt FFMA}
+throughput microbhenchmark. We observe that the $7$th bit of the control code of {\tt TLD} instruction is $1$, which
+indicates a texture dependency barrier due to weak consistent memory model. It's verified that some illegal values are
+loaded if this bit is not set. Similarly, we discover that the $5$th bit means shared memory dependency barrier, the
+$4$th bit means global memory dependency barrier. Figure~\ref{fig:control_throughput} shows that {\tt FFMA} throughput varies with all control bit values from 0 to 255. As shown in this figure, the throughput linearly decreases with the increasing values represented by the $0-3$ bits. That implies that these $4$ bits set the number of stall cycles before issuing the instruction. Further, the microbenchmarking reveal some specific patterns of control codes:
 
 \begin{itemize}
 \item When the control bits are set to be $0x40$, the scheduler suspends a warp of the instructions for 32 cycles.
@@ -405,7 +410,10 @@ Inst name&operation&single issue&dual issue\\
 For the GPU memory hierarchy we focus on the programmer controllable memory resources--shared memory and global memory. On NVIDIA GPU architecture, there are different memory access widths (i.e., 32-bits,64-bits,128-bits) and paths (i.e., normal cache or texture cache). In fact, both NVIDIA document and previous works~\cite{} pointed out that wider instructions have longer pipeline latencies, which are also measured in our microbenchmark. In addition, we identify several bandwidth issues for memory optimization.
 
 Intuitively, a wider load operation achieves higher bandwidth. We benchmark bandwidth of shared memory operations {\tt LDS} with different widths, i.e., {\tt LDS.32}, {\tt LDS.64}
-and {\tt LDS.128}. The operations are specially arranged so that no shared memory bank conflict occurs in a warp. In the experiment, the amount of data are projected to the number of load instructions. For exmaple, if the data are loaded by $N$ {\tt LDS.128} instructions, then either $2N$ {\tt LDS.64} or $2N$ {\tt LDS.64} instructions are required. Figure~\ref{} compares the sequential memory access bandwidth with increasing volume of data. As shown in the figure, {\tt LDS.64} achieves the highest bandwidth $113GB/s$, which is about $60\%$ of the peak bandwidth\footnote{The theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth=f_{core}*Width*Warpsize$ in
+and {\tt LDS.128}. The operations are specially arranged so that no shared memory bank conflict occurs in a warp. In the
+experiment, the amount of data are projected to the number of load instructions. For exmaple, if the data are loaded by
+$N$ {\tt LDS.128} instructions, then either $2N$ {\tt LDS.64} or $2N$ {\tt LDS.64} instructions are required.
+Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth with increasing volume of data. As shown in the figure, {\tt LDS.64} achieves the highest bandwidth $113GB/s$, which is about $60\%$ of the peak bandwidth\footnote{The theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth=f_{core}*Width*Warpsize$ in
 bytes, where $f_{core}$ is frequency of CUDA core, $Width$ is bank width, $Warpsize$ is warp size.}.
 
 \begin{figure}[htbp]
@@ -453,7 +461,8 @@ It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all
 \end{center}
 \end{figure}
 
-Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{}, which illustrates the order of 144 {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
+Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{fig:order}, which
+illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
 
 Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{collector}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
