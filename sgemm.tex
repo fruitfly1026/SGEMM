@@ -179,7 +179,7 @@ The instruction is composed of $3$ main fields: {\tt opcode}, {\tt operands} and
 Operand can be registers, constant memory, global  memory, shared memory, immediate, predicate register and so on.
 The encoding of operands can be inferred by their names. For instance, encoding of register operand {\tt R5} could be
 inferred as $101$ by its binary, immediate $0x9$'s encoding could be $1001$. Besides, these fields are fixed length. For this kind of
-fields, we could use Algorithm~\ref{} to determine their positions and lengths and hence encoding.
+fields, we could use Algorithm~\ref{algo:int_solver} to determine their positions and lengths and hence encoding.
 NVIDIA document~\cite{cubin2015util} lists $94$ instructions of Kepler.
 Each instruction can specify modifiers~\cite{ptx2015isa}, modifier defines different behaviours for same instruction. For example,
 {\tt LD} instruction has type-size modifiers, such as .u8, .s8, .u16, .32, .64 and .128. {\tt LD} also has cache operation
@@ -216,7 +216,7 @@ modifier for {\tt LD} and {\tt LDG} are at different postions. So we deal with m
       \State return curpos[0]
   \end{algorithmic}
 \end{algorithm}
-The basic idea of Algorithm~\ref{} is that match binary encoding of operand in $64$ instruction encoding and find
+The basic idea of Algorithm~\ref{algo:int_solver} is that match binary encoding of operand in $64$ instruction encoding and find
 position until the postion is unique. All input can from disassembly code of NVIDIA CUBLAS library or generated from PTX.
 First, random pick up instruction that has the filed we want to probe, and express field in binary by its name. Second, we match field binary in $64$
 bit instruction encoding, and find possible positions. More than one positions may be found. Third, we intersect current candidate
@@ -462,9 +462,17 @@ It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all
 \end{figure}
 
 Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{fig:order}, which
-illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
+illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C.
+For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to
+calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue
+order illustrated in Figure~\ref{fig:order}.
 
-Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{collector}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
+Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate
+operand collector mechanism~\cite{collector}. Operand collector is storage element coupled from register file and
+provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused
+in the subsequent instructions. The assembly code in Algorithm~\ref{fig:order} lists the instructions to calculate
+$C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in
+Figure~\ref{fig:ffma}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
 \begin{table}[!t]
 \caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers.}
@@ -543,15 +551,17 @@ two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. 
 \#slots = \frac{bm\times bn\times unroll}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
 \end{displaymath}
 
-According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The schedule slots are illustrated in two dimension as shown in Table~\ref{}.
+According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The
+schedule slots are illustrated in two dimension as shown in Table~\ref{tab:position}.
 Note that we use double buffers to hide latency of {\tt LDG} from global memory, which costs $200$ clock cycles.
 Every $4$ loop requires $2$ {\tt LDG}s to load data from global memory to registers, $4$ {\tt STS}s to store data from registers to shared memory. There is a read after write (RAW) dependency between {\tt
-LDG} and {\tt STS}. The simple model estimates that $\frac{200\times 7}{4} = 350$ are needed instructions between them. As shown in Table~\ref{}, we put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and position $P[65][2]$, respectively. Thus, the number of instructions between them are $143-77 + 144\times 2 +
+LDG} and {\tt STS}. The simple model estimates that $\frac{200\times 7}{4} = 350$ are needed instructions between them.
+As shown in Table~\ref{tab:position}, we put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and position $P[65][2]$, respectively. Thus, the number of instructions between them are $143-77 + 144\times 2 +
 65=419$, resulting in a distance of $\frac{4\times 419}{7}=239$ clocks, which is enough to hide latency of {\tt LDG}s.
 
 The arrangement of {\tt LDS}s, which load data from shared memory for double buffers of both $A$ and $B$, follows the same way with {\tt LDG}s.
 A {\tt LDS} has a latency of $40$ clock cycles, $\frac{40\times 7}{4}=70$ instructions are needed to interleave {\tt LDS} and {\tt
-FFMA}. As shown in Table~\ref{}, {\tt LDS} in $P[11][3]$ read data from {\tt STS} in position $P[65][2]$, the distance is more than $40$ clock
+FFMA}. As shown in Table~\ref{tab:position}, {\tt LDS} in $P[11][3]$ read data from {\tt STS} in position $P[65][2]$, the distance is more than $40$ clock
 cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {\tt LDS} to make sure that data in shared memory is ready. Other instructions like {\tt XOR},
 {\tt IADD}, {\tt ISETP} are inserted according to data dependency, there is almost no performance loss due to little latency.
 
@@ -672,7 +682,7 @@ Register allocation for $C$ is allocated orderly from $0$ to $143$, then $A$ and
 FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
 issue optimization either.
 
-{\it +Reg:}~~The register allocation pattern described in section~\ref{} is applied to eliminate register bank conflict. No
+{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler} is applied to eliminate register bank conflict. No
 instruction scheduling change between this version and baseline version.
 
 {\it +LD128:}~~Use wider global load instruction.
@@ -680,7 +690,8 @@ Kepler has an L1 data cache, but it is designed for local rather than global mem
 
 {\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed before using the data.
 
-{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the pattern described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment.
+{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
+pattern described in section~\ref{sec:assembler}. For dual issue version, $NOP$ may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
