@@ -55,17 +55,10 @@
 
 \begin{abstract}
 In this paper, we present a thorough experience on tuning single precision general matrix multiplication(SGEMM)
-in assembly level on Kepler GK110 architecture. First, we propose a methodology to demistify GPU's
-microarchitecture-level optimizations. Based on the our own assembler KeplerAs, we debunk the
-mystery of three performance-critical factors of microarchitecture,
-which are control code pattern, register bank mapping and instruction throughput. Second, we tune
-SGEMM performance by applying a comprehensive optimization which is never done in either CUDA or
-PTX. The optimization strategies go through the architecture hierarchy including maximizing FFMA
-throughput (core), eliminating register bank conflict (register), reducing global memory
-transactions (shared memory), selecting data path to global memory (off-chip memory).
-The optimized SGEMM TN, NN achieve an maximal floating-point efficiency of $88\%$ and $83\%$, which are $25\%$ and
-$12\%$ higher than Cublas's $63\%$ and $71\%$ respectively.
-This work will facilitate performance tuning of other core kernels on GPUs.
+in assembly level on NVIDIA GPU architecture. First, we propose a methodology to demystify GPU's microarchitecture-level optimizations. An instruction solver is developed to retrieve the undocumented ISA specification, which enables us to build an assembler to generate CUDA binary compatible files. We further design a rigorous microbenchmark to identify four microarchitectural features of control function, register allocation, arithmetic throughput and memory operation. Second, we tune
+SGEMM by applying the correlated microarchitectural optimizations, which go through the architecture hierarchy including maximizing FFMA
+throughput (core), eliminating register bank conflict (register), selecting data path to shared/global memory (memory).
+The optimized SGEMM achieves the maximal floating-point efficiency of $88\%$, which are $25\%$ higher than CUBLAS's $63\%$ on a NVIDIA Kepler GPU.
 \end{abstract}
 
 %\category{CR-number}{subcategory}{third-level}
@@ -79,24 +72,22 @@ This work will facilitate performance tuning of other core kernels on GPUs.
 SGEMM, Assembler, GPU, Performance
 
 \section{Introduction}
-Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is implemented as a basic routine of Level-3 in BLAS library~\cite{}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn more and more effort on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
+Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is one of the basic routines in BLAS library~\cite{}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn more and more efforts on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
 
-As GPU provides more peak FLOP/S over CPU contemporarily, people tend to adopt GPUs to accelerate their floating-points intensive applications. In fact, SGEMM's performance highly relies on low level microarchitecture features. Hardware vendors also provide BLAS libraries tuned on their own processors, i.e. MKL/ACML for multicore x86 CPUs, CUBLAS/CLMath for GPUs. However, we always witness improvement of the third-party tuned implementations over these vendors' libraries. For multicore CPUs, based on the hand tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases. Although there is lack of an OpenBLAS-like library on GPUs, we observe that several on-going efforts~\cite{} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes, too. Figure~\ref{} compares the maximal floating-point efficiencies achieved by SGEMMs in CUBLAS and third-party implementations. The third-parties improve performance by $xx\%$, $xx\%$ and $xx\%$ on G80, Fermi and Maxwell CUDA architectures, respectively. Unfortunately, there is no such a performance tuning work for SGEMM on Kepler architecture, which is the most popular architecture in current Tesla GPUs market. This work attempts to explore improvement space of floating-point efficiency of SGEMM on Kepler GPU.
-
-However, there remain two issues to be addressed for accomplishing the microarchitecture based performance tuning on each generation of GPUs.
+As GPU provides more peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate their floating-point intensive applications. In fact, SGEMM's performance highly relies on low level microarchitecture features. Hardware vendors provide BLAS libraries tuned on their own processors, i.e. MKL/ACML for multicore x86 CPUs, CUBLAS/CLMath for GPUs. However, we always witness improvement of the third-party tuned implementations over these vendors' libraries. For multicore CPUs, based on the hand tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases. Although there is lack of an OpenBLAS-like library on GPUs, several on-going efforts~\cite{} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes. However, these scattered works remain two issues to be addressed for accomplishing the microarchitecture based performance tuning on each generation of GPUs.
 \begin{itemize}
-\item {\em There is lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.} Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal way, only is the abstract model CUDA is encouraged. A major reason is the significant changes of each generation of GPU architecture. For example, the recent ISA is totally different from that of the first generation of GPU. The ISA is evolving to the trend where the graphics features are becoming less and less. Other microarchitectural details like register bank conflict and floating-point instructions dual issue are also different between two generations of GPUs. Fortunately, people have made some initial progress on such performance tuning tools due to the pursuit of extreme performance. These efforts are involved with either benchmarking~\cite{} or disassembler~\cite{} on a specific GPU architecture. We attempt to develop a methodology that provides a systematic way to identify microarchitecture by benchmarking, automatically decode instruction formats and generate ISA-compatible executable codes.
+\item {\em There is lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.} Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal way, only is the abstract CUDA model encouraged. A major reason is the significant changes of each generation of GPU architecture. For example, the recent ISA is totally different from that of the first generation of GPU. The ISA is evolving to the trend where the graphics features are becoming less and less. Other microarchitectural details like register bank conflict and floating-point instructions dual issue are also different between two generations of GPUs. Fortunately, people have made some initial progress on such performance tuning tools due to the pursuit of extreme performance. These efforts are involved with either benchmarking~\cite{} or disassembler~\cite{} on a specific GPU architecture. We attempt to develop a methodology that provides a systematic way to identify microarchitecture by benchmarking, automatically decode instruction formats and generate ISA-compatible executable codes.
 
 \item {\em There is lack of a comprehensive understanding of SGEMM's performance in terms of low level GPU microarchitecture.} Due to the lack of bare-metal tools on GPUs, most of SGEMM analysis are circumscribed at the levels of either CUDA  or PTX. Unfortunately, these analysis cannot directly diagnose neither compiler deficiency nor hardware defect. In fact, by observing the disassembled code of SGEMM in CUDA, we find that the generated control code is
-very inefficient in exploiting FFMA dual issue. This means NVCC generated code does not
-utilize shared $64$ cores on $192$ core SM, leaving them idle at most of time. A side effect of the limitation leads to a bias estimation of performance bound. We present a thorough analysis of performance which goes through the whole architecture hierarchy including instruction throughput, register allocation, shared memory transactions and global memory. The understanding of microarchitecture optimization help build a robust performance model of SGEMM.
+very inefficient in exploiting {\tt FFMA} dual issue. This means NVCC generated code does not
+utilize $192$ cores on a SM, leaving them idle at most of time. A side effect of the limitation leads to a bias estimation of performance bound. We present a thorough analysis of performance which goes through the whole architecture hierarchy including instruction throughput, register allocation, shared/global memory transactions. The understanding of microarchitecture helps build a robust performance model of SGEMM.
 
 
 \end{itemize}
 
-In this paper we crack instruction encoding by performing a tough reverse engineering work, and build assembler to generate CUDA binary file for ISA-compatible assembly codes. Basically, due to the compatible grammar with CUDA {\tt cuobjdump}, we use CUDA toolchains to compile CUDA codes to {\tt cubin} file and then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the base of generated code instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that demystify lots of GPU microarchitecture details such as instruction issue, warp schedule, register bank distribution and control code. It's helpful to understand and optimize performance of SGEMM. We apply a collection of optimizations to incrementally improve SGEMM performance one by one. More specifically, we make the following contributions:
+In this paper we crack instruction encoding by performing a tough reverse engineering work, and build assembler to generate CUDA binary file for ISA-compatible assembly codes. Basically, due to the compatible grammar with CUDA {\tt cuobjdump}, we use CUDA toolchains to compile CUDA codes to {\em cubin} file and then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the base of generated code instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that demystify lots of GPU microarchitecture details such as instruction issue, warp schedule, register bank distribution and control code. It's helpful to understand and optimize performance of SGEMM. We apply a collection of optimizations to incrementally improve SGEMM performance one by one. More specifically, we make the following contributions:
 \begin{itemize}
-\item We propose an approach to reverse engineering approach to crack instruction encoding of GPU architecture, especially for control codes that orchestrate instruction scheduling. An assembler is developed to directly tune the assembly codes generated by CUDA compiler.
+\item We propose a reverse engineering approach to crack instruction encoding of GPU architecture, especially for control codes that orchestrate instruction scheduling. An assembler is developed to directly tune the assembly codes generated by CUDA compiler.
 \item We design a bunch of benchmarks to reveal microarchitectural features which are undocumented by NVIDIA. They are important to understand and tune performance of GPU programs.
 \item We implement the highest performance SGEMM routines on NVIDIA Kepler by applying the demystified microarchitecture-level optimizations. The achieved maximal floating-point efficiency is xx and xx on two GPUs, respectively.
 \end{itemize}
@@ -110,12 +101,12 @@ Since we seek to establish an assembly-level optimization approach to SGEMM, thi
 \label{sec:cuda}
 
 A CUDA binary file is an ELF-formatted file generated by CUDA compiler {\tt nvcc}. It is also called {\em cubin} file, which can be either embedded into the host executable file or generated separately by using the "{\em -cubin}" option of {\tt nvcc}. In order to check {\em cubin} files, CUDA toolkit introduces three binary tools and documents on ISAs of several generations of GPUs from GT200 to Maxwell architecture. These binary tools only provide very limited functionalities to users. For instance, both {\tt cuobjdump} and {\tt nvdiasm} disassemble {\em cubin} files to {\em sass} ones, which are readable assembly codes for examining possible performance issues in GPU programs. For each instruction in the executable code sections, the tools list its address in hexadecimal, name in string and encoded number in hexadecimal. For example, an {\tt IADD} instruction might be printed as follows: \\\\
-$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~~~/* 0x4800000000201c03 */$\\\\
-Unfortunately, these tools do not enable us to directly modify the assembly codes for tuning performance. What we can do is to refine CUDA C codes after examining the read-only assembly codes iteratively. In fact, an assembler is required to manipulate assembly codes. Although NVIDIA doesn't release its internal assembler and instruction encoding format, the printed third field--encoded number, combining with the released ISA reference~\cite{}, provides clue to crack instruction format (in Section~\ref{sec:assembler}).
+$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\\\
+Unfortunately, these tools do not enable us to directly modify the assembly codes for tuning performance. What we can do is to refine CUDA C codes after examining the read-only assembly codes iteratively. In fact, an assembler is required to manipulate assembly codes. Although NVIDIA doesn't release its internal assembler and instruction encoding format, the printed third field--encoded number, combining with the released ISA reference~\cite{}, provides clues to crack instruction format (in Section~\ref{sec:assembler}).
 
 
 \subsection{Performance Factors of SGEMM }
-It's well-known that the primary factors of SGEMM performance are the blocking parameters for exploiting data reuse through memory hierarchy. For an instance of GPU, they are shared memory blocking factor and register blocking factor. For the purpose of completeness, we describe a blocking algorithm which is similar with that in other literatures~\cite{magma}~\cite{nervana_sgemm_wiki}~\cite{lai}~\cite{tan}.
+It's well-known that the primary factors of SGEMM performance are the blocking parameters for exploiting data reuse through memory hierarchy. For an instance of GPU, they are factors of shared memory blocking and register blocking. For the purpose of completeness, we describe a blocking algorithm which is similar with that in other literatures~\cite{magma}~\cite{nervana_sgemm_wiki}~\cite{lai}~\cite{tan}.
 
 Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on result matrix $C$.
 Each thread block of $tx*ty$ threads is responsible to compute a $bm*bn$ block of submatrix $C$,
@@ -136,15 +127,15 @@ $N=\Bigl\lfloor \frac{n+bn-1}{bn} \Bigr\rfloor$.
       \State load one $bk*bn$ block of B into smB[$bk$][$bn$]
       \Do
       \For {i = 1 to $bk$ } \Comment Unrolling for loop
-      \State load one column of A in smA into rA[0 . . . $rx$]
-      \State load one row of B in smB into rB[0 . . . $ry$]
-      \State accum[0 . . . $rx$][0 . . .$ry$]+ = rA[0 . . . $rx$]* rB[0 . . . $ry$]
+      \State load one column of A in smA into rA[$0 . . . rx$]
+      \State load one row of B in smB into rB[$0 . . . ry$]
+      \State accum[$0 . . . rx$][$0 . . .ry$]+ = rA[$0 . . . rx$]* rB[$0 . . . ry$]
       \EndFor
       \State load one $bm*bk$ block of A into smA[$bk$][$bm$]
       \State load one $bk*bn$ block of B into smB[$bk$][$bn$]
       \State bar.sync
       \doWhile {pointer in B is out of range}
-      \State merge accum[0 . . . $rx$][0 . . . $ry$] with $bm*bn$ block of C.
+      \State merge accum[$0 . . . rx$][$0 . . . ry$] with $bm*bn$ block of C.
   \end{algorithmic}
 \end{algorithm}
 
@@ -180,13 +171,15 @@ The instruction solver takes the assembly files as input to decode 64-bits binar
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.45]{methodology}
-\caption{A schematic diagram of demystifying GPU microarchitecture features by leveraging CUDA binary tools. The back arrows represents the workflow of instruction solver while the red ones represents that of benchmarking to find out correlation between microarchitecture and performance.}
+\caption{A schematic diagram of demystifying GPU microarchitecture features by leveraging CUDA binary tools. The back arrows represent the workflow of instruction solver while the red ones represents that of benchmarking to find out correlation between microarchitecture and performance.}
 \label{fig:workflow}
 \end{center}
 \end{figure}
 
 \subsection{Instruction Solver}
-GPU instruction is composed of  serval fields: opcode, register, immediate, predicate register, modifiers. Encoding of some fields can be infered by their names, for example, R5's encoding could be 101, 0x9's encoding could be 1001. For this kind of fields, we could use similar method to determine their position and length. Encoding of some fields are mnemonic symbols, such as opcode, we can not infer encoding of FFMA by its name.
+The instruction is composed of fields: opcode, constant, immediate, address, predicate and register. 
+
+Encoding of some fields can be infered by their names, for example, R5's encoding could be 101, 0x9's encoding could be 1001. For this kind of fields, we could use similar method to determine their position and length. Encoding of some fields are mnemonic symbols, such as opcode, we can not infer encoding of FFMA by its name.
 \subsubsection{Fixed Length Field}
 
 \begin{algorithm}
@@ -220,6 +213,7 @@ For fields whose encoding can be infered by its name, such as immediate, registe
 First, we random pick instruction that have these fileds, express field in binary. Second, we match field binary in $64$
 bit instruction, and find possible candidate. There may be more than one instructions. Third, we merge current candidate
 with previous candidate, if length of candidate is $1$ and return, else set current candidate to previous candidate, current candidate to null, random pick next instruction. repeat second step.
+
 \subsubsection{Variable Length Opcode}
 Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags
 combinations based on syntax on Nvidia PTX manual, and generate encoding by using NVDIA toolchain.
@@ -291,6 +285,8 @@ than $10$ bit. After finding the candidate, we enumerate these bit, and group ea
       \EndFor
   \end{algorithmic}
 \end{algorithm}
+
+%LD.E
 
 \subsection{Correlating Microarchitecture with Performance}
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we correlate microarchitecture with performance variants that guide performance optimizations in real applications. The correlation is presented as several meaningful observations, which are categorized into four microarchitectural features of {\tt control} function, {\tt register} allocation, {\tt arithmetic} throughput and {\tt memory} operation.
@@ -424,16 +420,8 @@ bytes, where $f_{core}$ is frequency of CUDA core, $Width$ is bank width, $Warps
 \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{lds_broadcast_bandwidth}
-    \caption{ Broadcast bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
-\label{fig:lds_brd_bw}
-\end{center}
-\end{figure}
-
 % global memory
-There are two paths to global memory. One is from global memory to normal cache (L1 or L2), which is executed by {\tt LD} instruction. The other one is from global memory to texture cache, which is executed by {\tt LDG} instruction. Our microbenchmark launches $26$ thread blocks with $512$ threads, and specifies that each thread access $4$ words with a stride of $4*blockDim.x*gridDim.x$. As shown in  Figure~\ref{}, {\tt LDG} achieves higher bandwidth than {\tt LD}.
+There are two paths to global memory. One is from global memory to normal cache (L1 or L2), which is executed by {\tt LD} instruction. The other one is from global memory to texture cache, which is executed by {\tt LDG} instruction. We launche $26$ thread blocks with $512$ threads, and specifies that each thread access $4$ words with a stride of $4*blockDim.x*gridDim.x$. Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}, which has been identified by previous work~\cite{}.
 
 
 \section{Applying Optimizations to SGEMM }
@@ -446,64 +434,93 @@ The demystified GPU microarchitecture features provides additional space to tune
 \end{itemize}
 
 \subsection{Instruction Scheduling}
-It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all the time. However, for each SM on Kepler architecture, 64 cores share $4$ schedulers, each of which issues instructions to 32 cores as a warp. As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of 2 dual issues (4 {\tt FFMA}s) and 2 single issues ((2 {\tt FFMA}s)). As shown in Figure~\ref{}, the instructions in lines 2-3 and lines 6-7 are respectively grouped as two dual-issues. The other two instructions in line 10 and line 13 are two single issues in terms of floating-point instruction execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUDA compiler generated codes.
+\subsubsection{Schedule {\tt FFMA} Instructions}
+It's ideal to keep warp scheduler dual issue instructions (i.e., {\tt FFMA}) all the time. However, for each SM on Kepler architecture, 64 cores share $4$ schedulers, each of which issues instructions to 32 cores as a warp. As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of 2 dual issues (4 {\tt FFMA}s) and 2 single issues ((2 {\tt FFMA}s)). As shown in Figure~\ref{fig:assemblycode}, the instructions in lines 2-3 and lines 5-6 are respectively grouped as two dual-issues. The other two instructions in line 8 and line 11 are two single issues in terms of floating-point instruction execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUDA compiler generated codes.
 
-
-\begin{algorithm}
-      \caption{NVCC generated assembly code}\label{nvcc}
-  \begin{algorithmic}[1]
-      \footnotesize
-        \State /*0x08dc109c14801410*/
-        \State [
-        \State /*0348*/ FFMA R28, R41, R15, R28; /*0xcc007000079ca472*/
-        \State /*0350*/ LDS.128 R12, [0x40];     /*0x7a700000201ffc32*/
-        \State ]
-        \State /*0358*/ FFMA R39, R41, R9, R39; /*0xcc009c00049ca49e*/
-        \State /*0360*/ FFMA R29, R41, R10, R29; /*0xcc007400051ca476*/
-        \State /*0368*/ FFMA R32, R41, R11, R32; /*0xcc008000059ca482*/
-        \State [
-        \State /*0370*/ LDS.128 R8, [0x50]; /*0x7a700000281ffc22*/
-        \State /*0378*/ IADD R4.CC, R4, R21; /*0xe08400000a9c1012*/
-    \State ]
-  \end{algorithmic}
-\end{algorithm}
-
-
-
-\begin{algorithm}
-      \caption{The optimized assembly code }\label{nvcc}
-  \begin{algorithmic}[1]
-      \footnotesize
-        \State [
-        \State -:-:D:-:04      FFMA R27, R150, R146, R27;
-        \State -:-:D:-:05      FFMA R6, R149, R146, R6;
-        \State ]
-        \State [
-        \State -:-:D:-:04      FFMA R7, R148, R147, R7;
-        \State -:-:D:-:05      FFMA R2, R149, R147, R2;
-        \State ]
-        \State [
-        \State -:-:D:-:04      FFMA R3, R148, R146, R3;
-        \State -:-:-:-:00      LDS.64 R168, [R222+0x400];
-        \State ]
-        \State -:-:D:-:05      FFMA R9, R148, R152, R9;
-
-        \State ]
-  \end{algorithmic}
-\end{algorithm}
+\begin{figure*}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{assemlycode}
+    \caption{The comparison of compiler generated codes and our tuned assembly codes.}
+\label{fig:assemblycode}
+\end{center}
+\end{figure*}
 
 \begin{figure}[htbp]
 \begin{center}
-%\includegraphics[scale=0.5]{order}
-\caption{{\tt FFMA}s instructions scheduling for calculating a $8\times 8$ subblock of matrix C.}
+\includegraphics[scale=0.5]{order}
+\caption{{\tt FFMA}s instructions scheduling for calculating a $12\times 12$ subblock of matrix C.  The numbers in cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are executed at same clock cycle.}
 \label{fig:order}
 \end{center}
 \end{figure}
 
 Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{}, which illustrates the order of 144 {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C. For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue order illustrated in Figure~\ref{}.
 
-Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 7 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
+Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate operand collector mechanism~\cite{}. Operand collector is storage element coupled from register file and provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused in the subsequent instructions. The assembly code in Algorithm~\ref{} lists the instructions to calculate $C_{22}, C_{21}, C_{30}, C_{31}, C_{20}, C_{40}$, where are corresponding to the orders of $7,8,9,10,11,12$ in Figure~\ref{}. The reuse happens as follows. The {\tt FFMA} in line 2 uses the cached operand {\tt R150} from the previous instruction block. Line 3 uses the cached operand {\tt R146} from the previous instruction. Similarly, The {\tt FFMA} in line 6 reuses the cached operands of   {\tt R149} and {\tt R147} from the previous two instructions, respectively.
 
+\begin{table}[!t]
+\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers.}
+\label{tab:position}
+\captionsetup{font=scriptsize}
+\centering
+\scalebox{0.78} {
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\diagbox[width=4em, height=3em]{slot}{unroll} & 0 &1 &2 &3 \\
+    \hline
+    5 & ISET P0 & IADD A0 & & XOR smB \\
+    \hline
+    11 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    17 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    23 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    29 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    35& IADD K, -4 & IADD A1 & TEXDEPBAR & \\
+    \hline
+    41 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    47 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    53 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    59 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    65 & & &STS.64 writeS & ISETP P2 \\
+    \hline
+    71 & & & & \\
+    \hline
+    77 & & IADD B0 & & LDG A \\
+    \hline
+    83 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    89 &ISETP P3 & & &\\
+    \hline
+    95 & LDS.64 smA & LDS.64 smA & LDS.64 smA & LDS.64 smA \\
+    \hline
+    101 & & & STS.64 loadB0 & LDG B \\
+    \hline
+    107 & & & STS.64 loadB2 & XOR writeS \\
+    \hline
+    113 & & & & \\
+    \hline
+    119 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    125 & & & XOR smA & \\
+    \hline
+    131 & LDS.64 smB & LDS.64 smB & LDS.64 smB & LDS.64 smB \\
+    \hline
+    137 & & & & \\
+    \hline
+    143 & & IADD B1 & BAR.SYNC & BAR Loop \\
+    \hline
+\end{tabular}
+}
+
+\end{table}
+
+\subsubsection{Schedule {\tt non-FFMA} Instructions}
 
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to assure
 corretness of the program without losing performance. In order to tolerate instruction latency, we need to keep distance of dependent instructions to be larger than the latency. The distance can be approximately computed as
@@ -529,68 +546,6 @@ FFMA}. As shown in Table~\ref{}, {\tt LDS} in $P[11][3]$ read data from {\tt STS
 cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {\tt LDS} to make sure that data in shared memory is ready. Other instructions like {\tt XOR},
 {\tt IADD}, {\tt ISETP} are inserted according to data dependency, there is almost no performance loss due to little latency.
 
-\begin{table}[!t]
-\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers.}
-\label{tab:position}
-\captionsetup{font=scriptsize}
-\centering
-\scalebox{0.78} {
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-\diagbox[width=4em, height=3em]{slot}{unroll} & 0 &1 &2 &3 \\
-    \hline
-    5 & ISET P0 & IADD trackA0 & & XOR readBs \\
-    \hline
-    11 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    17 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    23 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    29 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    35& IADD K, -4 & IADD trackA1 & TEXDEPBAR & \\
-    \hline
-    41 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    47 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    53 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    59 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    65 & & &STS.64 writeS & ISETP P2 \\
-    \hline
-    71 & & & & \\
-    \hline
-    77 & & IADD trackB0 & & LDG trackA \\
-    \hline
-    83 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    89 &ISETP P3 & & &\\
-    \hline
-    95 & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs & LDS.64 readAs \\
-    \hline
-    101 & & & STS.64 loadB0 & LDG trackB \\
-    \hline
-    107 & & & STS.64 loadB2 & XOR writeS \\
-    \hline
-    113 & & & & \\
-    \hline
-    119 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    125 & & & XOR readAs & \\
-    \hline
-    131 & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs & LDS.64 readBs \\
-    \hline
-    137 & & & & \\
-    \hline
-    143 & & IADD trackB1 & BAR.SYNC & BAR Loop \\
-    \hline
-\end{tabular}
-}
-
-\end{table}
 
 \subsection{Register Allocation}
 
@@ -614,23 +569,14 @@ $C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, henc
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.55]{reg}
-\caption{Register bank allocation: number in the cell is register number. Double buffering column
-    $A$ and row $B$. Leftest two columns are registers allocated to one column of $A$ sub-matrix, the
-top two rows are registers allocated to one row of sub-matrix $B$, others are registers for
-sub-matrix $C$. Green cells means bank0, blue cell means bank1, gray cell means bank2, red cell
-means bank3.}
+\caption{An illustration of register bank allocation. The number in the cell is register number. Double buffering column
+    $A$ and row $B$. The leftmost two columns of registers are allocated to one column of $A$ sub-matrix, the
+top two rows of registers are allocated to one row of sub-matrix $B$, others are registers for
+sub-matrix $C$. The different colors denotes mapping of register banks: Green$\rightarrow$bank0, blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.}
 \label{fig:reg}
 \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{order}
-\caption{FFMA order: the numbers in the cells mean FFMA executing order, not register number.
-Dashed ellipses across two cells mean two FFMA instructions are executed at same clock cycle. }
-\label{fig:order}
-\end{center}
-\end{figure}
 
 \subsection{Memory Movment}
 According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} operation reduces the numbers to be 3. 
@@ -646,7 +592,7 @@ In this section, we compare the optimized SGEMM performance in Gflop/s with NVID
 The experiments are conducted on NVIDIA K20m GPU, which hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
 
 \begin{table}[!t]
-\caption{K20 Specification}
+\caption{The configuration of NVIDIA Tesla K20m GPU.}
 \centering
 \scalebox{1.0} {
 \begin{tabular}{|c||c|}
@@ -695,7 +641,7 @@ L1 cache&16KB or 48KB\\
 Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
 Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS. 
 
-As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768x768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.  
+As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768\times 768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.  
 
 \begin{figure}[htbp]
 \begin{center}
@@ -725,14 +671,12 @@ Kepler has an L1 data cache, but it is designed for local rather than global mem
 
 {\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed before using the data. 
 
-{\it +InstSched:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the pattern described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment.
+{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the pattern described in section~\ref{}. For dual issue version, $NOP$ may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of each optimization method: {\tt conf} is register conflict, {\tt noconf} is no register bank conflict,
-    {\tt single} is {\tt FFMA} single issue, {\tt LD} is using {\tt LD} as load instruction, {\tt LDG} is use {\tt LDG}
-    as load instruction, 32-bit {\tt LD} instruction, {\tt dual} is {\tt FFMA} dual-issue.}
+    \caption{Evaluation of the incremental optimizations.}
 \label{fig:th_prof}
 \end{center}
 \end{figure}
@@ -808,7 +752,10 @@ memory feature. Mei~\cite{mei} benchmarked memory hierachy
 of Fermi, Kepler and Maxwell GPU, which including cache, shared memory etc. However neither of them benchmarked vectorized load instruction like {\tt LD} and {\tt LDS}. Due to lack of considering vectorized load instructions and too less instruction inside loop, the results is not so accurate. Neither of them considered dual issue modes of arithmetic instructions. We leverage the our complete assembler to crack control codes which reveal more microarchitecture details.
 
 With respect to GEMM optimization in microarchitectural level, there are several work which inspires the implementation on specific GPUs. For example, we adopt the proved effective optimization techniques like shared memory/register blocking and double-buffering\cite{volkov}~\cite{tan}. Further, Tan et.al.~\cite{tan} implemented fast DGEMM by using assembly level optimization, such as software pipelining, vector memory operations, instruction scheduling. Lai~\cite{lai} presented performance analysis and optimization work of SGEMM on both Fermi and GTX680 GPUs. However, they don't consider dual issue mode by setting control code, which can boost performance significantly. Scott Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM in assembly on Maxwell GPU. Since Maxwell does not support {\tt FFMA} dual issue, the optimization is much easier than
-Kepler. In fact, we present a more complete case of applying microarchitectural features by combining instruction scheduling, register allocation and memory access paths. 
+Kepler. In fact, we present a more complete case of applying microarchitectural features by combining instruction scheduling, register allocation and memory access paths.
+
+
+
 
 
 % We recommend abbrvnat bibliography style.
