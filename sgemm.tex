@@ -69,13 +69,13 @@
 SGEMM, Assembler, GPU, Performance
 
 \section{Introduction}
-Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is one of the basic routines in BLAS library~\cite{blas}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
+Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is one of the basic routines in BLAS library~\cite{blas}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance critical kernel in deep learning applications~\cite{nervana_sgemm_wiki}.
 
 As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate floating-point
 intensive applications. In fact, SGEMM's performance highly relies on low-level microarchitecture features. Hardware
 vendors provide BLAS libraries tuned on their own processors, e.g. MKL/ACML for multicore x86 CPUs and CUBLAS/CLMath for
 GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. For
-multicore CPUs, based on hand-tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases.
+multicore CPUs, based on hand-tuned assembly codes, OpenBLAS~\cite{xianyi2012openblas} achieves the best performance in most cases.
 Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{tan,lai,nervana_sgemm_wiki,
 chien, volkov} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes. However, these scattered works remain two issues to be addressed to accomplish the microarchitecture based performance tuning on each generation of GPUs.
 
