@@ -774,7 +774,23 @@ of Fermi, Kepler and Maxwell GPU, which including cache, shared memory etc. Howe
 With respect to GEMM optimization in microarchitectural level, there are several work which inspires the implementation on specific GPUs. For example, we adopt the proved effective optimization techniques like shared memory/register blocking and double-buffering\cite{volkov}~\cite{tan}. Further, Tan et.al.~\cite{tan} implemented fast DGEMM by using assembly level optimization, such as software pipelining, vector memory operations, instruction scheduling. Lai~\cite{lai} presented performance analysis and optimization work of SGEMM on both Fermi and GTX680 GPUs. However, they don't consider dual issue mode by setting control code, which can boost performance significantly. Scott Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM in assembly on Maxwell GPU. Since Maxwell does not support {\tt FFMA} dual issue, the optimization is much easier than
 Kepler. In fact, we present a more complete case of applying microarchitectural features by combining instruction scheduling, register allocation and memory access paths.
 
+\subsection{Conclusion}
 % We recommend abbrvnat bibliography style.
+\label{sec:conclusion}
+In this paper, we have presented the fastest implementation of SGEMM on Kepler Gk110 architecture.
+The optimized TN is $3104$ Gflop/s and efficiency is $3104/3520=88\%$, cublas's TN is $2216 Gflops$,
+efficiency is $2216/3520=63\%$. Our TN implementation is 25\% higher than cublas's TN. 
+The optimized NN achieves $2938$ Gflop/s ($83\%$ efficiency), cublas's NN achieves $2509$($71\%$
+efficiency). Our NN is $12\%$ than Cublas's NN.
+The performance boost is achieved on the basis of high FFMA throughput and series of optimizations.
+These optimizations include register bank conflict eliminating, FFMA dual issue scheduling, choosing
+proper width of global load and shared memory load instructions and so on.
+
+This study includes detailed benchmarking of the GPU instruction issue system that
+reveals how control code influences throughput. Our assembler open a door to optimize Nvidia GPU
+code in native machine level, and our experience and performance model are a good case study of it.
+In future, we will develop automatic compiling tools, which could generate higher performance code.
+
 
 %\bibliographystyle{abbrvnat}
 \bibliographystyle{plain}
