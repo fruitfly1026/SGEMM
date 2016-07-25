@@ -69,12 +69,24 @@
 SGEMM, Assembler, GPU, Performance
 
 \section{Introduction}
-Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is one of the basic routines in BLAS library~\cite{}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
+Single Precision General Matrix Multiply (SGEMM) performs a multiplication of two single-precision matrices and is one of the basic routines in BLAS library~\cite{blas}. It has been extensively used in many scientific and engineering computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance critical kernel in deep learning applications~\cite{}.
 
-As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate floating-point intensive applications. In fact, SGEMM's performance highly relies on low-level microarchitecture features. Hardware vendors provide BLAS libraries tuned on their own processors, e.g. MKL/ACML for multicore x86 CPUs and CUBLAS/CLMath for GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. For multicore CPUs, based on hand-tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases. Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes. However, these scattered works remain two issues to be addressed to accomplish the microarchitecture based performance tuning on each generation of GPUs.
+As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate floating-point
+intensive applications. In fact, SGEMM's performance highly relies on low-level microarchitecture features. Hardware
+vendors provide BLAS libraries tuned on their own processors, e.g. MKL/ACML for multicore x86 CPUs and CUBLAS/CLMath for
+GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. For
+multicore CPUs, based on hand-tuned assembly codes, OpenBLAS~\cite{} achieves the best performance in most cases.
+Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{tan,lai,nervana_sgemm_wiki,
+chien, volkov} achieve better performance than CUBLAS for either SGEMM or DGEMM by tuning assembly codes. However, these scattered works remain two issues to be addressed to accomplish the microarchitecture based performance tuning on each generation of GPUs.
 
 \begin{itemize}
-\item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.} Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal way, only the abstract CUDA model is encouraged. A major reason is the significant changes of GPU architecture between each generation. For example, graphic features, bank conflicts, and floating-point instructions dual issue of the recent ISA is totally different from the previous first generation. Fortunately, people have made some initial progress on performance tuning tools due to the pursuit of extreme performance, including benchmarking~\cite{} and disassembler~\cite{} on a specific GPU architecture. We attempt to develop a methodology that provides a systematic way to identify microarchitecture by benchmarking, decode instruction formats automatically, and generate ISA-compatible executable codes.
+\item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
+    Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal
+        way, only the abstract CUDA model is encouraged. A major reason is the significant changes of GPU architecture
+        between each generation. For example, graphic features, bank conflicts, and floating-point instructions dual
+        issue of the recent ISA is totally different from the previous first generation. Fortunately, people have made
+        some initial progress on performance tuning tools due to the pursuit of extreme performance, including
+        benchmarking~\cite{mei, volkov, wong} and disassembler~\cite{asfermi,bernstein2012usable,decuda,maxas} on a specific GPU architecture. We attempt to develop a methodology that provides a systematic way to identify microarchitecture by benchmarking, decode instruction formats automatically, and generate ISA-compatible executable codes.
 \item {\em There is a lack of a comprehensive understanding of SGEMM's performance in terms of low-level GPU microarchitecture.} Most SGEMM analyses are circumscribed at the levels of either CUDA or PTX because there is short of bare-metal tools on GPUs. Unfortunately, these analyses cannot directly diagnose either compiler deficiency or hardware defect. In fact, by observing the disassembled code of SGEMM in CUDA, we find that the generated control code is very inefficient in exploiting {\tt FFMA} dual issue. Thus, it indicates that NVCC generated code does not completely utilize $192$ cores on an SM (streaming processor), leaving them idle at most of the time. A side effect of the limitation leads to a bias estimation of performance bound. We present a thorough analysis of performance which goes through the whole architecture hierarchy, including instruction throughput, register allocation, and shared/global memory transactions. The understanding of microarchitecture helps us build a robust performance model of SGEMM.
 \end{itemize}
 
@@ -95,7 +107,7 @@ Since we seek to optimize SGEMM at an assembly-level, this section introduces so
 
 A CUDA binary file is an ELF-formatted file generated by CUDA compiler ({\tt nvcc}), which is also called a {\em cubin} file. It can be either embedded into a host executable file or generated separately by using the "{\em -cubin}" option of {\tt nvcc}. To help developers understand {\em cubin} files, CUDA toolkit introduces three binary tools and documents on ISAs from GT200 to Maxwell architecture. These binary tools only provide very limited functionalities for users. For instance, both {\tt cuobjdump} and {\tt nvdiasm} disassemble {\em cubin} files to {\em sass} files, which are readable assembly codes for examining possible performance issues in GPU programs. For each instruction in the executable code sections, the tools list its address in hexadecimal, mnemonics in string, and encoded number in hexadecimal. For example, an {\tt IADD} instruction might be printed as follows: \\\\
 $/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\\\
-Unfortunately, these tools do not enable us to modify the assembly codes directly for tuning performance. What we can do is to refine CUDA C codes after examining the read-only assembly codes iteratively. Thus, an assembler is required to manipulate assembly codes. Although NVIDIA does not release its internal assembler and instruction encoding format, the encoded number for each instruction and the released ISA references~\cite{}, provide us clues to crack instruction format (in Section~\ref{sec:assembler}).
+Unfortunately, these tools do not enable us to modify the assembly codes directly for tuning performance. What we can do is to refine CUDA C codes after examining the read-only assembly codes iteratively. Thus, an assembler is required to manipulate assembly codes. Although NVIDIA does not release its internal assembler and instruction encoding format, the encoded number for each instruction and the released ISA references~\cite{ptx2015isa}, provide us clues to crack instruction format (in Section~\ref{sec:assembler}).
 
 
 \subsection{Performance Factors of SGEMM}
@@ -269,6 +281,14 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
 \begin{center}
 \includegraphics[scale=0.5]{ctrl_latency}
 \caption{Different control codes regulate {\tt FFMA} latency.}
+\label{fig:control}
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.5]{pattern}
+    \caption{Control codes pattern regulate peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
 \label{fig:control}
 \end{center}
 \end{figure}
@@ -730,11 +750,12 @@ Kepler. In fact, we present a more complete case of applying microarchitectural 
 
 % We recommend abbrvnat bibliography style.
 
-\bibliographystyle{abbrvnat}
+%\bibliographystyle{abbrvnat}
+\bibliographystyle{plain}
 
 % The bibliography should be embedded for final submission.
 
-\bibliography{ref}
+\bibliography{bib/ref}
 
 \end{document}
 
