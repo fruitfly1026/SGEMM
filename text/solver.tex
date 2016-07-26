@@ -2,7 +2,7 @@
 An instruction is composed of three fields: {\tt opcode}, {\tt operands} and {\tt modifiers}. An operand can be register, constant memory, global memory, shared memory, immediate, or predicate register.
 The encoding of operands can be inferred by their names. For instance, the register operand {\tt R5} could be
 inferred as $101$ in binary format, immediate $0x9$ is represented as $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore, their encoding can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
-modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately.
+modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately. All the process of solver can be done automatically.
 
 \subsubsection{Operands:Fixed Length Field}
 Algorithm~\ref{algo:int_solver} shows pseudo code for immediate typed operand decoding process. 
@@ -52,36 +52,38 @@ However, other operand types like immediate $0x48$ or subscript of constant memo
 \end{figure}
 
 \subsubsection{Opcode}
-Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags
-combinations based on syntax on NVIDIA PTX manual, and generate encoding by using NVDIA toolchain.
-Then, opcode can be got by stripping out operand mask, and flags can be found by stripping out opcode and operand mask. However, the uncompleteness of NVIDIA document hinder us to find out all the opcodes and instruction modifiers. Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
-Normally, each instruction have $3$ register operand, and one $4-bit$ predicate register, we have $64-8*3-4=36$ bits left to probe.
+Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand encoding is to write {\tt PTX} code
+based on syntax on NVIDIA PTX manual, and generate encoding by using NVDIA toolchain.
+Then, opcode can be got by stripping out operand mask, and flags can be found by stripping out both opcode and operand mask. However, the uncompleteness of NVIDIA document hinder us to find out all the opcodes and instruction modifiers. Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
+Normally, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By randomly probing bit by bit, we find that the top $10$ bits and lower $2$ bits represent opcode and other bits represent flags. Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find the minimal opcode without any flags. 
 
 
 \begin{algorithm}
       \caption{Opcode Solver}\label{algo:opcode}
   \begin{algorithmic}[1]
-      \State for each instruction in PTX generated database
+      \State input: instmap
+      \State onput: opcode position
       \For {i=0; i < num\_inst; i++}
       \For {j=0; j < 64; j ++}
-      \If {isoperand(encode[i][j] == 0) and encode[i][j]== 0}
+      \If {isOperand(encode[i][j] == 0) and encode[i][j]== 0}
       \State newcode = encode[i][j].setbit(j, 1)
       \State newinst=nvdisasm(newcode)
       \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
-      \State pushback(j)
+      \State pos.pushback(j)
       \EndIf
       \EndIf
       \EndFor
       \EndFor
+      \State return pos
   \end{algorithmic}
 \end{algorithm}
 
 \subsubsection{Modifier: Instruction Specific}
 
-Modifier defines a specific behavior for some instruction. For example,
-{\tt LD} instruction has type-size modifiers, such as .u8, .s8, .u16, .32, .64 and .128. {\tt LD} also has cache operation modifier, such as .ca(cache at all level) and .cg(cache at global level). Modifiers (also called flags) are much more complicated because its position spans accross the reminding bits and one instruction may have more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. We observe that the default value for modifier is $0$. That is, modifier works when at least one bit is set. We can find possible positions of modifiers 
-by greedily set the remaining bits one by one, the time complexity is $O(2^{10})$ instead of $O(2^{24})$. The number of bit is typically less
-than $10$. After finding the candidates, we enumerate these bits, and group each kind.
+Modifier(also called flags) defines a specific behavior for an instruction. For example,
+{\tt LD} instruction has type-size modifiers, such as {\tt .u8}, {\tt .s8}, {\tt .u16}, {\tt .32}, {\tt .64} and {\tt .128}. {\tt LD} also has cache operation modifier, such as {\tt .ca}(cache at all level) and {\tt .cg}(cache at global level). Modifiers are much more complicated because its position spans accross the reminding bits and one instruction may have more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. In order to reduce search space, we observe that the default value for modifier is $0$. That is, modifier works when at least one bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to observe whether flags are change.
+%the time complexity is $O(2^{10})$ instead of $O(2^{24})$. The number of bit is typically less
+%than $10$. After finding the candidates, we enumerate these bits, and group each kind.
 
 

@@ -1,29 +1,21 @@
 \subsection{Correlating Microarchitecture with Performance}
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we correlate microarchitecture with performance variants that guide performance optimizations in real applications. The correlation is presented as several meaningful observations, which are categorized into four microarchitectural features of {\tt control} function, {\tt register} allocation, {\tt arithmetic} throughput and {\tt memory} operation.
+    \begin{figure*}
+        \begin{subfigure}[htbp]{0.3\textwidth}
+            \includegraphics[width=2.1in]{ctrl}
+           \subcaption{Regulate {\tt FFMA} throughput.}
+        \end{subfigure}
+        \begin{subfigure}[htbp]{0.3\textwidth}
+            \includegraphics[width=2.1in]{ctrl_latency}
+            \subcaption{Regulate {\tt FFMA} latency.}
+        \end{subfigure}
+        \begin{subfigure}[htbp]{0.3\textwidth}
+            \includegraphics[width=2.1in]{pattern}
+    \subcaption{Peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
+        \end{subfigure}
+        \caption{Different control code impact on performance}\label{fig:1}
+    \end{figure*}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{ctrl}
-\caption{Different control codes regulate {\tt FFMA} throughput.}
-\label{fig:control_throughput}
-\end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{ctrl_latency}
-\caption{Different control codes regulate {\tt FFMA} latency.}
-\label{fig:control_latency}
-\end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{pattern}
-    \caption{Control codes pattern regulate peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
-\label{fig:pattern}
-\end{center}
-\end{figure}
 
 {\em {\bf Observation 1--[Control]}: The execution sequence of instructions is regulated by control codes. Both warp scheduling and issue mode are tunable by setting control codes.}
 
