@@ -1,48 +1,47 @@
 \subsection{Instruction Solver}
 An instruction is composed of three fields: {\tt opcode}, {\tt operands} and {\tt modifiers}. An operand can be register, constant memory, global memory, shared memory, immediate, or predicate register.
 The encoding of operands can be inferred by their names. For instance, the register operand {\tt R5} could be
-inferred as $101$ in binary format, immediate $0x9$ is represented as $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, we can not infer encoding by their names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
+inferred as $101$ in binary format, immediate $0x9$ is represented as $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore, their encoding can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
 modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately.
 
 \subsubsection{Operands:Fixed Length Field}
-
-The basic idea of Algorithm~\ref{algo:int_solver} is that match binary encoding of operand in $64$ instruction encoding and find
+Algorithm~\ref{algo:int_solver} shows pseudo code for immediate typed operand decoding process. 
+The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
 position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
-First, we randomly pick up instruction that has the filed we want to probe, and represent it in binary by its name. Second, we match its binary in $64$-bit instruction encoding, and find possible positions. Third, we intersect current candidate with previous one, if the number of candidate is $1$, we find the position. Otherwise, we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
+First, we randomly pick up an instruction that has the field we want to probe, and represent the field in binary by its name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we intersect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
+Other operand type such as register operand can be use similar routine by matching the corresponding operand binary.
 
 \begin{algorithm}
-      \caption{Solver}
+      \caption{Immediate Solver}
       \label{algo:int_solver}
   \begin{algorithmic}[1]
-	  \State \textbf{input:} instmap
-      \State output: pos, length
-      \State currpos=\{\}
-      \State prepos=\{0,1,2,...63\}
-      \While {lenght(currpos) != 1}
-      \State inst=instmap[random()]
+	  \State \textbf{input:} instMap
+      \State \textbf{output:} pos, length
+      \State currPos=\{\}
+      \State prePos=\{0,1,2,...63\}
+      \While {length(currpos) != 1}
+      \State inst=instMap[random()]
       \If {inst.src1type == immediate}
-      \State instencode=inst->encode64bit
-      \State immbin = completecode(imm)
+      \State instEncode=inst->encode64bit
+      \State immBin = completement(imm)
       \State pos = 0
-      \While {pos + length(immbin) < 64}
-      \If {strcmp(immbin,instencode+pos,length(immbin)}
-      \State pushback(currpos, pos)
+      \While {pos+length(immBin) < 64}
+      \If {strcmp(immBin,instEncode+pos,length(immBin)}
+      \State pushback(currPos, pos)
       \EndIf
       \EndWhile
-      \State currpos = intersect (curpos, prepos)
-      \State prepos = currpos
-      \State currpos=\{\}
+      \State currPos = intersect (curpos, prepos)
+      \State prePos = currPos
+      \State currPos=\{\}
       \EndIf
       \EndWhile
-      \State return curpos[0]
+      \State return prePos[0]
   \end{algorithmic}
 \end{algorithm}
 
-
-After finding the operand position, we need to infer or veritify the length of operand encoding. Some are easy to be
-inferred, for example, there are at most $256=2^{8}$ registers for each thread, we could infer the length of register operand to be $8$.
-The others like immediate or script note of constant memory is more complicated. One solution is to set the bit from the
-position one by one to check whether the operand value is grown as we expected.
+Once operand position is found, we need to probe or veritify the length of operand encoding. Some are easy to be
+deduced, for example, each thread can use at most $256=2^{8}$ registers, we could predict the length of register operand mask to be $8$.
+However, other operand types like immediate $0x48$ or subscript of constant memory $C[0x2][0x05]$, are more complicated to predicate. Our solution is to set the bit from the position bit by bit to check whether the operand value is grown as we expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position of {\tt IADD RX, RY, 0ximm}(RX, RY is arbitrary register operand, 0ximm is immediate operand) is at bit $23$. As specified in~\cite{cuda2015programming}, NVIDIA GPU use little-endian representation, then we set bit higher than $23$ to $1$ bit by bit, and observe the the disassembled code. Immediate value increases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$ is for integer immediate. Even we set bit $42$ to $1$, no {\tt fffff} immediate is got. 
 
 \subsubsection{Opcode}
 Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags
