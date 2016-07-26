@@ -1,0 +1,16 @@
+\section{Conclusion}
+% We recommend abbrvnat bibliography style.
+\label{sec:conclusion}
+In this paper, we have presented the fastest implementation of SGEMM on Kepler Gk110 architecture.
+The optimized TN is $3104$ Gflop/s and efficiency is $3104/3520=88\%$, cublas's TN is $2216 Gflops$,
+efficiency is $2216/3520=63\%$. Our TN implementation is 25\% higher than cublas's TN. 
+The optimized NN achieves $2938$ Gflop/s ($83\%$ efficiency), cublas's NN achieves $2509$($71\%$
+efficiency). Our NN is $12\%$ than Cublas's NN.
+The performance boost is achieved on the basis of high FFMA throughput and series of optimizations.
+These optimizations include register bank conflict eliminating, FFMA dual issue scheduling, choosing
+proper width of global load and shared memory load instructions and so on.
+
+This study includes detailed benchmarking of the GPU instruction issue system that
+reveals how control code influences throughput. Our assembler open a door to optimize Nvidia GPU
+code in native machine level, and our experience and performance model are a good case study of it.
+In future, we will develop automatic compiling tools, which could generate higher performance code.

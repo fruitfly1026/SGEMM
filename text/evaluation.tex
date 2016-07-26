@@ -1,0 +1,100 @@
+\section{Evaluation}
+
+In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA CUBLAS. The $12\sim 25\%$ improvement shows that the microarchitectural optimization makes sense of tuning SGEMM on GPUs.   We further present a quantitative analysis of the effect of each individual optimization strategy and an estimation of the upper bound performance.
+
+The experiments are conducted on NVIDIA K20m GPU, which hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
+
+\begin{table}[!t]
+\caption{The configuration of NVIDIA Tesla K20m GPU.}
+\centering
+\scalebox{1.0} {
+\begin{tabular}{|c||c|}
+\hline
+Metric& Value\\
+\hline
+SPs/SM &192\\
+\hline
+    SMs&13\\
+\hline
+Cores &2496\\
+\hline
+Frequency(MHz)&705\\
+\hline
+Memory Bus Width&320\\
+\hline
+Memory frequency&2600 Mhz\\
+\hline
+Bandwidth(GB/s)&208.0\\
+\hline
+Single FLOPS&3520\\
+\hline
+warp schedular per SM&4\\
+\hline
+dispatch unit/SM&8\\
+\hline
+Max registers/thread&256 \\
+\hline
+32-bit registers/SM&64K\\
+\hline
+LD/ST unit&32 \\
+\hline
+shared memory&48KB\\
+\hline
+L1 cache&16KB or 48KB\\
+\hline
+    L2 cache&1536KB\\
+\hline
+\end{tabular}
+}
+\label{table:k20}
+\end{table}
+
+
+\subsection{Overall Performance}
+Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
+Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS.
+
+As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768\times 768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{sgemm_tn}
+\caption{Performance comparison of CUBLAS and the optimized SGEMM }
+\label{fig:sgemm_tn}
+\end{center}
+\end{figure}
+
+\subsection{Performance Analysis}
+
+\subsubsection{Profiling Microarchitectural Optimization}
+In order to examine performance gain of different optimization strategies, we construct several intermediate implementations by incrementally applying the microarchitectural optimizations.
+
+{\it Baseline:}~~The baseline involves conventional optimizations including register blocking, global
+memory double buffer, shared memory double buffer and unrolling, rather than assembly level optimization.
+For example, baseline use default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} to load data from global memory.
+Register allocation for $C$ is allocated orderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
+FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
+issue optimization either.
+
+{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler} is applied to eliminate register bank conflict. No
+instruction scheduling change between this version and baseline version.
+
+{\it +LD128:}~~Use wider global load instruction.
+Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be L1-cached, it may be L2-cached.
+
+{\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed before using the data.
+
+{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
+pattern described in section~\ref{sec:assembler}. For dual issue version, $NOP$ may be inserted for instruction alignment.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.65]{tn_prof}
+    \caption{Evaluation of the incremental optimizations.}
+\label{fig:th_prof}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
+As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
+Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
