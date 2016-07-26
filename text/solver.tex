@@ -4,7 +4,7 @@ The encoding of operands can be inferred by their names. For instance, the regis
 inferred as $101$ in binary format, immediate $0x9$ is represented as $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore, their encoding can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, mask of type-size
 modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately. All the process of solver can be done automatically.
 
-\subsubsection{Operands:Fixed Length Field}
+\subsubsection{Operand:Fixed Length Field}
 Algorithm~\ref{algo:int_solver} shows pseudo code for immediate typed operand decoding process. 
 The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
 position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
