@@ -57,3 +57,47 @@ modifier for {\tt LD} and {\tt LDG} are at different postions. So we deal with m
       \State return curpos[0]
   \end{algorithmic}
 \end{algorithm}
+
+The basic idea of Algorithm~\ref{algo:int_solver} is that match binary encoding of operand in $64$ instruction encoding and find
+position until the postion is unique. All input can from disassembly code of NVIDIA CUBLAS library or generated from PTX.
+First, random pick up instruction that has the filed we want to probe, and express field in binary by its name. Second, we match field binary in $64$
+bit instruction encoding, and find possible positions. More than one positions may be found. Third, we intersect current candidate
+with previous candidate, if number of candidate is $1$, we find the postion. Otherwise, set current candidate to previous candidate,
+current candidate to null, random pick next instruction. repeat second step.
+
+After finding the operand position, we need to infer or veritify the length of operand encoding. Some can be easier
+inferred, for example, there are $256=2^{8}$ registers for each thread, we could infer length of register operand to $8$.
+Some are difficult ot infer, such as immediate or script note of constant memory. One way is set the bit from the
+postion one by one to check whether operand value is grown as we expected.
+
+\subsubsection{Opcode}
+Opcodes does not show their encoding literally. One possible way is to write instruction {\tt PTX} code with flags
+combinations based on syntax on Nvidia PTX manual, and generate encoding by using NVDIA toolchain.
+Then, opcode can be got by stripping out operand mask, and flags can be found by stripping out opcode and operand mask.
+This method is fast, but due to the uncompleteness of Nvidia document, we can not find out all the opcodes and
+instruction modifiers.
+Other method is using brute force to emulate possible binary combinations after striping out operand mask.
+Normally, each instruction have $3$ register operand, and one $4-bit$ predicat register, we have $64-8*3-4=36$ bits left to probe.
+It's still a large space,  we can prunt the search space by recognize possible position that representation by
+algoirthm~\ref{algo:opcode}. By random probling bit by bit, we find opcode is at top $10$ bit and lower $2$ bit represent opcode and other bits represent flags. We only
+emunarate these bits.The space is acceptable. Then we find the minimal opcode without any flags. The method allow use to find instructions
+that are not listed on NVIDIA document, such as {\tt ALD}.
+
+
+\begin{algorithm}
+      \caption{Opcode Solver}\label{algo:opcode}
+  \begin{algorithmic}[1]
+      \State for each instruction in PTX generated database
+      \For {i=0; i < num\_inst; i++}
+      \For {j=0; j < 64; j ++}
+      \If {isoperand(encode[i][j] == 0) and encode[i][j]== 0}
+      \State newcode = encode[i][j].setbit(j, 1)
+      \State newinst=nvdisasm(newcode)
+      \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
+      \State pushback(j)
+      \EndIf
+      \EndIf
+      \EndFor
+      \EndFor
+  \end{algorithmic}
+\end{algorithm}
