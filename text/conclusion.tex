@@ -1,16 +1,5 @@
 \section{Conclusion}
-% We recommend abbrvnat bibliography style.
 \label{sec:conclusion}
-In this paper, we have presented the fastest implementation of SGEMM on Kepler Gk110 architecture.
-The optimized TN is $3104$ Gflop/s and efficiency is $3104/3520=88\%$, cublas's TN is $2216 Gflops$,
-efficiency is $2216/3520=63\%$. Our TN implementation is 25\% higher than cublas's TN. 
-The optimized NN achieves $2938$ Gflop/s ($83\%$ efficiency), cublas's NN achieves $2509$($71\%$
-efficiency). Our NN is $12\%$ than Cublas's NN.
-The performance boost is achieved on the basis of high FFMA throughput and series of optimizations.
-These optimizations include register bank conflict eliminating, FFMA dual issue scheduling, choosing
-proper width of global load and shared memory load instructions and so on.
-
-This study includes detailed benchmarking of the GPU instruction issue system that
-reveals how control code influences throughput. Our assembler open a door to optimize Nvidia GPU
-code in native machine level, and our experience and performance model are a good case study of it.
-In future, we will develop automatic compiling tools, which could generate higher performance code.
+We have presented a profound microbenchmarking at assembly level to demystify the architecture features under the hood, such as dual issue impact on float arithmetic throughput, memory load width on bandwidth, register bank distribution on performance etc. These parameters are worthwhile for both hardware and software researcher to understand how GK110 is designed and how to adapt program to Kepler GPU hardware.
+Based on these disclosed information, we implemented the fastest SGEMM on Kepler GK110 GPU. The optimized SGEMM is $3104$ Gflop/s and efficiency is $3104/3520=88\%$, CUBLAS's SGEMM achieves $2509$ Gflp/s($71\%$ efficiency). Our optimized one is $17\%$ higher than Cublas. The performance boost is achieved on the basis of tuning {\tt FFMA} throughput as high as hardware peak, then add other non-FFMA instruction with little penalty. These optimizations include register bank conflict eliminating, {\tt FFMA} dual issue scheduling, choosing proper width of global load and shared memory load instructions and so on.
+As far as we know, our assembler which will be public in future is the first assembler for Kepler GK110 architecture. In this paper, we also provided a detailed description of how we cracked the instruction encoding by presenting our decoding solver. This solver is not limited to Kepler GPU, it can be used to crack the future GPU encoding automatically. Our assembler and decoding solver open a door to optimize Nvidia GPU code in native machine level.
