@@ -82,7 +82,7 @@ instruction scheduling change between this version and baseline version.
 {\it +LD128:}~~Use wider global load instruction.
 Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be L1-cached, it may be L2-cached.
 
-{\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR} is needed before using the data.
+{\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR}~\cite{lukyanov2014efficient} is needed before using the data.
 
 {\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
 pattern described in section~\ref{sec:assembler}. For dual issue version, $NOP$ may be inserted for instruction alignment.
