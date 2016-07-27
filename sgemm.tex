@@ -17,8 +17,9 @@
 
 \usepackage{graphicx}
 \usepackage{algorithm}
+%\usepackage{algorithmicx}
 %\usepackage{algorithmic}
-\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+\usepackage{algpseudocode}
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{caption}
@@ -30,6 +31,7 @@
 
 \algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
+\algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
 
 \makeatletter
 \algnewcommand{\LineComment}[1]{\Statex \hskip\ALG@thistlm \(\triangleright\) #1}
