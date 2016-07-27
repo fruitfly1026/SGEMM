@@ -17,10 +17,9 @@ Other operand type such as register operand can be use similar routine by matchi
   \begin{algorithmic}[1]
 	  \State \textbf{input:} instMap
       \State \textbf{output:} pos, length
-	  \LeftComment {}
       \State $currPos$ $\gets$ \{\}
       \State $prePos$ $\gets$ \{0,1,2,...63\}
-	  \LeftComment {check if position is unique}
+	  \LineComment {check if position is unique}
       \While {length($prePos$) != 1}
 	  \LineComment {fetch a instruction with this field}
       \State $inst$ $\gets$ $instMap[random()]$
@@ -33,9 +32,11 @@ Other operand type such as register operand can be use similar routine by matchi
       \LineComment {match immBin in 64 bit encoding}
       \While {$pos$+ $immLen$ < $64$}
       \If {strcmp($immBin,instEnc+pos,immLen$)}
+      \LineComment {find all the possible positions}
       \State pushback(currPos, pos)
       \EndIf
       \EndWhile
+      \LineComment {common position between curPos and prePos}
       \State $currPos$ $\gets$ $curPos$ $\cap$ $prePos$
       \State $prePos$ $\gets$ $currPos$
       \State $currPos$ $\gets$ \{\}
