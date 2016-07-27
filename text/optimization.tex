@@ -2,8 +2,8 @@
 \label{sec:optimization}
 The demystified GPU microarchitecture features provides additional space to tune performance-critical kernels. We apply a series of incremental optimizations to improve SGEMM efficiency on Kepler architecture. The optimization strategies go through architectural hierarchy from core and register to memory. All the optimization strategies are inspired by our microbenchmark's observations.
 \begin{itemize}
-\item At core level, we orchestrate {\tt FFMA} instruction executions by a more efficient instruction scheduling pattern with respect to the proper control code.
-\item At register level, we meticulously map operands to registers so that  bank conflicts are avoided in the inner loop iteration.
+\item At core level, we orchestrate {\tt FFMA} instruction executions by a more efficient instruction scheduling with respect to the proper control code pattern.
+\item At register level, we meticulously map operands to registers so that bank conflicts are avoided in the inner loop iteration.
 \item At memory level, we select appropriate shared memory load/store width and global memory data path to mitigate latencies.
 \end{itemize}
 
