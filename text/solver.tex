@@ -62,22 +62,28 @@ However, other operand types like immediate $0x48$ or subscript of constant memo
 Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand encoding is to write {\tt PTX} code
 based on syntax on NVIDIA PTX manual, and generate encoding by using NVDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flags can be found by stripping out both opcode and operand mask. However, the uncompleteness of NVIDIA document hinder us to find out all the opcodes and instruction modifiers. Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
-Normally, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left to probe.
+In general, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By randomly probing bit by bit, we find that the top $10$ bits and lower $2$ bits represent opcode and other bits represent flags. Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find the minimal opcode without any flags. 
 
 
 \begin{algorithm}
       \caption{Opcode Solver}\label{algo:opcode}
   \begin{algorithmic}[1]
-      \State input: instmap
-      \State onput: opcode position
-      \For {i=0; i < num\_inst; i++}
-      \For {j=0; j < 64; j ++}
-      \If {isOperand(encode[i][j] == 0) and encode[i][j]== 0}
-      \State newcode = encode[i][j].setbit(j, 1)
-      \State newinst=nvdisasm(newcode)
-      \If {sameop(newinst,oldinst) == 0 and isvalid(newinst) }
-      \State pos.pushback(j)
+      \State \textbf {input:} instMap
+      \State \textbf {onput:} pos
+      \For {$i \gets 0, N$}
+	  \LineComment {fetch a instruction from generated database}
+      \State $enc \gets instMap[i]$ 
+	  \LineComment {check if bit j represent opcode}
+      \For {$j \gets 0, 63$}
+	  \LineComment {if bit j is not operand and value is 0}
+      \If {notOprd($enc[j]$) and $enc[j] == 0$}
+      \State newCode = setbit($enc[j], j, 1$)
+	  \LineComment {disassemble newCode to get newInst}
+      \State newInst=nvdisasm(newCode)
+	  \LineComment {if opcode is changed, bit j represents opcode}
+      \If {$newInst.op\neq oldInst.op$}
+      \State pushback($pos$,$j$)
       \EndIf
       \EndIf
       \EndFor
