@@ -4,31 +4,33 @@ With the assembler we tune the assembly codes of microbenchmark. According to th
         \begin{subfigure}[htbp]{0.3\textwidth}
             \includegraphics[width=2.1in]{ctrl}
            \subcaption{Regulate {\tt FFMA} throughput.}
+            \label{fig:control_throughput}
         \end{subfigure}
         \begin{subfigure}[htbp]{0.3\textwidth}
             \includegraphics[width=2.1in]{ctrl_latency}
             \subcaption{Regulate {\tt FFMA} latency.}
+            \label{fig:control_latency}
         \end{subfigure}
         \begin{subfigure}[htbp]{0.3\textwidth}
             \includegraphics[width=2.1in]{pattern}
-    \subcaption{Peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
+            \subcaption{Peak {\tt FFMA} throughput(S:single issue, D:dual issue).}
+            \label{fig:control_pattern}
         \end{subfigure}
-        \caption{Different control code impact on performance}\label{fig:1}
+        \caption{Different control code impact on performance}\label{fig:control_code}
     \end{figure*}
 
 
 {\em {\bf Observation 1--[Control]}: The execution sequence of instructions is regulated by control codes. Both warp scheduling and issue mode are tunable by setting control codes.}
 
-Starting with the Kepler architecture NVIDIA has been moving some control logic off of the chip and into kernel instructions which are determined by the assembler. This evolution provides programmer a chance to make globally optimal decisions on scheduling and other control aspects if an assembler is available. The disassembly code indicates that every 64 bits control code controls $7$ instructions. We identify that both higher $6$ bits and lower 2 bits are {\em opcode} of control code, and the middle 56 bits are used to control the execution of $7$ instructions, each of which is assigned $8$ control bits.
+Starting with the Kepler architecture, NVIDIA has been moving some control logic off the chip and into kernel instructions which are determined by the assembler~\cite{lai,maxas}. This evolution provides programmer a chance to make globally optimal decisions on scheduling and other control aspects if an assembler is available. The disassembly code on Figure~\ref{fig:assemblycode} shows that on Kepler control code is placed before seven instructions, and it indicates that every $64$ bits control code controls $7$ instructions. We identify that both higher $6$ bits and lower $2$ bits are {\em opcode} of control code, and the middle $56$ bits are used to control the execution of $7$ instructions, each of which is assigned $8$ control bits.
 
-For the eight control bits, we identify their meanings by examining CUBLAS disassembly codes and tuning a {\tt FFMA}
-throughput microbhenchmark. We observe that the $7$th bit of the control code of {\tt TLD} instruction is $1$, which
-indicates a texture dependency barrier due to weak consistent memory model. It's verified that some illegal values are
+For the eight control bits, we identify their meanings by statistically examining CUBLAS disassembly codes and dynamtically benchmarking instruction sequence of different control codes. We observe that the $7$th bit of the control code of {\tt TEXDEPBAR} instruction is $1$, which
+indicates a texture dependency barrier due to weak consistent memory model of texture cache. It's verified that some unexpected values are
 loaded if this bit is not set. Similarly, we discover that the $5$th bit means shared memory dependency barrier, the
-$4$th bit means global memory dependency barrier. Figure~\ref{fig:control_throughput} shows that {\tt FFMA} throughput varies with all control bit values from 0 to 255. As shown in this figure, the throughput linearly decreases with the increasing values represented by the $0-3$ bits. That implies that these $4$ bits set the number of stall cycles before issuing the instruction. Further, the microbenchmarking reveal some specific patterns of control codes:
+$4$th bit means global memory dependency barrier. Figure~\ref{fig:control_code}(\subref{fig:control_throughput}) and Figure~\ref{fig:control_code}(\subref{fig:control_latency}) shows that {\tt FFMA} throughput and latency varies with all control bit values from 0 to 255. As shown in this figure, the throughput linearly decreases with the increasing values represented by the $0-3$ bits. That implies that these $4$ bits set the number of stall cycles before issuing the instruction. Further, the microbenchmarking reveals some specific patterns of control codes:
 
 \begin{itemize}
-\item When the control bits are set to be $0x40$, the scheduler suspends a warp of the instructions for 32 cycles.
+\item When the control bits are set to be $0x40$, the scheduler suspends a warp of the instructions for $38$ cycles.
 \item $0x04$ means dual issue mode. If two consecutive instructions is controlled by $0x04$ and $0x05$, the throughput can reach the maximum. Single issue control code is $0x00$.
 \item $0x20|n$ means a warp is suspended for $n$ cycles before issuing the next instruction, where $n$ is number between 0 and 15.
 \end{itemize}
