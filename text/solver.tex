@@ -53,13 +53,13 @@ However, other operand types like immediate $0x48$ or subscript of constant memo
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.5]{imm}
-    \caption{Immediate position at IADD instruction}
+    \caption{Immediate position at {\tt IADD} instruction}
 \label{fig:imm}
 \end{center}
 \end{figure}
 
 \subsubsection{Opcode}
-Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand encoding is to write {\tt PTX} code
+Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand encoding is to write PTX code
 based on syntax on NVIDIA PTX manual, and generate encoding by using NVDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flags can be found by stripping out both opcode and operand mask. However, the uncompleteness of NVIDIA document hinder us to find out all the opcodes and instruction modifiers. Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
 In general, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left to probe.
