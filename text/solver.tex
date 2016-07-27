@@ -17,25 +17,31 @@ Other operand type such as register operand can be use similar routine by matchi
   \begin{algorithmic}[1]
 	  \State \textbf{input:} instMap
       \State \textbf{output:} pos, length
-      \State currPos=\{\}
-      \State prePos=\{0,1,2,...63\}
-      \While {length(currpos) != 1}
-      \State inst=instMap[random()]
-      \If {inst.src1type == immediate}
-      \State instEncode=inst->encode64bit
-      \State immBin = completement(imm)
-      \State pos = 0
-      \While {pos+length(immBin) < 64}
-      \If {strcmp(immBin,instEncode+pos,length(immBin)}
+	  \LeftComment {}
+      \State $currPos$ $\gets$ \{\}
+      \State $prePos$ $\gets$ \{0,1,2,...63\}
+	  \LeftComment {check if position is unique}
+      \While {length($prePos$) != 1}
+	  \LineComment {fetch a instruction with this field}
+      \State $inst$ $\gets$ $instMap[random()]$
+      \If {$inst.src1type$ == $imm$}
+      \State $instEnc$ $\gets$ inst->enc64
+	  \LineComment {express immediate in completement code}
+      \State $immBin$ $\gets$ completement($imm$)
+      \State $pos$ $\gets$ 0
+      \State $immLen$ $\gets$ length($immBin$)
+      \LineComment {match immBin in 64 bit encoding}
+      \While {$pos$+ $immLen$ < $64$}
+      \If {strcmp($immBin,instEnc+pos,immLen$)}
       \State pushback(currPos, pos)
       \EndIf
       \EndWhile
-      \State currPos = intersect (curpos, prepos)
-      \State prePos = currPos
-      \State currPos=\{\}
+      \State $currPos$ $\gets$ $curPos$ $\cap$ $prePos$
+      \State $prePos$ $\gets$ $currPos$
+      \State $currPos$ $\gets$ \{\}
       \EndIf
       \EndWhile
-      \State return prePos[0]
+      \State return $prePos[0]$
   \end{algorithmic}
 \end{algorithm}
 
