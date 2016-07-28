@@ -136,7 +136,7 @@ We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They c
 memory, global memory and computation power. In register blocking loop, each thread compute $bm*bn*bk$, read $bm*bk$
 and $bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{displaymath}
-    \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} < \frac{Gflop/s}{bandwidth}
+    \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
 \end{displaymath}
 According to parameters in our SGEMM implementation, $bm=bn=192$, $bk=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
 requirement for global memory bandwidth in order to achieve peak $3520$ Gflops.
@@ -152,8 +152,8 @@ $1173/13=90$ GB/s.
 The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth, which is
 higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
 
-The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:assembler}, FFMA throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
+The loss to peak performance can be explained as the following reasons. As we have shown in Section~\ref{sec:assembler}, {\tt FFMA} throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency of {\tt LDS}.
 With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
 With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
-Each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} penalty will be $2*10/384 = 5.2\%$. Other penalty comes from synchronization and writing $C$ matrix in the block.
+We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} penalty will be $2*10/384 = 5.2\%$. Other penalty comes from synchronization and writing $C$ matrix in the block.
