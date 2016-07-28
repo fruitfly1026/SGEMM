@@ -156,4 +156,4 @@ The loss to peak performance can be explained as the following reasons. As we ha
 With $12x12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
 With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
-We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} penalty will be $2*10/384 = 5.2\%$. Other penalty comes from synchronization and writing $C$ matrix in the block.
+We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} will cause $2*10/384 = 5.2\%$ loss. Other penalty comes from synchronization and writing $C$ matrix in the block.
