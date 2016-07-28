@@ -1,5 +1,5 @@
 \section{Evaluation}
-
+\label{sec:experiment}
 In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA CUBLAS. The $17\sim 25\%$ improvement confirms that the microarchitectural optimization makes sense when tuning SGEMM on GPUs. We further present a quantitative analysis of the effect of each individual optimization strategy and an estimation of the upper bound performance.
 
 The experiments are conducted on NVIDIA K20m GPU, and the hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
