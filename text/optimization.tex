@@ -39,8 +39,8 @@ operand collector mechanism~\cite{collector}. Operand collector is storage eleme
 provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused
 in the subsequent instructions. The assembly code in Algorithm~\ref{fig:order} lists the instructions to calculate
 $C_{32},C_{22}, C_{21}, C_{30}, C_{31}, C_{20}$, where are corresponding to the orders of $6,7,8,9,10,11$ in
-Figure~\ref{fig:reg}. With the elaborately designed computing order and register allocation, the reuse happens as follows. The {\tt FFMA} in Line $4$ uses cached operand {\tt R150} of line $2$, Line $4$ and Line $5$ share {\tt R146}. Thus, in dual issue mode {\tt FFMA} of Line $4$ and $5$ need to read 4 registers {\tt R146}, {\tt R27}, {\tt R149}, {\tt R6} instead of $6$ registers. The corresponding bank of these registers are $0,1,3,2$, so no bank conflicts happen.
-Similarly, Line 7 uses the cached operand {\tt R149} from the Line 5. In dual issue mode, two {\tt FFMAs} of Line 7 and Line 8 need to read $4$ registers {\tt R148}, {\tt R147}, {\tt R7} and {\tt R2}.
+Figure~\ref{fig:reg}. With the elaborately designed computing order and register allocation, the reuse happens as follows. The {\tt FFMA} in Line $3$ uses cached operand {\tt R150} of line $2$, Line $3$ and Line $4$ share {\tt R146}. Thus, in dual issue mode {\tt FFMA} of Line $3$ and $4$ need to read 4 registers {\tt R146}, {\tt R27}, {\tt R149}, {\tt R6} instead of $6$ registers. The corresponding bank of these registers are $0,1,3,2$, so no bank conflicts happen.
+Similarly, Line 7 uses the cached operand {\tt R149} from the Line 4. In dual issue mode, two {\tt FFMAs} of Line 6 and Line 7 need to read $4$ registers {\tt R148}, {\tt R147}, {\tt R7} and {\tt R2}.
 
 \begin{table}[!t]
 \caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column records slot numbers and the first row represents iteration number.}
