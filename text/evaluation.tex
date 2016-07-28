@@ -1,14 +1,14 @@
 \section{Evaluation}
 
-In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA CUBLAS. The $12\sim 25\%$ improvement shows that the microarchitectural optimization makes sense of tuning SGEMM on GPUs.   We further present a quantitative analysis of the effect of each individual optimization strategy and an estimation of the upper bound performance.
+In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA CUBLAS. The $17\sim 25\%$ improvement confirms that the microarchitectural optimization makes sense when tuning SGEMM on GPUs. We further present a quantitative analysis of the effect of each individual optimization strategy and an estimation of the upper bound performance.
 
-The experiments are conducted on NVIDIA K20m GPU, which hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
+The experiments are conducted on NVIDIA K20m GPU, and the hardware configuration is summarized in Table~\ref{table:k20}. The compared CUBLAS is from CUDA $7.0$ version. In our experiments the sizes of matrix vary in $768\times768$, $1536\times1536$,$3072\times3072$,$6144\times6144$,$12288\times12288$.
 
 \begin{table}[!t]
 \caption{The configuration of NVIDIA Tesla K20m GPU.}
 \centering
 \scalebox{1.0} {
-\begin{tabular}{|c||c|}
+\begin{tabular}{|c|c|}
 \hline
 Metric& Value\\
 \hline
@@ -52,7 +52,7 @@ L1 cache&16KB or 48KB\\
 
 \subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
-Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2216$ Gflop/s which efficiency is $63\%$. The comparison shows that our implementation achives 25\% performance improvement over CUBLAS.
+Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2509$ Gflop/s which efficiency is $71\%$. The comparison shows that our implementation achives $17\%$ performance improvement over CUBLAS.
 
 As the figure shows, the overall trend is that performance increases with bigger matrices. On one hand, the larger matrix size leads to a higher ratio of floating-point operations to memory operations, which is more close to the hardware arithmetic intensity. On the other hand, the larger matrix size increases occupation of the threading CUDA cores. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768\times 768$ suffers from low utilization of massive cores. Therefore, we observe that there is significant growth in Gflop/s from 768 to 1536 for both ours and CUBLAS. With respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning performance.
 
