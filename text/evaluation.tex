@@ -66,21 +66,25 @@ As the figure shows, the overall trend is that performance increases with bigger
 
 \subsection{Performance Analysis}
 
-\subsubsection{Choosing Register Blocking Size}
+\subsubsection{Register Blocking Size Influence}
+Section~\ref{sec:background} summarized computation volumn and data movement volumn of blocking SGEMM algorithm.
+The volumn of data moving from shared memory to global memory is $rx\times bk+ ry\times bk$, and computation volumn is $rx\times ry\times bk$. Thus, the computation and shared memory access ratio can be formulated as $\frac {rx\times ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}$.
+This function implies that the larger register blocking, the higher computation shared memory ratio, and the optimal solution should be in the case of $rx=ry$. 
+For global memory, it is the same conclusion.
 
-Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block.
+However, Register blocking size is limited by number of registers per thread. 
+%the maximum number of threads in one block.
 In order to hide latency of shared memory, software pipelining using double
 buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
 submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for prefetching $A$ and $B$ from shared memory to
-registers for next loop. Since the total number of registers should be less than $255$ in Kepler architecture, we have the following equations.
+registers for next loop. Since the total number of registers should be less than $256$ on Kepler, we have the following equations:
 \begin{equation}
-    rx\times ry + rx\times 2 + ry\times 2 < 255
+    rx\times ry + rx\times 2 + ry\times 2 < 256
 \label{f_register}
 \end{equation}
-First, this function implies that the optimal solution should be in the case of $rx=ry$. Because the maximal number of register per thread is 255 and data load must be aligned with 128-bits, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
+Because the maximal number of register per thread is $256$ and data load must be aligned with $128$-bits when using {\tt LDG.128}, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
 $8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
-space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The register number allows us to launch $256$ threads in a block. Each block of threads computes a $bm\times bn$ submatrix of $C$ by multiply $A_{bm,bk}$ and $B_{bk,
-bn}$.
+space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The $65536$ registers per SM restricts us to launch $256$ threads at most. In our implementation, we have $256$ threads in a block. Each block of threads computes a $192\times 192$ submatrix of $C$ by multiply $A_{192,4}$ and $B_{4, 192}$, in which $4$ is the unroll factor.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -89,6 +93,8 @@ bn}$.
 \label{fig:block}
 \end{center}
 \end{figure}
+the active block per SM is one, occupancy is $256/1024=12.5\%$.
+The occupancy is low which means the thread parallism is low, but our instruction level parallism is high. The high performance of SGEMM with low occupancy confirms that instruction level parallelism plays an important role on GPU~\cite{volkov2010better}.
 
 \subsubsection{Profiling Microarchitectural Optimization}
 In order to examine performance gain of different optimization strategies, we construct several intermediate implementations by incrementally applying the microarchitectural optimizations.
