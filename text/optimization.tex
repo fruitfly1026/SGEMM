@@ -22,7 +22,7 @@ As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions blo
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.5]{order}
+\includegraphics[scale=0.55]{order}
 \caption{{\tt FFMA}s instructions scheduling for calculating a $12\times 12$ subblock of matrix C.  The numbers in cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are executed at same clock cycle.}
 \label{fig:order}
 \end{center}
@@ -140,16 +140,16 @@ cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {
 To allocate register for $A$ column, $B$ row and $C$ submatrix, we have three considerations: correctness, no bank
 conflict and allocate register index tightly.
 {\tt LDG.128} restricts $4$ words alignment restriction for register.
-Nvidia GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, result is writen to
-$RN+1$, $RN+2$, $RN+3$. There is undocumented restriction: $N\%4==0$, otherwise illegal instruction error will be reported.
-It's not hard to understand this restriction, $4$ words align for {\tt LDG.128} make hardware logic simpler saving die area.
+Nvidia GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, result will be writen to
+four $32$ bits registers:{\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}. There is an undocumented restriction: $N\%4==0$, otherwise illegal instruction error will be reported.
+It's not hard to understand this restriction, $4$ words alignment for {\tt LDG.128} make hardware logic simpler and cut down power usage.
 Since we will use {\tt LDG.128} to load $A$ and $B$, there are $2$ bank allocation choices due to $N\%4==0$ restriction and
 bank distribution of Kepler. We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
-$B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure, we have 2 choices left for $C$.
+$B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure, we have 2 choices left for $C$:
 $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$
-$\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$
-We have $2i\times2$ bank patterns for SGEMM, we choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
-$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively as shown in Figure.
+$\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$.
+We have $2\times2$ bank patterns for SGEMM, these four patterns are equivalent in performance, and we arbitrarily choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
+    $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively from the $4$ patterns as shown in Figure~\ref{fig:reg}.
 To allocate actual register index, we choose continuous register index so that register index do not get too big to
 exceed 255 restriction. From figure, we can verify that $C_{ij}$, $A_i$ and $B_j$ have different banks, for example
 $C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, hence no bank conflicts.
