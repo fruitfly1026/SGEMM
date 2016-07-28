@@ -9,7 +9,7 @@ The demystified GPU microarchitecture features provides additional space to tune
 
 \subsection{Instruction Scheduling}
 \subsubsection{Schedule {\tt FFMA} Instructions}
-It's unrealistic to keep warp schedulers dual issue the same kinds of arithemtic instructions (i.e., {\tt FFMA}) all the time. Because on Kepler architecture, each warp is assigned a $32$ core privately, $4$ warp schedulers will consume $128$ cores. The reminding $192-128=64$ cores are divided into $2$ groups, each group has $32$ cores, these $32$ cores are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid resource conflict.
+It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all the time. Because on Kepler architecture, each warp is assigned a $32$ core privately, $4$ warp schedulers will consume $128$ cores. The reminding $192-128=64$ cores are divided into $2$ groups, each group has $32$ cores, these $32$ cores are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid resource conflict.
 As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of $1$ single issue(1 {\tt FFMA}), 2 dual issues (4 {\tt FFMA}s) and 1 single issues ((1 {\tt FFMA})). As shown in Figure~\ref{fig:assemblycode}, the instructions in lines 4-5 and lines 7-8 are respectively grouped as two dual-issues. The other two instructions in line 8 and line 11 are two single issues in terms of floating-point instruction execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUDA compiler generated codes.
 
 \begin{figure*}[htbp]
@@ -108,7 +108,7 @@ Similarly, Line 7 uses the cached operand {\tt R149} from the Line 4. In dual is
 \subsubsection{Schedule {\tt non-FFMA} Instructions}
 
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to assure
-corretness of the program without losing performance. In order to tolerate instruction latency, we need to keep distance of dependent instructions to be larger than the latency. The distance can be approximately computed as
+correctness of the program without losing performance. In order to tolerate instruction latency, we need to keep distance of dependent instructions to be larger than the latency. The distance can be approximately computed as
 \begin{displaymath}
 distance = \frac{4\times\#instructions}{7}
 \end{displaymath}
@@ -118,7 +118,7 @@ two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. 
 \begin{displaymath}
 \#slots = \frac{rx\times ry\times unroll}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
 \end{displaymath}
-In this formular, $rx\times ry\times unroll$ yields total number of {\tt FFMA} for one threads inside register blocking loop.
+In this formula, $rx\times ry\times unroll$ yields total number of {\tt FFMA} for one threads inside register blocking loop.
 and denominator is {\tt FFMA} instructions inside one schedule block. As stated in section~\ref{sec:benchmark}, the number is $6$ by our $1-2-2-1$ dual issue pattern.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The
 schedule slots are illustrated in two dimension as shown in Table~\ref{tab:position}.
@@ -166,7 +166,7 @@ sub-matrix $C$. The different colors denotes mapping of register banks: Green$\r
 \end{figure}
 
 
-\subsection{Memory Movment}
+\subsection{Memory Movement}
 According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} operation reduces the numbers to 3.
 
 Second, it is another story for shared memory. The shared memory transaction size of 256 bytes forces that any shared memory request will be split into multiple transactions of 256 bytes. By inspecting the inner loop, we cannot control when the second transactions happen so that it is difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s. As for {\tt LDS.64}, it's determinable to avoid register bank since a transaction just happens at the position of {\tt LDS.64}.

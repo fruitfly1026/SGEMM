@@ -100,7 +100,7 @@ The occupancy is low which means the thread parallism is low, but our instructio
 In order to examine performance gain of different optimization strategies, we construct several intermediate implementations by incrementally applying the microarchitectural optimizations.
 
 {\it Baseline:}~~The baseline involves conventional optimizations including register blocking, global
-memory double buffer, shared memory double buffer and unrolling, rather than assembly level optimization.
+memory double buffering, shared memory double buffering and unrolling, rather than assembly level optimization.
 For example, baseline use default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} to load data from global memory.
 Register allocation for $C$ is allocated orderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
 FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
@@ -110,12 +110,12 @@ issue optimization either.
 instruction scheduling change between this version and baseline version.
 
 {\it +LD128:}~~Use wider global load instruction.
-Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be L1-cached, it may be L2-cached.
+Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~{\tt LD} is load instruction used in implementation. When {\tt LDG} is used, a {\tt TEXDEPBAR}~\cite{lukyanov2014efficient} is needed before using the data.
+{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster to replace L2-cached {\tt LD}. When {\tt LDG} is used, a {\tt TEXDEPBAR}~\cite{lukyanov2014efficient} is needed before using the data due to weak consistence of texture cache.
 
 {\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
-pattern described in section~\ref{sec:assembler}. For dual issue version, $NOP$ may be inserted for instruction alignment.
+pattern described in section~\ref{sec:assembler}. For dual issue version, {\tt NOP} may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -126,11 +126,10 @@ pattern described in section~\ref{sec:assembler}. For dual issue version, $NOP$ 
 \end{figure}
 
 Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
-As long as number of instructions is changed, instruction order needs reschedual to achive high peformance.
+As long as number of instructions is changed, instruction order needs rescheduling to achieve high performance.
 Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
-Register bank conflict elimating imporves around $10\%$. wider load instruction improves $27\%\sim35\%$, texture cached
-load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$. In most cases, the bigger matrix
-size, the more improves except {\tt LDG} and {\tt LD}.
+Register bank conflict eliminating improves around $10\%$. Wider load instruction improves $27\%\sim35\%$, texture cached
+load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$.
 
 \subsubsection{Upper Bound Analysis}
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, shared
