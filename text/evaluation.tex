@@ -66,6 +66,30 @@ As the figure shows, the overall trend is that performance increases with bigger
 
 \subsection{Performance Analysis}
 
+\subsubsection{Choosing Register Blocking Size}
+
+Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block.
+In order to hide latency of shared memory, software pipelining using double
+buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
+submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for prefetching $A$ and $B$ from shared memory to
+registers for next loop. Since the total number of registers should be less than $255$ in Kepler architecture, we have the following equations.
+\begin{equation}
+    rx\times ry + rx\times 2 + ry\times 2 < 255
+\label{f_register}
+\end{equation}
+First, this function implies that the optimal solution should be in the case of $rx=ry$. Because the maximal number of register per thread is 255 and data load must be aligned with 128-bits, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
+$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
+space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The register number allows us to launch $256$ threads in a block. Each block of threads computes a $bm\times bn$ submatrix of $C$ by multiply $A_{bm,bk}$ and $B_{bk,
+bn}$.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.6]{block}
+    \caption{Evaluation of different blocking size}
+\label{fig:block}
+\end{center}
+\end{figure}
+
 \subsubsection{Profiling Microarchitectural Optimization}
 In order to examine performance gain of different optimization strategies, we construct several intermediate implementations by incrementally applying the microarchitectural optimizations.
 
@@ -101,30 +125,6 @@ Compared with the baseline implementation, $2.6X$ speedups are gained by applyin
 Register bank conflict elimating imporves around $10\%$. wider load instruction improves $27\%\sim35\%$, texture cached
 load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$. In most cases, the bigger matrix
 size, the more improves except {\tt LDG} and {\tt LD}.
-
-\subsubsection{Choosing Register Blocking Size}
-
-Register blocking size is limited by instruction cache, shared memory size, registers per thread, the maximum number of threads in one block.
-In order to hide latency of shared memory, software pipelining using double
-buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ to store a column of $A$
-submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for prefetching $A$ and $B$ from shared memory to
-registers for next loop. Since the total number of registers should be less than $255$ in Kepler architecture, we have the following equations.
-\begin{equation}
-    rx\times ry + rx\times 2 + ry\times 2 < 255
-\label{f_register}
-\end{equation}
-First, this function implies that the optimal solution should be in the case of $rx=ry$. Because the maximal number of register per thread is 255 and data load must be aligned with 128-bits, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of $4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and $12\times12$ blocking. $12\times12$ is better than
-$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, leaving more
-space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is $12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The register number allows us to launch $256$ threads in a block. Each block of threads computes a $bm\times bn$ submatrix of $C$ by multiply $A_{bm,bk}$ and $B_{bk,
-bn}$.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.6]{block}
-    \caption{Evaluation of different blocking size}
-\label{fig:block}
-\end{center}
-\end{figure}
 
 \subsubsection{Upper Bound Analysis}
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, shared
