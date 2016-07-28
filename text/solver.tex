@@ -4,12 +4,6 @@ The encoding of operand can be inferred by its name. For instance, the register 
 inferred as $101$ in binary format, immediate $0x9$ is $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore, they can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, masks of type-size
 modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately. 
 
-\subsubsection{Operand:Fixed Length Field}
-Algorithm~\ref{algo:int_solver} shows pseudocode for immediate typed operand decoding process. 
-The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
-position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
-First, we randomly pick up an instruction that has the field we want to probe, and represent the field in binary by its name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we intersect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
-Other operand type such as register operand can be use similar routine by matching the corresponding operand binary.
 
 \begin{algorithm}
       \caption{Immediate Solver}
@@ -45,6 +39,13 @@ Other operand type such as register operand can be use similar routine by matchi
       \State return $prePos[0]$
   \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Operand:Fixed Length Field}
+Algorithm~\ref{algo:int_solver} shows pseudocode for immediate typed operand decoding process. 
+The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
+position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
+First, we randomly pick up an instruction that has the field we want to probe, and represent the field in binary by its name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we intersect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
+Other operand type such as register operand can be use similar routine by matching the corresponding operand binary.
 
 Once operand position is found, we need to probe or verify the length of operand encoding. Some are easy to be
 deduced, for example, each thread can use at most $256=2^{8}$ registers, we could predict the length of register operand mask to be $8$.
