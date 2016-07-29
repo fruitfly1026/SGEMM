@@ -28,12 +28,14 @@
 
 \usepackage{color}
 \newcommand{\jled}{\textcolor[rgb]{1,0,0}{JL: }\textcolor[rgb]{1,0,0}}
+\definecolor{mygray}{gray}{0.4}
+% \renewcommand{\algorithmiccomment}[1]{ \hfill\textit {\color{mygray}{#1}} }
 
 \graphicspath{{./Figures/}}
 
 \algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}
 \algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
-\algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
+\algnewcommand{\LineComment}[1]{\State \(\triangleright\) {\color{mygray}{#1}}}
 
 %\makeatletter
 %\algnewcommand{\LineComment}[1]{\Statex \hskip\ALG@thistlm \(\triangleright\) #1}
