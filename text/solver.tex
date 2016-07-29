@@ -20,15 +20,18 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
       \caption{Immediate Solver}
       \label{algo:int_solver}
   \begin{algorithmic}[1]
+      \LineComment {input is pairs of full instruction and 64-bit encoding}
+      \LineComment {output is the postion of immediate}
 	  \State \textbf{input:} instMap
-      \State \textbf{output:} pos, length
+      \State \textbf{output:} pos
       \State $currPos$ $\gets$ \{\}
+      \LineComment initialize with all the possibles postions
       \State $prePos$ $\gets$ \{0,1,2,...63\}
 	  \LineComment {check if position is unique}
-      \While {length($prePos$) != 1}
+      \While {length($prePos$) $\neq$ 1}
 	  \LineComment {fetch a instruction with this field}
       \State $inst$ $\gets$ $instMap[random()]$
-      \If {$inst.src1type$ == $imm$}
+      \LineComment get the instruction's 64-bit binary encoding
       \State $instEnc$ $\gets$ inst->enc64
 	  \LineComment {express immediate in completement code}
       \State $immBin$ $\gets$ completement($imm$)
@@ -36,7 +39,7 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
       \State $immLen$ $\gets$ length($immBin$)
       \LineComment {match immBin in 64 bit encoding}
       \While {$pos$+ $immLen$ < $64$}
-      \If {strcmp($immBin,instEnc+pos,immLen$)}
+      \If {strcmp($immBin,instEnc+pos$)}
       \LineComment {find all the possible positions}
       \State pushback(currPos, pos)
       \EndIf
@@ -45,9 +48,8 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
       \State $currPos$ $\gets$ $curPos$ $\cap$ $prePos$
       \State $prePos$ $\gets$ $currPos$
       \State $currPos$ $\gets$ \{\}
-      \EndIf
       \EndWhile
-      \State return $prePos[0]$
+      \State \textbf{return} $prePos[0]$
   \end{algorithmic}
 \end{algorithm}
 
@@ -118,7 +120,7 @@ the minimal opcode without any flags.
       \EndIf
       \EndFor
       \EndFor
-      \State return pos
+      \State \textbf{return} pos
   \end{algorithmic}
 \end{algorithm}
 
