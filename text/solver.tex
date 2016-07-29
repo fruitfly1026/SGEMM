@@ -5,12 +5,12 @@
 An instruction is composed of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. An operand can be register, 
 constant memory, global memory, shared memory, immediate, or predicate register.
 The encoding of operand can be inferred by its name. For instance, the register operand {\tt R5} might be
-inferred as $101$ in binary format, immediate $0x9$ is $1001$. Besides, the fixed lengths of these fields allow us to de
-termine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore
-, they can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different en
-codings for different instructions. For instance, masks of type-size
-modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately
-. 
+inferred as $101$ in binary format, immediate $0x9$ is $1001$. Besides, the fixed lengths of these fields allow us to 
+determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, 
+therefore, they can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be 
+different encodings for different instructions. For instance, masks of type-size
+modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction 
+separately. 
 
 
 \begin{algorithm}
@@ -53,22 +53,22 @@ Algorithm~\ref{algo:int_solver} shows pseudocode for immediate typed operand dec
 The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
 position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
 First, we randomly pick up an instruction that has the field we want to probe, and represent the field in binary by its 
-name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we inter
-sect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, we set 
-the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
+name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we 
+intersect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, 
+we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
 Other operand type such as register operand can be use similar routine by matching the corresponding operand binary.
 
 Once operand position is found, we need to probe or verify the length of operand encoding. Some are easy to be
-deduced, for example, each thread can use at most $256=2^{8}$ registers, we could predict the length of register operand
- mask to be $8$.
+deduced, for example, each thread can use at most $256=2^{8}$ registers, we could predict the length of register 
+operand mask to be $8$.
 However, other operand types like immediate $0x48$ or subscript of constant memory $C[0x2][0x05]$, are more complicated 
-to predicate. Our solution is to set the bit from the position bit by bit to check whether the operand value is grown as
- we expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position of
- {\tt IADD RX, RY, 0ximm} (the RX and RY are arbitrary register operands, 0ximm is immediate operand) is at bit $23$ as 
-shown in Figure~\ref{fig:imm}. As specified in~\cite{cuda2015programming}, NVIDIA GPU uses little-endian representation,
- then we set the bits higher than the $23$ to $1$ bit by bit, and observe the the disassembled code. Immediate value inc
-reases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$ is for integer immediate. No {\tt fffff
-} immediate was got even if we set bit $42$ to be $1$.  
+to predicate. Our solution is to set the bit from the position bit by bit to check whether the operand value is grown 
+as we expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position 
+of {\tt IADD RX, RY, 0ximm} (the RX and RY are arbitrary register operands, 0ximm is immediate operand) is at bit $23$ 
+as shown in Figure~\ref{fig:imm}. As specified in~\cite{cuda2015programming}, NVIDIA GPU uses little-endian 
+representation, then we set the bits higher than the $23$ to $1$ bit by bit, and observe the the disassembled code. 
+Immediate value increases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$ is for integer 
+immediate. No {\tt fffff} immediate was got even if we set bit $42$ to be $1$.  
 
 \begin{figure}[htbp]
 \begin{center}
@@ -79,18 +79,18 @@ reases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$
 \end{figure}
 
 \subsubsection{Opcode}
-Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand encod
-ing is to write intermediate codes
+Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand 
+encoding is to write intermediate codes
 based on NVIDIA PTX syntax, and generate encoding by using NVDIA toolchain.
-Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand ma
-sk. However, the uncompleteness of NVIDIA document hinders us to find out all the opcodes and instruction modifiers. Ano
-ther feasible way is to emulate all of possible binary combinations after striping out operand mask.
+Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand 
+mask. However, the uncompleteness of NVIDIA document hinders us to find out all the opcodes and instruction modifiers. 
+Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
 In general, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left 
 to probe.
-In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By rando
-mly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode and other bits represent
- flags. Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find the minimal
- opcode without any flags. 
+In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By 
+randomly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode and other bits 
+represent flags. Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find 
+the minimal opcode without any flags. 
 
 
 \begin{algorithm}
@@ -122,10 +122,10 @@ mly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits r
 \subsubsection{Modifier: Instruction Specific}
 
 Modifier(also called flags) defines a specific behavior for an instruction. For example,
-{\tt LD} instruction has type-size modifiers, such as {\tt .u8}, {\tt .s8}, {\tt .u16}, {\tt .32}, {\tt .64} and {\tt .1
-28}. {\tt LD} also has cache operation modifier, such as {\tt .ca}(cache at all level) and {\tt .cg}(cache at global lev
-el). Modifiers are much more complicated because its position spans accross the reminding bits and one instruction may h
-ave more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. In order
- to reduce search space, we observe that the default value for modifier is $0$. That is, modifier works when at least on
-e bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to observe whet
-her flags will change.
+{\tt LD} instruction has type-size modifiers, such as {\tt .u8}, {\tt .s8}, {\tt .u16}, {\tt .32}, {\tt .64} and {\tt 
+.128}. {\tt LD} also has cache operation modifier, such as {\tt .ca}(cache at all level) and {\tt .cg}(cache at global 
+level). Modifiers are much more complicated because its position spans accross the reminding bits and one instruction 
+may have more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. In 
+order to reduce search space, we observe that the default value for modifier is $0$. That is, modifier works when at 
+least one bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to 
+observe whether flags will change.
