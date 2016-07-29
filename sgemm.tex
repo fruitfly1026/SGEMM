@@ -66,7 +66,14 @@
 \maketitle
 
 \begin{abstract}
-	In this paper, we present thorough experience on tuning single precision general matrix multiplication (SGEMM) in assembly level on NVIDIA GPUs. First, we propose a methodology to demystify GPU's microarchitecture level optimizations. An instruction solver is developed to retrieve the undocumented ISA specification, which enables us to build an assembler that generates CUDA binary compatible files. We further design a rigorous microbenchmark to identify four microarchitectural features of control function, register allocation, arithmetic throughput, and memory operation. Second, we tune SGEMM by applying the correlated microarchitectural optimizations including maximizing FFMA throughput (core), eliminating register bank conflict (register), and selecting data path to shared/global memory (memory). The optimized SGEMM achieves the maximal floating-point efficiency of 88\%, which is 17\% higher than CUBLAS's 71\% on a NVIDIA Kepler GPU.
+	In this paper, we present thorough experience on tuning single precision general matrix multiplication (SGEMM) i
+n assembly level on NVIDIA GPUs. First, we propose a methodology to demystify GPU's microarchitecture level optimization
+s. An instruction solver is developed to retrieve the undocumented ISA specification, which enables us to build an assem
+bler that generates CUDA binary compatible files. We further design a rigorous microbenchmark to identify four microarch
+itectural features of control function, register allocation, arithmetic throughput, and memory operation. Second, we tun
+e SGEMM by applying the correlated microarchitectural optimizations including maximizing FFMA throughput (core), elimina
+ting register bank conflict (register), and selecting data path to shared/global memory (memory). The optimized SGEMM ac
+hieves the maximal floating-point efficiency of 88\%, which is 17\% higher than CUBLAS's 71\% on a NVIDIA Kepler GPU.
 \end{abstract}
 
 %\category{CR-number}{subcategory}{third-level}
