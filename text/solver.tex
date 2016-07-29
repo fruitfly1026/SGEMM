@@ -1,4 +1,7 @@
 \subsection{Instruction Solver}
+
+\jled{How sample programs used in here? No mention.}
+
 An instruction is composed of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. An operand can be register, constant memory, global memory, shared memory, immediate, or predicate register.
 The encoding of operand can be inferred by its name. For instance, the register operand {\tt R5} might be
 inferred as $101$ in binary format, immediate $0x9$ is $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. Encodings of opcode and modifier are mnemonic symbols, therefore, they can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different encodings for different instructions. For instance, masks of type-size
