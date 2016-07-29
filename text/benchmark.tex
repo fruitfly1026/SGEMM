@@ -74,7 +74,7 @@ Figure~\ref{fig:control_code}(\subref{fig:control_throughput}) and
 Figure~\ref{fig:control_code}(\subref{fig:control_latency}) show {\tt FFMA}'s throughput and latency  when its $8$ control bits varies from $0$ to $255$. 
 % Thus, most throughputs achieve the maximum when the control code's value is smaller than {\tt 0x20} because of no set suspension.
 % Obvious periodicity is shown with size $16$ after the control code's value reaches {\tt 0x20}.
-After {\tt 0x20}, both the throughput and latency show obvious periodicity.
+After 0x20, both the throughput and latency show obvious periodicity.
 For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. \jled{the period size is different! why?}
 This phenomenon implies that the $4$ lower bits stores the number of stall cycles before issuing 
 an instruction. 
@@ -82,10 +82,10 @@ Our microbenchmarking reveals some specific patterns of control codes:
 % Furthermore, the microbenchmarking reveals some specific patterns of control codes:
 
 \begin{itemize}
-\item When the control bits are set to be {\tt 0x00}, the scheduler suspends a warp of the instructions for $16$ cycles.
-\item {\tt 0x2n} means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
-\item {\tt 0x00} means single issue mode, while {\tt 0x04} means dual-issue mode. 
-While two consecutive instructions are controlled by {\tt 0x04} and {\tt 0x05} respectively, the throughput could reach the maximum. \jled{relation with Figure?}
+\item When the control bits are set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
+\item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
+\item 0x00 means single issue mode, while 0x04 means dual-issue mode. 
+While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum. \jled{relation with Figure?}
 \end{itemize}
 
 
@@ -227,11 +227,10 @@ instructions have longer pipeline latency.
 Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
 
 
-\jled{operations refer to instructions here?}
 Intuitively, a wider load operation should achieve higher bandwidth. 
-We test the bandwidth of shared memory operations with different widths, {\tt LDS.32}, {\tt LDS.64},
+We test the bandwidth of shared memory instructions with different widths, {\tt LDS.32}, {\tt LDS.64},
 and {\tt LDS.128}. 
-The operations are specially arranged to avoid shared memory bank conflict. 
+The instructions are specially arranged to avoid shared memory bank conflict. 
 % In this experiment, the amount of data are projected to the number of load instructions. 
 Assume the data can be loaded by $N$ {\tt LDS.128} instructions, 
 then $2N$ {\tt LDS.64} or $4N$ {\tt LDS.32} instructions are needed.

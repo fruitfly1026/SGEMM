@@ -17,15 +17,16 @@ latencies.
 \subsection{Instruction Scheduling}
 \subsubsection{Schedule {\tt FFMA} Instructions}
 It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all 
-the time. Because on Kepler architecture, each warp is assigned a $32$ core privately, $4$ warp schedulers will consume 
-$128$ cores. The reminding $192-128=64$ cores are divided into $2$ groups, each group has $32$ cores, these $32$ cores 
+the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, $4$ warp schedulers will consume 
+$128$ cores. The reminding $192-128=64$ cores are divided into $2$ 32-core groups, each $32$ cores 
 are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid 
 resource conflict.
 As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of $1$ single issue(1 
 {\tt FFMA}), 2 dual issues (4 {\tt FFMA}s) and 1 single issues ((1 {\tt FFMA})). As shown in 
-Figure~\ref{fig:assemblycode}, the instructions in lines 4-5 and lines 7-8 are respectively grouped as two dual-issues. 
+Figure~\ref{fig:assemblycode}, the instructions in lines 4-5 \jled{nothing in line 5. Check the line numbers.} and lines 7-8 are dual issued separately. 
 The other two instructions in line 8 and line 11 are two single issues in terms of floating-point instruction 
-execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUDA compiler generated codes.
+execution. 
+As a comparison, most of the {\tt FFMA}s are single issued in the CUDA compiler generated codes.
 
 \begin{figure*}[htbp]
 \begin{center}
@@ -37,30 +38,29 @@ execution. As a comparison, most of the {\tt FFMA}s are single-issues in the CUD
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.55]{order}
-\caption{{\tt FFMA}s instructions scheduling for calculating a $12\times 12$ subblock of matrix C.  The numbers in 
-cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are 
-executed at same clock cycle.}
+\includegraphics[scale=0.5]{order}
+\caption{{\tt FFMA}s instruction scheduling to compute a $12\times 12$ sub-block of matrix C.  The numbers in 
+cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are dual issued in one clock cycle.}
 \label{fig:order}
 \end{center}
 \end{figure}
 
-Based on the basic {\tt FFMA} instruction block, the scheduling pattern is depicted in Figure~\ref{fig:order}, which
-illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C.
-For example, the {\tt FFMA} to calculate $c_{00}$ is the first instruction to be issued. Then, both {\tt FFMA}s to
-calculate $c_{10}$ and  $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} operations according to issue
-order illustrated in Figure~\ref{fig:order}.
+By extending the basic {\tt FFMA} $7$-instruction block (section~\ref{sec:benchmark}), we depict the scheduling pattern of computing a $12\times 12$ sub-block of matrix C in Figure~\ref{fig:order}.
+% illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C.
+For example, the {\tt FFMA} to calculate $c_{00}$ is issued first. 
+Then, two {\tt FFMA}s to
+compute $c_{10}$ and $c_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} instructions of SGEMM according to the order in Figure~\ref{fig:order}.
 
-Another advantage of this execution order is less register pressure due to register data reuse, which can facilitate
-operand collector mechanism~\cite{collector}. Operand collector is storage element coupled from register file and
-provides inputs to the data path of the processor core for executing an instruction. Operands may be cached and reused
+Another advantage of this execution order is less register pressure due to register reuse, which can facilitate
+operand collector mechanism~\cite{collector}. Operand collector is a storage element coupled with register file and
+provides inputs to the data path of the processor core for executing an instruction. \jled{This is not the first occurrence of Operand collector.} Operands may be cached and reused
 in the subsequent instructions. 
 The assembly code in Figure~\ref{fig:assemblycode} lists the instructions to calculate $C_{32},C_{22}, C_{21}, C_{30}, 
-C_{31}, C_{20}$, where are corresponding to the orders of $6,7,8,9,10,11$ in Figure~\ref{fig:reg}. 
+C_{31}, C_{20}$, corresponding to the orders of $6,7,8,9,10,11$ in Figure~\ref{fig:reg}. 
 With the elaborately designed computing order and register allocation, the reuse happens as follows. The {\tt FFMA} in 
 Line $3$ uses cached operand {\tt R150} of line $2$, Line $3$ and Line $4$ share {\tt R146}. Thus, in dual issue mode 
 {\tt FFMA} of Line $3$ and $4$ need to read 4 registers {\tt R146}, {\tt R27}, {\tt R149}, {\tt R6} instead of $6$ 
-registers. The corresponding bank of these registers are $0,1,3,2$, so no bank conflicts happen.
+registers. The corresponding bank of these registers are $0,1,3,2$ based on Table~\ref{tab:reg}, so no bank conflicts happen.
 Similarly, Line 7 uses the cached operand {\tt R149} from the Line 4. In dual issue mode, two {\tt FFMAs} of Line 6 and 
 Line 7 need to read $4$ registers {\tt R148}, {\tt R147}, {\tt R7} and {\tt R2}.
 
@@ -131,53 +131,47 @@ records slot numbers and the first row represents iteration number.}
 \subsubsection{Schedule {\tt non-FFMA} Instructions}
 
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to 
-assure
-correctness of the program without losing performance. In order to tolerate instruction latency, we need to keep 
-distance of dependent instructions to be larger than the latency. The distance can be approximately computed as
-\begin{displaymath}
-distance = \frac{4\times\#instructions}{7}
-\end{displaymath}
-In a schedule block, there are $7$ instructions which cost $4$ clocks to be issued in dual issue mode. In other word, 
-if we want to have interleave
-two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. Besides, the remained number of slots 
-to insert these instructions is estimated as follows:
+assure the correct program without losing performance. In order to tolerate instruction latency, the
+distance of dependent instructions needs to be larger than their latency. The distance is approximated as
+\begin{equation}
+\label{eq:inst}
+distance = \frac{4\times\#instructions}{7}.
+\end{equation}
+A $7$-instruction scheduling block costs $4$ clock cycles to be issued in dual issue mode. 
+Therefore, if we assume two interleave instructions have a distance $L$, at least $\frac{L*7}{4}$ instructions are needed. 
+% two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. 
+Besides, the remained number of slots 
+to insert these instructions is estimated as
 
 \begin{displaymath}
-\#slots = \frac{rx\times ry\times bk}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
+\#slots = \frac{rx\times ry\times bk}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
-In this formula, $rx\times ry\times bk$ yields total number of {\tt FFMA} for one threads inside register blocking 
-loop in which $rx$, $ry$ is register blocking size, and $bk$ is the unrolling factor.
-$ffmas\_in\_schedule\_block$ is {\tt FFMA} instructions inside one schedule block. As stated in section~\ref{sec:benchmark}, the 
-number is $6$ by our $1-2-2-1$ dual issue pattern.
-According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The
-schedule slots are illustrated in two dimension as shown in Table~\ref{tab:position}.
-Note that we use double buffers to hide latency of {\tt LDG} from global memory, which costs $200$ clock cycles.
-Every $4$ loop requires $2$ {\tt LDG}s to load data from global memory to registers, $4$ {\tt STS}s to store data from 
-registers to shared memory. There is a read after write (RAW) dependency between {\tt
-LDG} and {\tt STS}. The simple model estimates that $\frac{200\times 7}{4} = 350$ are needed instructions between them.
-As shown in Table~\ref{tab:position}, we put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and position $P[65][2]$, 
-respectively. Thus, the number of instructions between them are $143-77 + 144\times 2 +
-65=419$, resulting in a distance of $\frac{4\times 419}{7}=239$ clocks, which is enough to hide latency of {\tt LDG}s.
+$rx\times ry\times bk$ yields the total number of {\tt FFMA}s for one thread inside register blocking loop in Algorithm~\ref{gemm}, where $rx$ and $ry$ are register blocking size and $bk$ is the unrolling factor.
+$ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is $6$ by our $1-2-2-1$ dual issue pattern in section~\ref{sec:benchmark}.
+According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} because of their long latencies. The
+schedule slots are illustrated in two dimension in Table~\ref{tab:position}.
+Note that we use double buffers to hide the latency of {\tt LDG} from global memory, which is $200$ clock cycles.
+Every $4$ loops require $2$ {\tt LDG}s to load data from global memory to registers, $4$ {\tt STS}s to store data from 
+registers to shared memory. A read after write (RAW) dependency exists between {\tt
+LDG} and {\tt STS}. 
+From equation~\ref{eq:inst}, $\frac{200\times 7}{4} = 350$ instructions are needed between them.
+We put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and $P[65][2]$ respectively in Table~\ref{tab:position}. 
+Thus, $143-77 + 144\times 2 + 65=419$ ($>350$) instructions are between them, which is enough to hide latency of {\tt LDG}s.
+% resulting in a distance of $\frac{4\times 419}{7}=239$ clocks,.
 
-The arrangement of {\tt LDS}s, which load data from shared memory for double buffers of both $A$ and $B$, follows the 
-same way with {\tt LDG}s.
-A {\tt LDS} has a latency of $40$ clock cycles, $\frac{40\times 7}{4}=70$ instructions are needed to interleave {\tt 
-LDS} and {\tt
-FFMA}. As shown in Table~\ref{tab:position}, {\tt LDS} in $P[11][3]$ read data from {\tt STS} in position $P[65][2]$, 
-the distance is more than $40$ clock
-cycles. In the end, a {\tt BAR.SYNC} should be inserted after {\tt STS} before {\tt LDS} to make sure that data in 
-shared memory is ready. Other instructions like {\tt XOR},
-{\tt IADD}, {\tt ISETP} are inserted according to data dependency, there is almost no performance loss due to little 
-latency.
+The arrangement of {\tt LDS}s, loading data from shared memory for double buffers of $A$ and $B$, follows the same approach with {\tt LDG}s.
+A {\tt LDS} has a latency of $40$ clock cycles, thus $\frac{40\times 7}{4}=70$ instructions are needed to interleave {\tt LDS} and {\tt FFMA}. 
+In Table~\ref{tab:position}, {\tt LDS} in $P[11][3]$ reads data from {\tt STS} in $P[65][2]$, 
+the distance between them is more than $40$ clock cycles. 
+At the end, a {\tt BAR.SYNC} is inserted after {\tt STS} but before {\tt LDS} to make sure that data in shared memory is ready. 
+Other instructions such as {\tt XOR}, {\tt IADD}, {\tt ISETP} are inserted according to data dependency, they doesn't influence the performance because of their short latencies.
 
 
 \subsection{Register Allocation}
 
-To allocate register for $A$ column, $B$ row and $C$ submatrix \jled{explain why?}, we have three considerations: 
-correctness, no bank
-conflict and allocate register index tightly.
-{\tt LDG.128} restricts $4$ words alignment restriction for register.
-Nvidia GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, 
+To allocate registers for $A$ column, $B$ row and $C$ sub-matrix as Algorithm~\ref{gemm}, we have three objectives: correctness, no bank conflict and tight register indices.
+{\tt LDG.128} restricts $4$ words alignment for registers.
+NVIDIA GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, 
 result will be writen to
 four $32$ bits registers:{\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}. There is an undocumented restriction: $N\%4==0$, 
 otherwise illegal instruction error will be reported.
