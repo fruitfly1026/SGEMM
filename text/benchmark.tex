@@ -1,23 +1,26 @@
-\subsection{Correlating Microarchitecture with Performance}
+\subsection{Correlating Microarchitecture with Performance\jled{change to ``Benchmarking''?}}
 \label{sec:benchmark}
 
-\jled{Introduce a little microbenchmark}
-To explore the Kepler architecture, we create microbenchmarks to expose each characteristic we wish to measure.
-Our conclusions were drawn from analyzing the execution times of the microbenchmarks.
-The general structure of a microbenchmark consists of GPU
-kernel code containing timing code around a code section (typically an unrolled loop running multiple times) that exercises
-the hardware being measured. 
-A benchmark kernel runs through
-the entire code twice, disregarding the first iteration to avoid the
-effects of cold instruction cache misses. In all cases, the kernel
-code size is small enough to fit into the L1 instruction cache
-Timing measurements are done by reading the clock register (using clock()). The clock values are
-first stored in registers, then written to global memory at the
-end of the kernel to avoid slow global memory accesses from
-interfering with the timing measurements.
+
+To explore NVIDIA Kepler architecture, we a create microbenchmark tailored for each considered characteristic.
+% Our following observations are drawn from analyzing the execution time of the microbenchmarks.
+Each program from the microbenchmark is basically a main function of CUDA kernel code with timing around.
+Timing ticks are recorded in a general register by reading the clock register (using clock()) and then time is calculated and written to global memory.
+% The clock values are
+% first stored in registers, then written to global memory at the
+% end of the kernel to avoid slow global memory accesses from
+% interfering with the timing measurements.
+For timing accuracy, the same CUDA kernel code is duplicated for several times and the average time is used for analysis.
+% The general structure of a microbenchmark consists of GPU
+% kernel code containing timing code around a code section (typically an unrolled loop running multiple times) that exercises
+% the hardware being measured. 
+We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses. 
+We make sure that all CUDA kernel codes are small enough to fit into the L1 instruction cache.
 The throughput is the maximum number of instructions of the same kind that can being executed per clock
 cycle when the operands of each instruction are independent of the preceding instructions.
 We use similar test method as~\cite{fog}.
+
+By comparing the execution time of each inside program, we get the following observations.
 
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we 
 correlate microarchitecture with performance variants that guide optimizations in real applications. The correlation is 
