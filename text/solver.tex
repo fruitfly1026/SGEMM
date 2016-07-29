@@ -5,14 +5,16 @@
 An instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. An operand could be register, 
 constant memory, global memory, shared memory, immediate values, or predicate register represented by different names.
 Thus, the encoding of operand can be inferred by its name. For instance, the register operand {\tt R5} is
-inferred as $101$ in binary format, while immediate value $0x9$ is $1001$. Besides, the fixed lengths of these fields allow us to determine their positions and lengths and hence encoding. 
-Encodings of opcode and modifier are mnemonic symbols, therefore
-, they can not be speculated by names. Modifiers are instruction specific, the same kind of modifier can be different en
-codings for different instructions. For instance, masks of type-size
-modifier for {\tt LD} and {\tt LDG} are at different positions. So we deal with modifier for each instruction separately
-. 
+inferred as $101$ in binary format, while immediate value {\tt 0x9} is $1001$. 
+Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
+The encodings of opcodes and modifiers are mnemonic symbols, therefore
+, they can not be speculated by names. 
+\jled{We design a greedy algorithm on a pruned search space to determine the position of opcode.}
+Modifiers are instruction-sensitive, that is modifiers in the same type may be different encodings for different instructions. 
+For instance, masks of type-size
+modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we process each instruction's modifier separately. 
 
-
+% TODO by jli
 
 \begin{algorithm}
       \caption{Immediate Solver}

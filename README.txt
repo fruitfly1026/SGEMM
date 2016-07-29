@@ -19,3 +19,4 @@ Suggesting Modifications:
 * change "e.g." to "such as"
 * Add full name for the first mention
 * Change "matrix width" to "matrix size" in experiment figures.
+* Unify cuBLAS, not CUBLAS
