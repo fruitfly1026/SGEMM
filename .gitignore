@@ -5,3 +5,5 @@
 *.ps
 *.graffle
 *.pdf
+Output/
+sgemm.synctex.gz

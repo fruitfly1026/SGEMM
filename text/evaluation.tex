@@ -132,6 +132,9 @@ Register bank conflict eliminating improves around $10\%$. Wider load instructio
 load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$.
 
 \subsubsection{Upper Bound Analysis}
+
+\jled{Add a Roofline figure?}
+
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, shared
 memory, global memory and computation power. In register blocking loop, each thread compute $bm*bn*bk$, read $bm*bk$
 and $bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
