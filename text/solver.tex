@@ -20,38 +20,77 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
       \caption{Immediate Solver}
       \label{algo:int_solver}
   \begin{algorithmic}[1]
-      \LineComment {input is pairs of full instruction and 64-bit encoding}
-      \LineComment {output is the postion of immediate}
-	  \State \textbf{input:} instMap
-      \State \textbf{output:} pos
-      \State $currPos$ $\gets$ \{\}
-      \LineComment initialize with all the possibles postions
-      \State $prePos$ $\gets$ \{0,1,2,...63\}
-	  \LineComment {check if position is unique}
-      \While {length($prePos$) $\neq$ 1}
-	  \LineComment {fetch a instruction with this field}
-      \State $inst$ $\gets$ $instMap[random()]$
-      \LineComment get the instruction's 64-bit binary encoding
-      \State $instEnc$ $\gets$ inst->enc64
-	  \LineComment {express immediate in completement code}
-      \State $immBin$ $\gets$ completement($imm$)
-      \State $pos$ $\gets$ 0
-      \State $immLen$ $\gets$ length($immBin$)
-      \LineComment {match immBin in 64 bit encoding}
-      \While {$pos$+ $immLen$ < $64$}
-      \If {strcmp($immBin,instEnc+pos$)}
-      \LineComment {find all the possible positions}
-      \State pushback(currPos, pos)
+      % \LineComment {input is pairs of full instruction and 64-bit encoding}
+      % \LineComment {output is the position of immediate}
+	  \State \textbf{Input:} instMap (A map of immediate instructions and their 64-bit encodings)
+      \State \textbf{Output:} immediate operand's position
+      \State $cPos$ $\gets$ \{\} \Comment record current positions
+      \State $pPos$ $\gets$ \{0,1,2,...63\} \Comment all potential positions
+	  % \LineComment {check if position is unique}
+      \While {length($pPos$) $>$ 1}
+      % \While {$pPos$ $\neq$ NULL}
+      \Comment fetch a random immediate instruction
+      \State $inst$ $\gets$ $instMap[random()]$ 
+      \State $instEnc$ $\gets$ $inst.enc64$ \Comment 64-bit binary encoding
+      \State $imm$ $\gets$ $inst.imm$ \Comment immediate value
+	  \LineComment {express immediate in its completement code}
+      \State $immB$ $\gets$ completement($imm$)
+      \State $p$ $\gets$ 0
+      % \State $immLen$ $\gets$ length($immBin$)
+      % \LineComment {match immBin in 64-bit encoding}
+      \LineComment {find all the matching positions}
+      \While {$p$+ length($immB$) < $64$}
+      \If {strcmp($immB,instEnc+pos$)}
+      \State pushback(cPos, p); $p$ $\gets$ $p+1$;
       \EndIf
       \EndWhile
-      \LineComment {common position between curPos and prePos}
-      \State $currPos$ $\gets$ $curPos$ $\cap$ $prePos$
-      \State $prePos$ $\gets$ $currPos$
-      \State $currPos$ $\gets$ \{\}
+      \LineComment {common positions of cPos and pPos}
+      \State $cPos$ $\gets$ $cPos$ $\cap$ $pPos$
+      \State $pPos$ $\gets$ $cPos$
+      \State $cPos$ $\gets$ \{\}
       \EndWhile
-      \State \textbf{return} $prePos[0]$
+      \State \textbf{return} $pPos[0]$
   \end{algorithmic}
 \end{algorithm}
+
+
+% \begin{algorithm}
+%       \caption{Immediate Solver}
+%       \label{algo:int_solver}
+%   \begin{algorithmic}[1]
+%       \LineComment {input is pairs of full instruction and 64-bit encoding}
+%       \LineComment {output is the postion of immediate}
+%     \State \textbf{input:} instMap
+%       \State \textbf{output:} pos
+%       \State $currPos$ $\gets$ \{\}
+%       \LineComment initialize with all the possibles postions
+%       \State $prePos$ $\gets$ \{0,1,2,...63\}
+%     \LineComment {check if position is unique}
+%       \While {length($prePos$) $\neq$ 1}
+%     \LineComment {fetch a instruction with this field}
+%       \State $inst$ $\gets$ $instMap[random()]$
+%       \LineComment get the instruction's 64-bit binary encoding
+%       \State $instEnc$ $\gets$ inst->enc64
+%     \LineComment {express immediate in completement code}
+%       \State $immBin$ $\gets$ completement($imm$)
+%       \State $pos$ $\gets$ 0
+%       \State $immLen$ $\gets$ length($immBin$)
+%       \LineComment {match immBin in 64 bit encoding}
+%       \While {$pos$+ $immLen$ < $64$}
+%       \If {strcmp($immBin,instEnc+pos$)}
+%       \LineComment {find all the possible positions}
+%       \State pushback(currPos, pos)
+%       \EndIf
+%       \EndWhile
+%       \LineComment {common position between curPos and prePos}
+%       \State $currPos$ $\gets$ $curPos$ $\cap$ $prePos$
+%       \State $prePos$ $\gets$ $currPos$
+%       \State $currPos$ $\gets$ \{\}
+%       \EndWhile
+%       \State \textbf{return} $prePos[0]$
+%   \end{algorithmic}
+% \end{algorithm}
+
 
 \subsubsection{Operand: Fixed Length Field}
 Algorithm~\ref{algo:int_solver} shows pseudocode for immediate typed operand decoding process. 
