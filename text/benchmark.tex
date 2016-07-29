@@ -2,6 +2,22 @@
 \label{sec:benchmark}
 
 \jled{Introduce a little microbenchmark}
+To explore the Kepler architecture, we create microbenchmarks to expose each characteristic we wish to measure.
+Our conclusions were drawn from analyzing the execution times of the microbenchmarks.
+The general structure of a microbenchmark consists of GPU
+kernel code containing timing code around a code section (typically an unrolled loop running multiple times) that exercises
+the hardware being measured. 
+A benchmark kernel runs through
+the entire code twice, disregarding the first iteration to avoid the
+effects of cold instruction cache misses. In all cases, the kernel
+code size is small enough to fit into the L1 instruction cache
+Timing measurements are done by reading the clock register (using clock()). The clock values are
+first stored in registers, then written to global memory at the
+end of the kernel to avoid slow global memory accesses from
+interfering with the timing measurements.
+The throughput is the maximum number of instructions of the same kind that can being executed per clock
+cycle when the operands of each instruction are independent of the preceding instructions.
+We use similar test method as~\cite{fog}.
 
 With the assembler we tune the assembly codes of microbenchmark. According to the performance tuning results, we 
 correlate microarchitecture with performance variants that guide optimizations in real applications. The correlation is 
