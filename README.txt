@@ -2,6 +2,7 @@ Comments:
 
 * Title: what about "Demystify GPU Microarchitecture to Tune SGEMM Performance" ?
 * Is it possible to add a roofline figure in section 5.2.3 "Upper Bound Analysis". That would be great!
+* Algorithm 2: What about using "register solver" instead? Since register optimization is thoroughly studied in this work. Besides, immediate solver mislead people to think it is simpler.
 * Could we call "sample programs" as "nanobenchmarks"?
 * More explanation of the listed small observations in sec 3.3.
 * Add more references
