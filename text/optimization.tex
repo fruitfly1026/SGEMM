@@ -142,12 +142,11 @@ two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed. 
 to insert these instructions is estimated as follows:
 
 \begin{displaymath}
-\#slots = \frac{rx\times ry\times unroll}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
+\#slots = \frac{rx\times ry\times bk}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4
 \end{displaymath}
-In this formula, $rx\times ry\times unroll$ yields total number of {\tt FFMA} for one threads inside register blocking 
-loop.
-\jled{the meaning of rx, ry, unroll, and ffmas\_in\_schedule\_block.}
-and denominator is {\tt FFMA} instructions inside one schedule block. As stated in section~\ref{sec:benchmark}, the 
+In this formula, $rx\times ry\times bk$ yields total number of {\tt FFMA} for one threads inside register blocking 
+loop in which $rx$, $ry$ is register blocking size, and $bk$ is the unrolling factor.
+$ffmas\_in\_schedule\_block$ is {\tt FFMA} instructions inside one schedule block. As stated in section~\ref{sec:benchmark}, the 
 number is $6$ by our $1-2-2-1$ dual issue pattern.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} due to their long latencies. The
 schedule slots are illustrated in two dimension as shown in Table~\ref{tab:position}.
