@@ -6,7 +6,6 @@ Comments:
 * More explanation of the listed small observations in sec 3.3.
 * Add more references
 * Tell the difference between the similar opcodes, e.g. LDG and LDS.64. Maybe list all mentioned opcodes' meanings in a table.
-* Why always use 7 instructions as examples?
 * 
 
 Notice:
