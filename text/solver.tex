@@ -29,7 +29,7 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
 	  % \LineComment {check if position is unique}
       \While {length($pPos$) $>$ 1}
       % \While {$pPos$ $\neq$ NULL}
-      \Comment fetch a random immediate instruction
+      \LineComment fetch a random immediate instruction
       \State $inst$ $\gets$ $instMap[random()]$ 
       \State $instEnc$ $\gets$ $inst.enc64$ \Comment 64-bit binary encoding
       \State $imm$ $\gets$ $inst.imm$ \Comment immediate value
@@ -39,7 +39,7 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we pro
       % \State $immLen$ $\gets$ length($immBin$)
       % \LineComment {match immBin in 64-bit encoding}
       \LineComment {find all the matching positions}
-      \While {$p$+ length($immB$) < $64$}
+      \While {$p+$ length($immB$) < $64$}
       \If {strcmp($immB,instEnc+pos$)}
       \State pushback(cPos, p); $p$ $\gets$ $p+1$;
       \EndIf
