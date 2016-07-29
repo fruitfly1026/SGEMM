@@ -101,8 +101,9 @@ the minimal opcode without any flags.
 \begin{algorithm}
       \caption{Opcode Solver}\label{algo:opcode}
   \begin{algorithmic}[1]
+      \LineComment {return bit positions that represent opcode}
       \State \textbf {input:} instMap
-      \State \textbf {onput:} pos
+      \State \textbf {onput:} opBits
       \For {$i \gets 0, N$}
 	  \LineComment {fetch a instruction from generated database}
       \State $enc \gets instMap[i]$ 
@@ -115,12 +116,12 @@ the minimal opcode without any flags.
       \State newInst=nvdisasm(newCode)
 	  \LineComment {if opcode is changed, bit j represents opcode}
       \If {$newInst.op\neq oldInst.op$}
-      \State pushback($pos$,$j$)
+      \State pushback($opBits$,$j$)
       \EndIf
       \EndIf
       \EndFor
       \EndFor
-      \State \textbf{return} pos
+      \State \textbf{return} opBits
   \end{algorithmic}
 \end{algorithm}
 
