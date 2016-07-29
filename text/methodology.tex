@@ -3,19 +3,24 @@
 \jled{Please check the correctness after editing. This section is still not good enough.}
 
 We propose a methodology to demystify GPU microarchitecture features and correlate them with performance.
-The workflow consists of three major components: CUDA binary tools, a instruction solver, and meticulously benchmarking\jled{(because it is a benchmarking process not just build and use a benchmark)}, and two program sets: sample programs and microbenchmark.
+The workflow consists of three major components: an instruction decoding solver, a GPU assembler, and meticulously
+benchmarking %\jled{(because it is a benchmarking process not just build and use a benchmark)}. 
+and two program sets: sample programs and microbenchmark.
 % a deliberate microbenchmark
-Each sample program is a synthetic PTX file which generates specific instructions as our reference in the instruction solver. \jled{xiuxia, check correctness}
+Each sample program is a synthetic PTX file which generates specific instructions as our input in the instruction
+solver.%\jled{xiuxia, check correctness}
 Deliberate microbenchmark is designed for the assembler to tune code at assembly language level, to find the correlation between microarchitecture and performance.
-We dissemble a binary library (such as cuBLAS) to provide a high coverage of instructions to instruction solver.
-We use cuBLAS in this work since it contains nearly all needed instructions for SGEMM routine.
+%We dissemble a binary library (such as cuBLAS) to provide a high coverage of instructions to instruction solver.
+%We use cuBLAS in this work since it contains nearly all needed instructions for SGEMM routine.
 
-We first leverage CUDA binary tools ({\tt cuobjdump} and {\tt nvdiasm}) to disassemble ASM codes from sample programs and the library.
+We first leverage CUDA binary tools ({\tt cuobjdump} and {\tt nvdiasm}) to disassemble ASM codes from sample programs. % and the library.
 % A library might provide a high coverage of instruction sets.
-As introduced in section~\ref{sec:cuda}, these generated assembly files ({\em sass}) provide a instruction encoded number to be cracked.
-Our instruction solver takes the assembly files as the input to decode each $64$-bit binary instruction.
+As introduced in section~\ref{sec:cuda}, these generated assembly files ({\em sass}) provide instruction encoding to be cracked.
+Our instruction solver takes the assembly files as the input to decode each field of 64-bit instructions.
 We design a set of algorithms to solve all fields of a binary instruction, which includes different types of {\em operands}, {\em opcodes} and {\em modifiers}.
-The solver retrieves \jled{uncovers} some undocumented ISA specifications, which is used to implement an naive assembler.
+The solver uncovers some undocumented ISA specifications, which is used to implement an naive assembler.
+Our assembler combines the translated 64 bit binaries with ELF header, and then generate a cubin, which is able to be called by cuda
+driver.
 In the benchmarking workflow, the deliberate microbenchmark is tuned at assembly language level using the assembler.
 Some GPU microarchitecture features are explored during this tuning process, which will guide the optimization of real programs.
 % In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.
