@@ -17,7 +17,7 @@ It's well-known that the primary factors of SGEMM performance are the blocking p
 Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on the result matrix $C$. Each thread block with $tx*ty$ threads is responsible to compute a $bm*bn$ submatrix in $C$, where $bm, bn$ are the number of rows and columns of the submatrix, respectively. We need read a $bm*bk$ from A and a $bk*bn$ sub-matrix from B for each thread block, where $bk$ is unroll factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and $M*N$ grids of $bm*bk$, $bk*bn$ and $bm*bn$ blocks, where $M=\Bigl\lfloor \frac{m+bm-1}{bm} \Bigr\rfloor$, $K=\Bigl\lfloor \frac{k+bk-1}{bk} \Bigr\rfloor$, $N=\Bigl\lfloor \frac{n+bn-1}{bn} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{SGEMM blocking algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em accum} are register variables.}\label{gemm}
+  \caption{SGEMM blocking algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em accum} are register variables. $rx$ and $ry$ are register blocking sizes}\label{gemm}
   \begin{algorithmic}[1]
 	\LeftComment {The size of a thread block: $tx*ty$}
 	\LeftComment {Registers: accum[$rx*ry$], rA[$2*rx$], rB[$2*ry$]}
@@ -26,7 +26,7 @@ Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partit
 	\Do
 	\For {$i \gets 1, bk$} \Comment Unrolling for loop
 	\State $rA[0...rx]\gets$ a column of $smA$
-	\State $rB[0...rx]\gets$ a row of $smB$
+	\State $rB[0...ry]\gets$ a row of $smB$
 	\State $accum[0...rx][0...ry]\gets accum[0...rx][0...ry]+rA[0...rx]*rB[0...ry]$
 	\EndFor
 	\State $smA[bk][bm]\gets$ a $bm*bk$ block of $A$
