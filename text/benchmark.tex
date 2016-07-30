@@ -55,7 +55,7 @@ Warp scheduling and issue mode are tunable by modifying control codes which regu
 
 Starting with the Kepler architecture, NVIDIA has been moving some control logics off the chip and into kernel 
 instructions which are determined by the assembler~\cite{lai,maxas}. This evolution provides programmers the opportunity to 
-make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls \jled{at most} $7$ instructions as Figure~\ref{fig:assemblycode}.
+make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls $7$ instructions exactly as Figure~\ref{fig:assemblycode}.
 % a control code is placed before $7$ instructions, and it 
 We identify that both the highest $6$ bits and lowest 
 $2$ bits are {\em opcodes}, and the middle $56$ bits are used to control the execution of $7$ 
@@ -84,7 +84,7 @@ Our microbenchmarking reveals some specific patterns of control codes:
 \begin{itemize}
 \item When the control bits are set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
 \item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
-\item 0x00 means single issue mode, while 0x04 means dual-issue mode. 
+\item 0x20 means single issue mode, while 0x04 means dual-issue mode. 
 While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum. \jled{relation with Figure?}
 \end{itemize}
 
@@ -100,7 +100,7 @@ register operands.
 Table~\ref{tab:th} shows one example combination resulting in various efficiency numbers. 
 The rightmost column represents the number of register bank conflicts recorded from our experiments. 
 This experiment is conducted 
-in single issue mode by setting control code to 0x20 \jled{0x00 is single-issue mode ?}. 
+in single issue mode by setting control code to 0x20 %\jled{0x00 is single-issue mode ?}. 
 Theoretical, the peak efficiency is $128/192=66.67\%$ \jled{why 128?}. 
 In fact, we observe that both single- and dual-issue mode produce the same throughput behavior for bank conflicts.
  % variance of instruction throughput. 
