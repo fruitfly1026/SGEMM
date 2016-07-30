@@ -4,8 +4,8 @@ of the basic routines in BLAS library~\cite{blas}. It has been extensively used 
 computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance 
 critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
 
-As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate such a 
-floating-point intensive computation. In fact, SGEMM's performance highly relies on low-level microarchitecture 
+As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate
+floating-point intensive computations. In fact, SGEMM's performance highly relies on low-level microarchitecture 
 features. Hardware
 vendors provide BLAS libraries tuned on their own processors, e.g. MKL/ACML~\cite{intel2007intel,amd2014} for multicore 
 x86 CPUs and CUBLAS/CLMath~\cite{nvidia2008cublas, clmath}for
@@ -21,7 +21,7 @@ each generation of GPUs.
 \item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
     Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal
         way, only the abstract CUDA model is encouraged. A major reason is the significant changes of GPU architecture
-        between each generation. For example, graphic features, register bank conflicts, and floating-point 
+        between each generation. For example, graphic features, register bank distribution, and floating-point 
 instructions dual
         issue of the recent ISA are totally different from the previous generations~\cite{fermi}. Fortunately, people 
 have made

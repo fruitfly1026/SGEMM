@@ -101,7 +101,8 @@ Table~\ref{tab:th} shows one example combination resulting in various efficiency
 The rightmost column represents the number of register bank conflicts recorded from our experiments. 
 This experiment is conducted 
 in single issue mode by setting control code to 0x20 %\jled{0x00 is single-issue mode ?}. 
-Theoretical, the peak efficiency is $128/192=66.67\%$ \jled{why 128?}. 
+Theoretical, the peak efficiency is $(4\times32)/192=128/192=66.67\%$, in which $4$ is number of warp scheduler and $32$
+is number of threads in a warp.%\jled{why 128?}. 
 In fact, we observe that both single- and dual-issue mode produce the same throughput behavior for bank conflicts.
  % variance of instruction throughput. 
 From our experiments on Kepler architecture, we observe:
