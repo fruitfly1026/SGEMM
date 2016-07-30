@@ -40,7 +40,7 @@ As a comparison, most of the {\tt FFMA}s are single issued in the CUDA compiler 
 \begin{center}
 \includegraphics[scale=0.5]{order}
 \caption{{\tt FFMA}s instruction scheduling to compute a $12\times 12$ sub-block of matrix C.  The numbers in 
-cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are dual issued in one clock cycle.}
+cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are dual issued in one clock cycle. \jled{Get rid of colors here.}}
 \label{fig:order}
 \end{center}
 \end{figure}
@@ -171,33 +171,34 @@ Other instructions such as {\tt XOR}, {\tt IADD}, {\tt ISETP} are inserted accor
 
 To allocate registers for $A$ column, $B$ row and $C$ sub-matrix as Algorithm~\ref{gemm}, we have three objectives: correctness, no bank conflict and tight register indices.
 {\tt LDG.128} restricts $4$ words alignment for registers.
-NVIDIA GPU does not have $128$ bit register, in order to use $128$ bit load, one destination register $RN$ is given, 
-result will be writen to
-four $32$ bits registers:{\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}. There is an undocumented restriction: $N\%4==0$, 
-otherwise illegal instruction error will be reported.
-It's not hard to understand this restriction, $4$ words alignment for {\tt LDG.128} make hardware logic simpler and cut 
-down power usage.
-Since we will use {\tt LDG.128} to load $A$ and $B$, there are $2$ bank allocation choices due to $N\%4==0$ restriction 
-and
-bank distribution of Kepler. We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
-$B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure, we have 2 choices left for $C$:
-$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$
+Since NVIDIA GPU does not have $128$-bit register, a $128$-bit load instruction ({\tt LDG.128}) writes the data to four consecutive $32$-bit registers {\tt RN}, {\tt RN+1}, {\tt RN+2}, and {\tt RN+3} given one destination register $RN$.
+% in order to use $128$-bit load, one destination register $RN$ is given, 
+% results will be written to
+% four $32$-bit registers: {\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}. 
+We discover an undocumented restriction that $N\%4=0$ to avoid illegal instruction error.
+% It's not hard to understand this restriction, 
+The $4$ words alignment restriction for {\tt LDG.128} simplifies hardware logic and cuts down power.
+Since we use {\tt LDG.128} to load $A$ and $B$, there are $2$ bank allocation choices limited by $N\%4==0$ restriction and Kepler's bank distribution (Table~\ref{tab:reg}). 
+We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
+$B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure\jled{which figure}, 2 choices left for $C$, 
+$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ and 
 $\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$.
-We have $2\times2$ bank patterns for SGEMM, these four patterns are equivalent in performance, and we arbitrarily 
+The $4=2\times2$ bank patterns for SGEMM are equivalent in performance, then we arbitrarily 
 choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
-    $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively from the $4$ patterns as shown in 
-Figure~\ref{fig:reg}.
-To allocate actual register index, we choose continuous register index so that register index do not get too big to
-exceed 255 restriction. From figure, we can verify that $C_{ij}$, $A_i$ and $B_j$ have different banks, for example
-$C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, hence no bank conflicts.
+    $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively.
+We use different colors to represent the four banks and show the bank allocation when computing a $12 \times 12$ sub-matrix of C in Figure~\ref{fig:reg}.
+% We have $2\times2$ bank patterns for SGEMM, these four patterns are equivalent in performance,
+To allocate actual register index, we choose continuous register index so that register index do not get too big to exceed 255 restriction. \jled{Is the left sentence necessary?}
+We can verify that every $C_{ij}$, $A_i$ and $B_j$ have different banks in Figure~\ref{fig:reg}, thus register bank conflicts are successfully avoided.
+% for example $C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, .
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.55]{reg}
+\includegraphics[scale=0.5]{reg}
 \caption{An illustration of register bank allocation. The number in the cell is register number.
-    The leftmost column of registers are allocated to one column of $A$ sub-matrix, the
-top row of registers are allocated to one row of sub-matrix $B$, others are registers for
-sub-matrix $C$. The different colors denotes mapping of register banks: Green$\rightarrow$bank0, 
+    The leftmost column registers are allocated to one block-column of $A$, the
+topmost row registers are allocated to one block-row of $B$, and the others are registers for
+a $12 \times 12$ sub-matrix $C$. Different colors denote the mapping of register banks as in Table~\ref{tab:ref}: green$\rightarrow$bank0, 
 blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.}
 \label{fig:reg}
 \end{center}
