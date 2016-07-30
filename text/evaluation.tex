@@ -152,16 +152,16 @@ Besides, the baseline cannot apply dual issue optimization either.
 {\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler}\jled{refer to the subsection} is applied to eliminate register bank conflict. 
 No optimization on instruction scheduling for this version.
 
-{\it +LD128:}~~Use wider global load instruction.
-Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be 
-L1-cached, it can be L2-cached.
+{\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
+Though Kepler has a L1 data cache, but it is designed for local rather than global memory access. ~\cite{xx}
+% So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster to replace L2-cached {\tt LD}. When {\tt LDG} is used, 
-a {\tt TEXDEPBAR}~\cite{lukyanov2014efficient} is needed before using the data due to weak consistence of texture cache.
+{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LDx}. 
+When {\tt LDGx} is used, {\tt TEXDEPBAR} is required before the data access due to weak consistence of texture cache~\cite{lukyanov2014efficient}.
 
-{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
-pattern described in section~\ref{sec:assembler}. For dual issue version, {\tt NOP} may be inserted for instruction 
-alignment.
+{\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
+Single issue is controlled by setting control code to $0x00$ \jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
+For dual issued code, {\tt NOP} may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -171,12 +171,13 @@ alignment.
 \end{center}
 \end{figure}
 
-Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
-As long as number of instructions is changed, instruction order needs rescheduling to achieve high performance.
-Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
-Register bank conflict eliminating improves around $10\%$. Wider load instruction improves $27\%\sim35\%$, texture 
-cached
-load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$.
+Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
+As long as the number of instructions is changed, rescheduling instruction order is needed to achieve good performance.
+Compared to the baseline implementation, we gain $2.6\times$\jled{on average or maximum?} speedup by applying all the optimization.
+Register bank conflict eliminating improves around $10\%$ performance. 
+Wider load instruction ({\tt LD128} improves $27\%-35\%$, texture cached
+load instruction {\tt LDG128} improves $5\%-12\%$.
+Dual issue improves the most, $84\%-106\%$.
 
 \subsubsection{Upper Bound Analysis}
 
