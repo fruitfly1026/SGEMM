@@ -20,3 +20,4 @@ Suggesting Modifications:
 * Add full name for the first mention
 * Change "matrix width" to "matrix size" in experiment figures.
 * Unify cuBLAS, not CUBLAS
+* Use operations or instructions, choose one and use one for the whole paper.
