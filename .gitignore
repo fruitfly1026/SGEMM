@@ -4,6 +4,6 @@
 *.blg
 *.ps
 *.graffle
-*.pdf
+sgemm.pdf
 Output/
 sgemm.synctex.gz
