@@ -2,30 +2,30 @@
 \label{sec:optimization}
 
 
-The demystified GPU microarchitecture features provide a larger tuning space for computational kernels \jled{most kernels are performance-critical, right? :-)}.g
-We applyg
-a series of incremental optimizations to improve SGEMM performance on Kepler architecture. The optimization strategiesg
+The demystified GPU microarchitecture features provide a larger tuning space for computational kernels 
+We apply
+a series of incremental optimizations to improve SGEMM performance on Kepler architecture. The optimization strategies
 go through architectural hierarchy from CUDA core and register to memory. All the optimization strategies are inspired by the observations from our benchmarking.
 \begin{itemize}
 \item At core level, we orchestrate {\tt FFMA} instruction executions with a more efficient instruction scheduling set by the proper control code.
 % with respect to the proper control code pattern.
 \item At register level, we meticulously map operands to registers so that bank conflicts are avoided for the inner loop in Algorithm~\ref{gemm}.
-\item At memory level, we select appropriate shared memory load/store width and global memory data path to mitigateg
+\item At memory level, we select appropriate shared memory load/store width and global memory data path to mitigate
 latencies.
 \end{itemize}
 
 \subsection{Instruction Scheduling}
 \subsubsection{Schedule {\tt FFMA} Instructions}
-It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) allg
-the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, $4$ warp schedulers will consumeg
+It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all
+the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, $4$ warp schedulers will consume
 $128$ cores. The reminding $192-128=64$ cores are divided into $2$ 32-core groups, each $32$ coresg
-are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoidg
+are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid
 resource conflict.
-As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of $1$ single issue(1g
-{\tt FFMA}), 2 dual issues (4 {\tt FFMA}s) and 1 single issues ((1 {\tt FFMA})). As shown ing
+As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of $1$ single issue(1
+{\tt FFMA}), 2 dual issues (4 {\tt FFMA}s) and 1 single issues ((1 {\tt FFMA})). As shown in
 Figure~\ref{fig:assemblycode}, the instructions in lines 3-4 and lines 6-7 are dual issued separately.g
-The other two instructions in line 8 and line 11 are two single issues in terms of floating-point instructiong
-execution.g
+The other two instructions in line 8 and line 11 are two single issues in terms of floating-point instruction
+execution
 As a comparison, most of the {\tt FFMA}s are single issued in the CUDA compiler generated codes.
 
 \begin{figure*}[htbp]
@@ -180,10 +180,10 @@ We discover an undocumented restriction that $N\%4=0$ to avoid illegal instructi
 The $4$ words alignment restriction for {\tt LDG.128} simplifies hardware logic and cuts down power.
 Since we use {\tt LDG.128} to load $A$ and $B$, there are $2$ bank allocation choices limited by $N\%4==0$ restriction and Kepler's bank distribution (Table~\ref{tab:reg}).g
 We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
-    $B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure~\ref{fig:reg}, 2 choices left for $C$,g
-$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ andg
+    $B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure~\ref{fig:reg}, 2 choices left for $C$,
+$\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ and
 $\begin{bmatrix} 3 & 1 \\ 0 & 2  \end{bmatrix}$.
-The $4=2\times2$ bank patterns for SGEMM are equivalent in performance, then we arbitrarilyg
+The $4=2\times2$ bank patterns for SGEMM are equivalent in performance, then we arbitrarily
 choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatrix}$
     $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ for $A$, $B$ and $C$ respectively.
 We use different colors to represent the four banks and show the bank allocation when computing a $12 \times 12$ sub-matrix of C in Figure~\ref{fig:reg}.
@@ -216,7 +216,7 @@ words from $A$ column.
 Second, the shared memory transaction size is 256 bytes, which forces each request being split into multiple transactions.
 % it is another story for shared memory.g
 If we use {\tt LDS.128}, we can not infer the time of the second transaction by inspecting the inner loop, so it is
-difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s..g
+difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s.
 However, it's determinable for {\tt LDS.64}, since a transaction just happens two cycles after the instruction is
 issued. \jled{don't understand this sentence.}
 
