@@ -46,7 +46,7 @@ These parameters demonstrate that SGEMM performance is affected by the hierarchi
 The tuning of these factors is conducted in two folds--memory bandwidth and latency. In fact, with the estimations in Table~\ref{tab:reg}, it is relatively easy to tune proper parameters to eliminate the bound of memory bandwidth~\cite{magma}~\cite{tan}. The difficulty lies in latency, which is closely related to specific microarchitectures such as instruction sequence, instruction type and so on. However, the microarchitectural optimizations depend on the availability of an assembler and deep understanding of microarchitectural features. %TODO the second last sentence
 
 \begin{table}[!t]
-\caption{Data movement volume of each thread inside while loop \jled{this table is not referred in this paper.}}
+\caption{Data movement volume of each thread inside the while loop \jled{this table is not referred in this paper.}}
 \centering
 \scalebox{1.0} {
 \begin{tabular}{|c|c|}
@@ -63,5 +63,5 @@ shared$\Rightarrow$register ({\tt LDS})& $rx\times bk + ry\times bk$\\
 %\hline
 \end{tabular}
 }
-\label{tab:reg}
+\label{tab:dm}
 \end{table}

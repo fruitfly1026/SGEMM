@@ -18,7 +18,7 @@ latencies.
 \subsubsection{Schedule {\tt FFMA} Instructions}
 It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all
 the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, $4$ warp schedulers will consume
-$128$ cores. The reminding $192-128=64$ cores are divided into $2$ 32-core groups, each $32$ coresg
+$128$ cores. The reminding $192-128=64$ cores are divided into $2$ 32-core groups, each $32$ cores
 are shared by $2$ warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid
 resource conflict.
 As noted in {\em observation 3}, the best pattern of {\tt FFMA} instructions block is a sequence of $1$ single issue(1
