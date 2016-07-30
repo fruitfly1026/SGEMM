@@ -61,20 +61,24 @@ L2 cache size&1536KB\\
 
 
 \subsection{Overall Performance}
-Figure~\ref{fig:sgemm_tn} reports the performance comparison of CUBLAS SGEMM and our optimized SGEMM.
-Our SGEMM achieves $3104$ Gflop/s which efficiency is $3104/3520=88\%$. With the same matrix size, CUBLAS has $2509$ 
-Gflop/s which efficiency is $71\%$. The comparison shows that our implementation achives $17\%$ performance improvement 
-over CUBLAS.
+Figure~\ref{fig:sgemm_tn} reports the performance of cuBLAS SGEMM and our optimized SGEMM.
+When matrix size is xx,\jled{matrix size} the optimized SGEMM achieves $3104$ GFlop/s with $88\%$ efficiency, while cuBLAS gets $2509$ GFlop/s with $71\%$ efficiency. 
+ %is $3104/3520=88\%$. 
+Our SGEMM achieves $17\%$ performance improvement over cuBLAS.
 
-As the figure shows, the overall trend is that performance increases with size of matrices. On one hand, the larger 
-matrix size leads to a higher ratio of floating-point operations to matrix $C$ store operations, which is more close to 
-the hardware arithmetic intensity. On the other hand, the larger matrix size increases workload of the threading CUDA 
-cores, resulting in load balance. The numbers of block ranges from $[768/192,768/192]=[4,4]$ to $[12288/192, 
-12288/192]$ $=[64,64]$. Since Kepler has $13$ SMs in total, matrix of size $768\times 768$ suffers from load balance. 
-Therefore, we observe that there is significant growth in Gflop/s from $768$ to $1536$ for both ours and CUBLAS. With 
-respect to the ratio of performance improvement, the optimization has less effect on the smaller matrix size than the 
-larger one. The reason is that the performance is increasingly bounded by the microarchitecture rather than memory due 
-to the higher arithmetic intensity. Thus, our microarchitecture-level optimization plays more important role on tuning 
+The overall trend Figure~\ref{fig:sgemm_tn} is that SGEMM performance increases with matrix sizes. 
+\jled{the next sentence change to ``On the one hand, a larger matrix has a higher arithmetic intensity 9$AI$), which is the ratio of compulsory floating-point operations to the total DRAM memory traffic.
+The high arithmetic intensity makes good use of GPU computing resources to obtain good performance.''}
+On the one hand, a large matrix has a high ratio of 
+floating-point operations to the store operations of matrix $C$, which is more close to the hardware arithmetic intensity. 
+On the other hand, a larger matrix has a better load balance on GPU by increasing the workload of the threading CUDA cores \jled{change to ``number of threading blocks''}. 
+The number of threading blocks range in $4 \times 4, 8 \times 8, \dots, 64 \times 64$ from left to right in Figure~\ref{fig:sgemm_tn}.
+% $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. 
+Since Kepler has $13$ SMs in total, matrix $768\times 768$ suffers more from load imbalance because of only a few ($16$) blocks. 
+This is why a significant performance growth from $768$ to $1536$ for SGEMM. 
+With respect to performance improvement over cuBLAS, our optimizations benefits more on larger matrices. 
+The higher arithmetic intensity of larger matrices makes their performance increasingly bounded by the GPU microarchitecture rather than memory. 
+Therefore, our microarchitecture-level optimization plays an important role on tuning 
 performance.
 
 \begin{figure}[htbp]
@@ -88,77 +92,76 @@ performance.
 \subsection{Performance Analysis}
 
 \subsubsection{Register Blocking Size Influence}
-Section~\ref{sec:background} summarized computation volumn and data movement volumn of blocking SGEMM algorithm.
-The volumn of data moving from shared memory to global memory is $rx\times bk+ ry\times bk$, and computation volumn is 
-$rx\times ry\times bk$. Thus, the computation and shared memory access ratio can be formulated as $\frac {rx\times 
-ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}$.
-This function implies that the larger register blocking, the higher computation shared memory ratio, and the optimal 
-solution should be in the case of $rx=ry$. 
-For global memory, it is the same conclusion.
-
-However, Register blocking size is limited by number of registers per thread. 
-%the maximum number of threads in one block.
-In order to hide latency of shared memory, software pipelining using double
-buffers is an efficient way. Each thread needs $rx\times ry$ registers to store result of $C$ submatrix, $rx$ and $ry$ 
-to store a column of $A$
-submatrix and a row of $B$ submatrix in current loop. In addition, the extra $rx$ and $ry$ registers are used for 
-prefetching $A$ and $B$ from shared memory to
-registers for next loop. Since the total number of registers should be less than $256$ on Kepler, we have the following 
-equations:
+Table~\ref{tab:dm} summarized computation and data movement volume of blocking SGEMM algorithm.
+The volume of data moving from shared memory to global memory is $rx\times bk+ ry\times bk$, and computation volume is $rx\times ry\times bk$. 
+The shared memory arithmetic intensity ($sAI$) is defined as the ratio of floating-point operations to the shared memory traffic, which is 
 \begin{equation}
-    rx\times ry + rx\times 2 + ry\times 2 < 256
+sAI = \frac {rx\times 
+ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}.
+\end{equation}
+This function implies that larger register blocks get the higher shared memory arithmetic intensity.
+The optimal solution should be in the case of $rx=ry$\jled{what about C is not square matrix?}. 
+For global memory, we have a similar conclusion.\jled{Add another equation for $AI$}
+
+However, register blocking size is limited by number of registers per thread. 
+%the maximum number of threads in one block.
+In order to hide shared memory latency, double-buffered software pipelining is an efficient way. 
+Each thread needs $rx\times ry$ registers to store the result of a sub-matrix of $C$, $rx$ and $ry$ registers to store a block-column of $A$ and a block-row of $B$ in the same loop. 
+For double-buffering, extra $rx$ and $ry$ registers are used to prefetch next block-column of $A$ and block-row of $B$ from shared memory. 
+Since the total number of registers must be less than the maximal number of registers per thread ($256$ on Kepler), we have
+\begin{equation}
+    rx\times ry + rx\times 2 + ry\times 2 < 256.
 \label{f_register}
 \end{equation}
-Because the maximal number of register per thread is $256$ and data load must be aligned with $128$-bits when using 
-{\tt LDG.128}, the blocking size might be $4\times 4$, $8\times 8$ and $12\times 12$. In fact, the blocking factor of 
-$4\times 4$ leads to low data reuse in register files. Figure~\ref{fig:block} demonstrates $8\times8$ blocking and 
-$12\times12$ blocking. $12\times12$ is better than
-$8\times8$ in that, it has high computation memory ratio and higher instruction level parallelism. With respect to 
-instruction scheduling optimization, $12\times12$ blocking has more slots to insert other {\tt non-FFMA} instructions, 
-leaving more
-space to schedule instructions, the overhead of {\tt LDS} can be amortized. Thus, the number of registers is 
-$12*12+4*12=192$ used by both {\tt LD} and {\tt FFMA}, totally resulting $236$ registers with other address indices.The 
-$65536$ registers per SM restricts us to launch $256$ threads at most. In our implementation, we have $256$ threads in 
-a block. Each block of threads computes a $192\times 192$ submatrix of $C$ by multiply $A_{192,4}$ and $B_{4, 192}$, in 
-which $4$ is the unroll factor.
+Because data load must be aligned in $128$-bit using 
+{\tt LDG.128}, the block size could be $4\times 4$, $8\times 8$ or $12\times 12$. 
+Since $4\times 4$ leads to low data reuse in register files, Figure~\ref{fig:block} plots $8\times8$ and $12\times12$ cases.
+We choose $12\times12$ over $8\times8$ because
+$12\times12$ blocking has higher $sAI$ and instruction level parallelism. 
+With respect to 
+instruction scheduling optimization as Figure~\ref{fig:position}, it has more slots to insert scheduling instructions, making the {\tt LDS} overhead being more easily amortized. 
+Thus, $12*12+4*12=192$ registers are used by {\tt LDx} and {\tt FFMA} instructions, and totally $236$ registers with other address indices\jled{what other?}.
+The number of registers per SM restricts us to launch up to $256$ threads. 
+In our implementation, we have $256$ threads per block. 
+Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{block}
-    \caption{Evaluation of different blocking size}
+    \caption{Evaluation of different blocking sizes\jled{could add $4\times4$ case.}}
 \label{fig:block}
 \end{center}
 \end{figure}
-the active block per SM is one, occupancy is $256/1024=12.5\%$.
-The occupancy is low which means the thread parallism is low, but our instruction level parallism is high. The high 
-performance of SGEMM with low occupancy confirms that instruction level parallelism plays an important role on 
-GPU~\cite{volkov2010better}.
+
+Only one thread block per SM is active\jled{why?}, thus the thread occupancy is $256/1024=12.5\%$.
+With our high instruction level parallelism, the thread parallelism becomes low.
+However, our SGEMM's high performance confirms that instruction level parallelism plays an more important role on GPU.
+Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
 
 \subsubsection{Profiling Microarchitectural Optimization}
 In order to examine performance gain of different optimization strategies, we construct several intermediate 
-implementations by incrementally applying the microarchitectural optimizations.
+implementations by incrementally applying our microarchitectural optimizations.
 
-{\it Baseline:}~~The baseline involves conventional optimizations including register blocking, global
-memory double buffering, shared memory double buffering and unrolling, rather than assembly level optimization.
-For example, baseline use default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} to load data from global memory.
-Register allocation for $C$ is allocated orderly from $0$ to $143$, then $A$ and $B$ matrices. In this case, {\tt
-FFMA}s will have $368/(144*4)=63.89\%$ and $64/(144*4)=11.11\%$ 3-way bank conflicts. Baseline does not apply dual
-issue optimization either.
+{\it Baseline:}~~The baseline includes conventional optimizations including register blocking, global
+memory double buffering, shared memory double buffering and unrolling, without assembly level optimization.
+For example, the baseline uses default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} instruction to load data from global memory.
+Registers is allocated orderly first for $C$, from $0$ to $143$, then for $A$ and $B$. 
+In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ \jled{2-way bank conflicts?} and $64/(144*4)=11.11\%$ 3-way bank conflicts. 
+Besides, the baseline cannot apply dual issue optimization either.
 
-{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler} is applied to eliminate register 
-bank conflict. No
-instruction scheduling change between this version and baseline version.
+{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler}\jled{refer to the subsection} is applied to eliminate register bank conflict. 
+No optimization on instruction scheduling for this version.
 
-{\it +LD128:}~~Use wider global load instruction.
-Kepler has an L1 data cache, but it is designed for local rather than global memory access. So {\tt LD} will not be 
-L1-cached, it can be L2-cached.
+{\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
+Though Kepler has a L1 data cache, but it is designed for local rather than global memory access. ~\cite{xx}
+% So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster to replace L2-cached {\tt LD}. When {\tt LDG} is used, 
-a {\tt TEXDEPBAR}~\cite{lukyanov2014efficient} is needed before using the data due to weak consistence of texture cache.
+{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LDx}. 
+When {\tt LDGx} is used, {\tt TEXDEPBAR} is required before the data access due to weak consistence of texture cache~\cite{lukyanov2014efficient}.
 
-{\it +Dual:}~~Single issue is controlled by setting control code to $0x00$. Dual issue is fully enabled by utilizing the
-pattern described in section~\ref{sec:assembler}. For dual issue version, {\tt NOP} may be inserted for instruction 
-alignment.
+{\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
+Single issue is controlled by setting control code to $0x00$ \jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
+For dual issued code, {\tt NOP} may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -168,12 +171,13 @@ alignment.
 \end{center}
 \end{figure}
 
-Figure~\ref{fig:th_prof} illustrates performance gain of each optimization method.
-As long as number of instructions is changed, instruction order needs rescheduling to achieve high performance.
-Compared with the baseline implementation, $2.6X$ speedups are gained by applying all the optimization.
-Register bank conflict eliminating improves around $10\%$. Wider load instruction improves $27\%\sim35\%$, texture 
-cached
-load instruction {\tt LDG} improves $5\%\sim12\%$. Dual issue improves the most, $84\%\sim106\%$.
+Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
+As long as the number of instructions is changed, rescheduling instruction order is needed to achieve good performance.
+Compared to the baseline implementation, we gain $2.6\times$\jled{on average or maximum?} speedup by applying all the optimization.
+Register bank conflict eliminating improves around $10\%$ performance. 
+Wider load instruction ({\tt LD128} improves $27\%-35\%$, texture cached
+load instruction {\tt LDG128} improves $5\%-12\%$.
+Dual issue improves the most, $84\%-106\%$.
 
 \subsubsection{Upper Bound Analysis}
 
