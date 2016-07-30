@@ -1,9 +1,15 @@
 \subsection{Instruction Solver}
 
 \jled{How sample programs used in here? No mention.}
+%We wrote simple PTX code generator, which generate PTX code with various modifiers specified.
+%Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump}. In this way, we generate real assembly
+%instruction and their 64-bit encoding, which is the input of solver algorithm.
+We disassmble libcublas.so to generate instruction and their corresponing 64-bit encodings, which are the input of
+solver algorithm. There are $1537123$ different encodings of cublas 7.0 library in total.
+An instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. We express these information in a struct
+varaible $instMap$.
 
-An instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. An operand could be register, 
-constant memory, global memory, shared memory, immediate values, or predicate register represented by different names.
+An operand could be register, constant memory, global memory, shared memory, immediate values, or predicate register represented by different names.
 Thus, the encoding of operand can be inferred by its name. For instance, the register operand {\tt R5} is
 inferred as $101$ in binary format, while immediate value {\tt 0x9} is $1001$. 
 Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
