@@ -40,8 +40,7 @@ As a comparison, most of the {\tt FFMA}s are single issued in the CUDA compiler 
 \begin{center}
 \includegraphics[scale=0.5]{order}
 \caption{{\tt FFMA}s instruction scheduling to compute a $12\times 12$ sub-block of matrix C.  The numbers in 
-cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are dual
-    issued in one clock cycle.}%\jled{Get rid of colors here.}}
+cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean that two {\tt FFMA} instructions are dual issued in one clock cycle.}
 \label{fig:order}
 \end{center}
 \end{figure}
@@ -207,15 +206,13 @@ blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.}
 
 
 \subsection{Memory Movement}
-According to the optimization observation on memory access suggested by microbenchmark, we use {\tt LDS.64} to load 
-data from shared memory and {\tt LDG.E.128} to load data from global memory. Specifically we have additional reasons to 
-adopt them in SGEMM kernel. First, the use of {\tt LDG.E.128} can reduce the number of {\tt non-FFMA} instructions. For 
-example,  in the inner loop, the number of 32-bits load operations to read $A$ and $B$ is 12. The wider {\tt LDG.E.128} 
-operation reduces the numbers to 3.
-
-Second, it is another story for shared memory. The shared memory transaction size of 256 bytes forces that any shared 
-memory request will be split into multiple transactions of 256 bytes. By inspecting the inner loop, we cannot control 
-when the second transactions happen so that it is difficult to eliminate potential bank conflicts between {\tt 
-LDS.128}s and {\tt FFMA}s. As for {\tt LDS.64}, it's determinable to avoid register bank since a transaction just 
-happens at the position of {\tt LDS.64}.
+% According to the optimization observation on memory access suggested by microbenchmark, 
+According to our observations, we use {\tt LDG.E.128} to load data from global memory through texture cache and {\tt LDS.64} to load data from shared memory. 
+We also have additional reasons to adopt them in SGEMM kernel. 
+First, using {\tt LDG.E.128} reduces {\tt non-FFMA} \jled{use load instead of non-FFMA. Use non-FFMA seems complicated.} instructions. 
+In Algorithm~\ref{gemm}'s inner loop, we need 3 {\tt LDG.E.128} instead of 12 32-bit load instructions to read $A$ and $B$.
+Second, the shared memory transaction size is 256 bytes\jled{bytes or bits}, which forces each request being split into multiple transactions.
+% it is another story for shared memory. 
+If we use {\tt LDS.128}, we cannot infer the time of the second transaction by inspecting the inner loop, so it is difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s.
+However, it's determinable for {\tt LDS.64}, since a transaction just happens at the position of it.\jled{don't understand this sentence.}
 

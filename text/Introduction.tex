@@ -3,6 +3,8 @@ Single Precision General Matrix Multiply (SGEMM) performs a multiplication of tw
 of the basic routines in BLAS library~\cite{blas}. It has been extensively used in many scientific and engineering 
 computing applications. Recently, SGEMM has drawn increasing efforts on performance tuning since it is the performance 
 critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
+\jled{Specify the importance of SGEMM in deep learning, and why SGEMM not DGEMM etc.}
+
 
 As GPU provides higher peak FLOPS over CPU contemporarily, people tend to adopt GPUs to accelerate
 floating-point intensive computations. In fact, SGEMM's performance highly relies on low-level microarchitecture 
