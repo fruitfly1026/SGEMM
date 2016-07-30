@@ -20,13 +20,15 @@ Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partit
   \caption{SGEMM blocking algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em accum} are register variables. $rx$ and $ry$ are register blocking sizes}
   \label{gemm}
   \begin{algorithmic}[1]
-	\LeftComment {The size of a thread block: $tx*ty$}
-	\LeftComment {Registers: accum[$rx*ry$], rA[$2*rx$], rB[$2*ry$]}
+	\LineComment {The size of a thread block: $tx*ty$}
+	\LineComment {Registers: accum[$rx*ry$], rA[$2*rx$], rB[$2*ry$]}
 	\State $smA[bm][bk] \gets$ a $bm * bk$ block of $A$
 	\State $smB[bk][bn] \gets$ a $bk * bn$ block of $B$
 	\Do
-	\For {$i \gets 1, bk$} \Comment Unrolling for loop
-	\State $rA[0...rx]\gets$ a column of $smA$
+      \For {{$i \gets 1, bk$}}
+      %\Comment {\color {mygray} {Unrolling for loop}}
+      \Comment {{Unrolling for loop}}
+      \State {\color {black} {$rA[0...rx]\gets$ a column of $smA$}}
 	\State $rB[0...ry]\gets$ a row of $smB$
 	\State $accum[0...rx][0...ry]\gets accum[0...rx][0...ry]+rA[0...rx]*rB[0...ry]$
 	\EndFor
