@@ -213,3 +213,12 @@ With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ 
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
 We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} will cause $2*10/384 = 5.2\%$ loss. Other penalty 
 comes from synchronization and writing $C$ matrix in the block.
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.35]{roofline}
+    \caption{Roofline model using log-log scale.}
+\label{fig:roofline}
+\end{center}
+\end{figure}
