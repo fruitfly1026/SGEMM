@@ -66,6 +66,12 @@ microarchitecture-level optimizations. The optimized SGEMM achieves the maximal 
 which is 17\% higher than CUBLAS.
 \end{itemize}
 
+Although Kepler is not the latest generation GPU, the arithmetic dual-issue feature will not
+outdate. 
+During our exploring of the method to fully exploit the arithmetic
+dual-issue feature of Kepler, we find that NVCC can not generate dual issue code efficiently even for computation
+intensive SGEMM. Dual-issue feature would return in future GPU design when scalability of thread
+level parallelism and frequency of GPU are too hard to improve.
 Although this work demonstrates the effectiveness on NVIDIA Kepler architecture, the approach is general-purpose for 
 other NVDIA GPU architectures by minor adjustments of instruction solver and benchmarking. To the best of our 
 knowledge, it is the first time to provide a detailed description of how to crack the instruction encoding for NVIDIA 
