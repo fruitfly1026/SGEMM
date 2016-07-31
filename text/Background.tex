@@ -25,11 +25,14 @@ instruction format (in Section~\ref{sec:assembler}).
 
 \subsection{Performance Factors of SGEMM}
 \label{sec:sgemm}
-It's well-known that the primary factors of SGEMM performance are the blocking parameters for exploiting data reuse 
-through memory hierarchy. On GPUs, we should consider both shared memory blocking and register blocking. For the 
-purpose of completeness, we describe a blocking algorithm which is similar to that in other 
-literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
-
+%It's well-known that the primary factors of SGEMM performance are the blocking parameters for exploiting data reuse 
+%through memory hierarchy. On GPUs, we should consider both shared memory blocking and register blocking. For the 
+%purpose of completeness, we describe a blocking algorithm which is similar to that in other 
+%literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
+The state of art implementation of SGEMM on GPU~\cite{magma,nervana_sgemm_wiki,lai,tan} is using two level blocking:
+shared memory blocking and register blocking to exploite data reuse through memory hierarchy.
+SGEMM is to evaluate the product $C = C + AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and $m\times n$
+matrices respectively. 
 Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on the result matrix $C$. 
 Each thread block with $tx*ty$ threads is responsible to compute a $bm*bn$ submatrix in $C$, where $bm, bn$ are the 
 number of rows and columns of the submatrix, respectively. We need read a $bm*bk$ from A and a $bk*bn$ sub-matrix from 
