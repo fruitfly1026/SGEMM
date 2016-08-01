@@ -1,31 +1,33 @@
 \section{Conclusion}
 \label{sec:conclusion}
-We have presented a methodology to demystify GPU's microarchitecture level optimizations and demonstrated its 
-application to tune SGEMM. The methodology relies on a reverse engineering approach to crack the instruction encoding 
+We presented a methodology to demystify GPU's microarchitecture level features and demonstrated its 
+application on tuning SGEMM. The methodology relies on a reverse engineering approach to crack the instruction encoding 
 of GPU architecture, and a profound microbenchmarking at assembly level to correlate architecture features with 
 performance factors, such as dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
 bank distribution on performance etc. These parameters are worthwhile for both hardware and software researchers to 
 understand GPU architecture and program optimization on GPUs. To our best knowledge, this is the 
 first time to describe a detailed decoding solver to crack the instruction encoding. 
-This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures \jled{``automatically'' change to easily}.
+This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. % \jled{``automatically'' change to easily}.
 
 Based on the disclosed correlation between GPU architecture features and program performance, we implemented the optimized SGEMM in $3104$ Gflop/s with $88\%$ efficiency on Kepler GPU, which is $17\%$ higher than cuBLAS. 
 We build two roofline models for shared and global memory separately, which reveal that even for compute-intensive SGEMM kernel, without appropriately optimizations or good resource usage, its performance could also be memory-bound.
 Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten some optimizations on compilers or other computational kernels.
-Our future work is to extend this methodology to FFT and integrate optimized SGEMM into deep learning algorithms, such as convolutional neural networks (CNN).
-\jled{I added the future work. Please check or remove it.}
+In future, we will apply our methodology to the latest Pascal GPU to revail GPU architecture features.
+We also try to apply our insights of GPU microarchitecture to optimize code generation of open source GPU compiler
+GPUCC~\cite{wu2016gpucc}.
+%We also considering 
+%Our future work is to extend this methodology to FFT and integrate optimized SGEMM into deep learning algorithms, such as convolutional neural networks (CNN).
+%\jled{I added the future work. Please check or remove it.}
 % cuBLAS's SGEMM achieves $2509$ Gflop/s ($71\%$ efficiency). 
 % Our optimized one is $17\%$ higher than Cublas. 
 % The performance boost is achieved on the basis of tuning {\tt FFMA} throughput as high as 
 % hardware peak, then add other non-FFMA instruction with little penalty. 
 % These optimizations include register bank 
 % conflict eliminating, {\tt FFMA} dual issue scheduling, choosing proper width of global load and shared memory load instructions and so on.
-
-\jled{I removed one and a half unnecessary paragraphs.}
+%\jled{I removed one and a half unnecessary paragraphs.}
 % Although Kepler is not the latest GPU, the arithmetic dual-issue feature will not be outdated.
 % During our exploring of the way to fully exploit the arithmetic dual-issue feature of Kepler, we discovered that NVCC
 % can not generate dual issue code efficiently which prohibits future GPU to adopt dual issue design. 
 % However when scalability of thread level parallelism
 % and frequency of GPU are too hard to improve, dual-issue feature would return in future GPU design.
-
 % The development of GPU compiler could learn experiences from these microarchitectural-level optimizations.
