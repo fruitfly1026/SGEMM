@@ -4,13 +4,14 @@
 
 To explore NVIDIA Kepler architecture, we a create microbenchmark tailored for each characteristic.
 % Our following observations are drawn from analyzing the execution time of the microbenchmarks.
-Our kernel code is  written in assembly and compiled into {\tt cubin} by our assembler. Then a main function with CUDA API 
+Our kernel code is  written in assembly and compiled into {\tt cubin} by our assembler. Then a main function with CUDA API
 will call {\tt cubin}.
 All assembly kernel codes are designed small enough to fit into the L1 instruction cache.
 For timing accuracy, the same CUDA kernel code is duplicated for several times, then the average is used for our analysis.
-Timing ticks are recorded by {\tt S2R R0, SR\_CLOCKLO} instruction, in which {\tt SR\_CLOCKLO} is the clock register,  
+Timing ticks are recorded by {\tt S2R R0, SR\_CLOCKLO} instruction, in which {\tt S2R} is special register to general
+purpose register and  {\tt SR\_CLOCKLO} is the clock register,
 and then time is calculated and written to global memory.
-%We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses. 
+%We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses.
 Two metrics are benchmarked: latency and throughput. Latency is tested by a succession of dependented instructions by
 launching $1$ block of $32$ threads. Throughput is tested by a succession of independent instructions by launching enough
 threads(e.g. $26$ blocks, each block with $512$ threads for kepler) to make full use of CUDA cores and bandwidth.
@@ -19,9 +20,9 @@ threads(e.g. $26$ blocks, each block with $512$ threads for kepler) to make full
 We tune the assembly codes of our microbenchmark using the assembler in Figure~\ref{fig:workflow}.
 From the tuning process, we correlate microarchitecture characteristics with the benchmark performance, which is useful
 to optimize program snippets in real applications.
-% According to the performance tuning results, we 
-The correlation is presented as some meaningful observations, which are categorized into four microarchitectural features:  {\tt 
-control} function, {\tt register} allocation, {\tt arithmetic} throughput, and {\tt memory} operation.
+% According to the performance tuning results, we
+The correlation is presented as some meaningful observations, which are categorized into four microarchitectural features:  {\tt register} bank, {\tt
+control} code,  {\tt arithmetic} throughput, and {\tt memory} operation.
 
 
 \begin{figure*}
@@ -45,81 +46,10 @@ control} function, {\tt register} allocation, {\tt arithmetic} throughput, and {
 \end{figure*}
 
 
-{\em {\bf Observation 1--[Control]}: 
-Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction execution.}
-
-Starting with the Kepler architecture, NVIDIA has been moving some control logics off the chip and into kernel 
-instructions which are determined by the assembler~\cite{lai,maxas}. This evolution provides programmers the opportunity to 
-make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls $7$ instructions exactly as Figure~\ref{fig:assemblycode}.
-% a control code is placed before $7$ instructions, and it 
-We identify that both the highest $6$ bits and lowest 
-$2$ bits are {\em opcodes}, and the middle $56$ bits are used to control the execution of $7$ 
-instructions, each of which is assigned to $8$ control bits.
-
-For the $8$ control bits, we identify their meanings by statically examining the disassembly codes of cuBLAS and 
-dynamically benchmarking instruction sequence of different control codes.
-In this way, we discover bit-$4$ marks global memory dependency barrier, bit-$5$ represents shared memory dependency barrier, and bit-$7$ indicates a texture cache dependency barrier due to its weak consistent memory model. 
-Some unexpected values are loaded if the any $4-7$ bits is not set. 
-\jled{Wrong bit number, bit-4 not 4th bit! What about bit-$6$?? Please check the correctness.} 
-% We verify the $7$\textsuperscript{th} bit of the control 
-% code of {\tt TEXDEPBAR} instruction is set to $1$, to
-% indicate a texture dependency barrier of texture cache due to its weak consistent memory model. 
-We use {\tt FFMA} instruction's behaviors to crack $0-3$ bits of its control code.
-Figure~\ref{fig:control_code}(\subref{fig:control_throughput}) and 
-Figure~\ref{fig:control_code}(\subref{fig:control_latency}) show {\tt FFMA}'s throughput and latency  when its $8$ control bits varies from $0$ to $255$. 
-% Thus, most throughputs achieve the maximum when the control code's value is smaller than {\tt 0x20} because of no set suspension.
-% Obvious periodicity is shown with size $16$ after the control code's value reaches {\tt 0x20}.
-After 0x20, both the throughput and latency show obvious periodicity.
-For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. \jled{the period size is different! why?}
-This phenomenon implies that the $4$ lower bits stores the number of stall cycles before issuing 
-an instruction. 
-Our microbenchmarking reveals some specific patterns of control codes:
-% Furthermore, the microbenchmarking reveals some specific patterns of control codes:
-
-\begin{itemize}
-\item When the control bits are set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
-\item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
-\item 0x20 means single issue mode, while 0x04 means dual-issue mode. 
-While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum. \jled{relation with Figure?}
-\end{itemize}
-
-
-{\em {\bf Observation 2--[Register]}: 
-Irrespective of single- or dual-issue mode, only source operands may cause register bank conflicts that degrades instruction throughput.}
-
-Shared memory bank conflict is well-known as an important performance factor for CUDA programming.
-Recent research~\cite{lai} noticed that register bank conflict is also nontrivial to performance. 
-In order to probe 
-register bank conflict, our microbenchmark measures instruction throughput for different combination of {\tt FFMA} 
-register operands. 
-Table~\ref{tab:th} shows one example combination resulting in various efficiency numbers. 
-The rightmost column represents the number of register bank conflicts recorded from our experiments. 
-This experiment is conducted 
-in single issue mode by setting control code to 0x20 %\jled{0x00 is single-issue mode ?}. 
-Theoretical, the peak efficiency is $(4\times32)/192=128/192=66.67\%$, in which $4$ is number of warp scheduler and $32$
-is number of threads in a warp.%\jled{why 128?}. 
-In fact, we observe that both single- and dual-issue mode produce the same throughput behavior for bank conflicts.
- % variance of instruction throughput. 
-From our experiments on Kepler architecture, we observe:
-\begin{itemize}
-\item Destination operand will not contribute to bank conflict, no matter which bank is assigned to it.
-\item When source operands have 2- or 3-way register bank conflict, the throughput will drop up to 2.33\% and 17.17\% respectively in single issue mode. 
-% When source operands have 3-way conflicts, the throughput will drop by up to 17.17\%. 
-    \jled{Is the two numbers fixed?}
-\item Our microbenchmark finds out a proper distribution of registers to eliminate bank
-     conflict. 
-     The distribution is summarized in Table~\ref{tab:reg}, which confirms the rule in~\cite{lai}: \\
- bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\
- bank2$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 1$) \\
-bank1$\Leftarrow$($Ridx \% 8 > 4$ \&\& $Ridx \%2 == 0$) \\
-bank3$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx\% 2 == 1$)\\
-where $Ridx$ is the register number. 
-This rule will guide the performance tuning of SGEMM code.
-
-\end{itemize}
-
+{\em {\bf Observation 1--[Register Bank]}:
+Irrespective of single- or dual-issue mode, source registers may cause register bank conflicts that degrades instruction throughput.}
 \begin{table}[htbp]
-    \caption{The efficiency of instruction throughput varies with difference register bank distribution. {\it Inst} : 
+    \caption{The efficiency of instruction throughput varies with difference register bank distribution. {\it Inst} :
 instruction pattern, {\it Th/SM}: the instruction throughput per SM, {\it Eff}: efficiency of throughput, {\tt Conf}: register bank conflicts.}
 \centering
 \scalebox{1.0} {
@@ -168,29 +98,99 @@ Inst &Th/SM&Eff&Conf\\
 \label{tab:reg}
 \end{table}
 
-{\em {\bf Observation 3--[Arithmetic]}: 
-With a proper control code pattern and register allocation, {\tt FFMA} 
+
+Shared memory bank conflict is well-known as an important performance factor for CUDA programming.
+Recent research~\cite{lai} noticed that register bank conflict is also nontrivial to performance.
+In order to probe
+register bank conflict on Kepler, our microbenchmark measures instruction throughput for different combination of {\tt FFMA}
+register operands.
+Table~\ref{tab:th} shows one example combination resulting in various efficiency numbers.
+The rightmost column represents the number of register bank conflicts recorded from our experiments.
+This experiment is conducted in single issue mode by setting control code to 0x20.
+Theoretically, without dual issue, the peak efficiency is $(4\times32)/192=128/192=66.67\%$, in which $4$ is number of warp schedulers and $32$
+is number of threads in a warp.
+In fact, we observe that both single- and dual-issue mode produce the same throughput behavior for bank conflicts.
+ % variance of instruction throughput.
+From our experiments on Kepler architecture, we observe:
+\begin{itemize}
+\item Destination register will not contribute to bank conflict, no matter which bank is assigned to it.
+\item When source registers have 2- or 3-way register bank conflict, the throughput will drop about 2.33\% and 17.17\% respectively in single issue mode.
+% When source operands have 3-way conflicts, the throughput will drop by up to 17.17\%.
+%    \jled{Is the two numbers fixed?}
+\item Our microbenchmark finds out a proper distribution of registers to eliminate bank conflict.
+     The distribution is summarized in Table~\ref{tab:reg}, which consistents to GTX680~\cite{lai}, though K20 is
+        different from GTX680 in register numbers: \\
+ bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\
+ bank2$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 1$) \\
+bank1$\Leftarrow$($Ridx \% 8 > 4$ \&\& $Ridx \%2 == 0$) \\
+bank3$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx\% 2 == 1$)\\
+where $Ridx$ is the register number.
+This rule will guide the performance tuning of SGEMM code.
+
+\end{itemize}
+
+
+{\em {\bf Observation 2--[Control Code]}:
+Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction execution.}
+
+Starting with the Kepler architecture, NVIDIA has been moving some control logics off the chip and into kernel
+instructions which are determined by the assembler~\cite{lai,maxas}. This evolution provides programmers the opportunity to
+make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls $7$ instructions exactly as Figure~\ref{fig:assemblycode}.
+% a control code is placed before $7$ instructions, and it
+We identify that both the highest $6$ bits and lowest
+$2$ bits are {\em opcodes}, and the middle $56$ bits are used to control the execution of $7$
+instructions, each of which is assigned to $8$ control bits.
+
+For the $8$ control bits, we identify their meanings by statically examining the disassembly codes of cuBLAS and
+dynamically benchmarking instruction sequence of different control codes.
+In this way, we discover bit-$4$ marks global memory dependency barrier, bit-$5$ represents shared memory dependency barrier, and bit-$7$ indicates a texture cache dependency barrier due to its weak consistent memory model.
+Some unexpected values are loaded if the any $4-7$ bits is not set.
+\jled{Wrong bit number, bit-4 not 4th bit! What about bit-$6$?? Please check the correctness.}
+% We verify the $7$\textsuperscript{th} bit of the control
+% code of {\tt TEXDEPBAR} instruction is set to $1$, to
+% indicate a texture dependency barrier of texture cache due to its weak consistent memory model.
+We use {\tt FFMA} instruction's behaviors to crack $0-3$ bits of its control code.
+Figure~\ref{fig:control_code}(\subref{fig:control_throughput}) and
+Figure~\ref{fig:control_code}(\subref{fig:control_latency}) show {\tt FFMA}'s throughput and latency  when its $8$ control bits varies from $0$ to $255$.
+% Thus, most throughputs achieve the maximum when the control code's value is smaller than {\tt 0x20} because of no set suspension.
+% Obvious periodicity is shown with size $16$ after the control code's value reaches {\tt 0x20}.
+After 0x20, both the throughput and latency show obvious periodicity.
+For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. \jled{the period size is different! why?}
+This phenomenon implies that the $4$ lower bits stores the number of stall cycles before issuing
+an instruction.
+Our microbenchmarking reveals some specific patterns of control codes:
+% Furthermore, the microbenchmarking reveals some specific patterns of control codes:
+
+\begin{itemize}
+\item When the control bits are set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
+\item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
+\item 0x20 means single issue mode, while 0x04 means dual-issue mode.
+While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum. \jled{relation with Figure?}
+\end{itemize}
+
+{\em {\bf Observation 3--[Arithmetic Throughput]}:
+With a proper control code pattern and register allocation, {\tt FFMA}
 instruction throughput can approach the theoretical peak in dual issue mode.}
 
-It's very intricate to tune instruction execution to improve instruction throughput. The previous work~\cite{lai} 
-reports the maximal throughput of {\tt FFMA} per SM as $132$, which is much lower than the theoretical throughput ($192$) on Kepler. 
-Our microbenchmark reveals several key points of optimization to approach theoretical peak on Kepler. 
-First, the control code must be set properly to dual issue adjacent instructions. Second, the ratio and interval of 
-dual issue {\tt FFMA} instructions must be tuned into a specific pattern. 
-Since each warp of extra computing unit is 
-shared among two warps, \jled{non clear} when all threads are trying to fully dual issue every two adjacent {\tt FFMA}s, half of the 
-scheduler would stall due to computing resource conflict. 
-Thus, the optimal ratio of dual issue to single issue is $2:2$ theoretically, and 
+It's very intricate to tune instruction execution to improve instruction throughput. The previous work~\cite{lai}
+reports the maximal throughput of {\tt FFMA} per SM as $132$, which is much lower than the theoretical throughput ($192$) on Kepler.
+Our microbenchmark reveals several key points of optimization to approach theoretical peak on Kepler.
+First, the control code must be set properly to dual issue adjacent instructions. Second, the ratio and interval of
+dual issue {\tt FFMA} instructions must be tuned into a specific pattern.
+Since each warp of extra computing unit is
+shared among two warps, \jled{non clear} when all threads are trying to fully dual issue every two adjacent {\tt FFMA}s, half of the
+scheduler would stall due to computing resource conflict.
+Thus, the optimal ratio of dual issue to single issue is $2:2$ theoretically, and
 with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn. \jled{not clear}
-Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single  and dual issue pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})). 
-We choose the best {\tt SDDS} pattern in our SGEMM implementation. 
-Third, the first instruction of the core loop needs to be aligned. This restriction is 
-caused by the aligned position of control code in the instruction sequence. 
-Last, {\tt FFMA} dual issue requires $6$ register banks from Table~\ref{tab:reg} \jled{Where is 6 from? Table~\ref{tab:reg}, right?}. 
-Instruction order has to be adjusted to fully use Kepler's operand 
+Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single  and dual issue pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
+We choose the best {\tt SDDS} pattern in our SGEMM implementation.
+Third, the first instruction of the core loop needs to be aligned. This restriction is
+caused by the aligned position of control code in the instruction sequence.
+Last, {\tt FFMA} dual issue requires $6$ register banks from Table~\ref{tab:reg} \jled{Where is 6 from? Table~\ref{tab:reg}, right?}.
+Instruction order has to be adjusted to fully use Kepler's operand
 collector mechanism~\cite{collector,tarjan2012policy} to avoid register bank conflicts.
 \jled{A new concept: operand collector mechanism. Maybe just don't mention it.}
-As shown in 
+As shown in
 Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock \jled{ops/cycle?}, which is very close to the theoretical peak $192$ ops/clock.
 
 \begin{table}[htbp]
@@ -213,25 +213,25 @@ Inst &operation&single issue&dual issue\\
 \end{table}
 
 
-{\em {\bf Observation 4--[Memory]}: For higher memory bandwidth, shared memory prefers 64-bit load 
+{\em {\bf Observation 4--[Memory]}: For higher memory bandwidth, shared memory prefers 64-bit load
 instruction {\tt LDS.64} while global memory prefers the load instruction with texture cache {\tt LDG}.}
 
-For GPU memory hierarchy we focus on the programmer controllable memory resources, shared memory and global memory. 
-On NVIDIA GPU architecture, there are different memory access widths (32-bit, 64-bit, 128-bit) and paths (through normal or texture cache). 
-In fact, both NVIDIA documents and previous studies~\cite{tan} pointed out that wider 
+For GPU memory hierarchy we focus on the programmer controllable memory resources, shared memory and global memory.
+On NVIDIA GPU architecture, there are different memory access widths (32-bit, 64-bit, 128-bit) and paths (through normal or texture cache).
+In fact, both NVIDIA documents and previous studies~\cite{tan} pointed out that wider
 instructions have longer pipeline latency.
 Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
 
 
-Intuitively, a wider load operation should achieve higher bandwidth. 
+Intuitively, a wider load operation should achieve higher bandwidth.
 We test the bandwidth of shared memory instructions with different widths, {\tt LDS.32}, {\tt LDS.64},
-and {\tt LDS.128}. 
-The instructions are specially arranged to avoid shared memory bank conflict. 
-% In this experiment, the amount of data are projected to the number of load instructions. 
-Assume the data can be loaded by $N$ {\tt LDS.128} instructions, 
+and {\tt LDS.128}.
+The instructions are specially arranged to avoid shared memory bank conflict.
+% In this experiment, the amount of data are projected to the number of load instructions.
+Assume the data can be loaded by $N$ {\tt LDS.128} instructions,
 then $2N$ {\tt LDS.64} or $4N$ {\tt LDS.32} instructions are needed.
-Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth of the three instructions by increasing the data volume. 
-{\tt LDS.64} achieves the highest bandwidth $137GB/s$, which is about $76\%$ of the peak bandwidth\footnote{The 
+Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth of the three instructions by increasing the data volume.
+{\tt LDS.64} achieves the highest bandwidth $137GB/s$, which is about $76\%$ of the peak bandwidth\footnote{The
 theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth = f_{core} \times Width \times Warpsize$ in
 bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, $Warpsize$ is warp size.}.
 
@@ -245,7 +245,7 @@ bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, 
 
 % global memory
 Two paths are used to load data from global memory, through L2 cache by {\tt
-LD} instruction or through texture cache by {\tt LDG} instruction. 
-We launch $26$ thread blocks each with $512$ threads, and specifies that each thread accesses $4$ words in a stride of $4 \times blockDim.x \times gridDim.x$. 
+LD} instruction or through texture cache by {\tt LDG} instruction.
+We launch $26$ thread blocks each with $512$ threads, and specifies that each thread accesses $4$ words in a stride of $4 \times blockDim.x \times gridDim.x$.
 Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}.
 % , which has been identified by previous work~\cite{tan}.
