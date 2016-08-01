@@ -1,7 +1,7 @@
 \begin{abstract}
 In this paper, we present a methodology to demystify GPU's microarchitecture level features and demonstrate how to use
-them to tune SGEMM. The methodology relies on a reverse engineering approach to crack the instruction encoding 
-of GPU architecture, and a profound microbenchmarking at assembly level to correlate architecture features with
+them to tune SGEMM. The methodology relies on a reverse engineering approach to crack the GPU instruction encoding, and
+a profound microbenchmarking at assembly level to correlate architecture features with
 performance factors, such as dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
 bank distribution on performance etc. 
 Based on these disclosed information, we implemented the fastest SGEMM on Kepler GPU. 

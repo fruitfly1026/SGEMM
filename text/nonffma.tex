@@ -16,7 +16,8 @@ to insert these instructions is estimated as
 \#slots = \frac{rx\times ry\times bk}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
 $rx\times ry\times bk$ yields the total number of {\tt FFMA}s for one thread inside register blocking loop in Algorithm~\ref{gemm}, where $rx$ and $ry$ are register blocking size and $bk$ is the unrolling factor.
-$ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is $6$ by our $1-2-2-1$ dual issue pattern in section~\ref{sec:benchmark}.
+$ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is $6$ by our
+$1$-$2$-$2$-$1$ dual issue pattern in section~\ref{sec:benchmark}.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} because of their long latencies. The
 schedule slots are illustrated in two dimension in Table~\ref{tab:position}.
 Note that we use double buffers to hide the latency of {\tt LDG} from global memory, which is $200$ clock cycles.

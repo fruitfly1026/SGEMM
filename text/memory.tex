@@ -8,7 +8,7 @@ In the inner loop of Algorithm~\ref{gemm}, we need three {\tt LDG.128} instead o
 words from $A$ column.
 Second, the shared memory transaction size is 256 bytes, which forces each request being split into multiple transactions.
 % it is another story for shared memory.
-If we use {\tt LDS.128}, we can not infer the time of the second transaction by inspecting the inner loop, so it is
-difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s.
-However, it's determinable for {\tt LDS.64}, since a transaction just happens two cycles after the instruction is
-issued. \jled{don't understand this sentence.}
+%If we use {\tt LDS.128}, we can not infer the time of the second transaction by inspecting the inner loop, so it is
+%difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s.
+%However, it's determinable for {\tt LDS.64}, since a transaction just happens two cycles after the instruction is
+%issued. \jled{don't understand this sentence.}

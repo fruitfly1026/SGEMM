@@ -159,7 +159,8 @@ code varies from $0$ to $255$.
 % Thus, most throughputs achieve the maximum when the control code's value is smaller than {\tt 0x20} because of no set suspension.
 % Obvious periodicity is shown with size $16$ after the control code's value reaches {\tt 0x20}.
 After 0x20, both the throughput and latency show obvious periodicity.
-For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. \jled{the period size is different! why?}
+For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. 
+%\jled{the period size is different! why?}
 This phenomenon implies that the $4$ lower bits stores the number of stall cycles before issuing
 an instruction.
 Our microbenchmarking reveals some specific patterns of control codes:

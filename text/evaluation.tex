@@ -62,8 +62,7 @@ L2 cache size&1536KB\\
 
 \subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} reports the performance of cuBLAS SGEMM and our optimized SGEMM.
-When matrix size is xx,\jled{matrix size} the optimized SGEMM achieves $3104$ GFlop/s with $88\%$ efficiency, while cuBLAS gets $2509$ GFlop/s with $71\%$ efficiency. 
- %is $3104/3520=88\%$. 
+When matrix size is $12288\times12288$, the optimized SGEMM achieves $3104$ GFlop/s with $88\%$ efficiency, while cuBLAS gets $2509$ GFlop/s with $71\%$ efficiency. 
 Our SGEMM achieves $17\%$ performance improvement over cuBLAS.
 
 The overall trend Figure~\ref{fig:sgemm_tn} is that SGEMM performance increases with matrix sizes. 
@@ -151,10 +150,10 @@ implementations by incrementally applying our microarchitectural optimizations.
 memory double buffering, shared memory double buffering and unrolling, without assembly level optimization.
 For example, the baseline uses default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} instruction to load data from global memory.
 Registers is allocated orderly first for $C$, from $0$ to $143$, then for $A$ and $B$. 
-In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ \jled{2-way bank conflicts?} and $64/(144*4)=11.11\%$ 3-way bank conflicts. 
+In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ 2-way bank conflicts and $64/(144*4)=11.11\%$ 3-way bank conflicts. 
 Besides, the baseline cannot apply dual issue optimization either.
 
-{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:assembler}\jled{refer to the subsection} is applied to eliminate register bank conflict. 
+{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:register} is applied to eliminate register bank conflict. 
 No optimization on instruction scheduling for this version.
 
 {\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
@@ -165,7 +164,7 @@ Though Kepler has a L1 data cache, but it is designed for local rather than glob
 When {\tt LDGx} is used, {\tt TEXDEPBAR} is required before the data access due to weak consistence of texture cache~\cite{lukyanov2014efficient}.
 
 {\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
-Single issue is controlled by setting control code to $0x00$ \jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
+%Single issue is controlled by setting control code to $0x40$. %\jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
 For dual issued code, {\tt NOP} may be inserted for instruction alignment.
 
 \begin{figure}[htbp]
