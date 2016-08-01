@@ -3,7 +3,7 @@
 
 
 In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA cuBLAS. 
-Our SGEMM achieves $17\sim 25\%$ performance
+Our SGEMM achieves $17\%\sim 25\%$ performance
 improvement, which confirms the usefulness of the microarchitectural optimization on GPU. 
 We present 
 a quantitative analysis on the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
@@ -14,7 +14,7 @@ and $C$, and  the matrix sizes vary in $768\times768$, $1536\times1536$, $3072\t
 %\jled{C size? What about A and B?}
 
 \begin{table}[htbp]
-\caption{The configuration of NVIDIA Tesla K20m GPU.}
+\caption{The specification of NVIDIA Tesla K20m GPU.}
 \centering
 \scalebox{0.8} {
 \begin{tabular}{|c|c|}
@@ -67,11 +67,13 @@ When matrix size is xx,\jled{matrix size} the optimized SGEMM achieves $3104$ GF
 Our SGEMM achieves $17\%$ performance improvement over cuBLAS.
 
 The overall trend Figure~\ref{fig:sgemm_tn} is that SGEMM performance increases with matrix sizes. 
-\jled{the next sentence change to ``On the one hand, a larger matrix has a higher arithmetic intensity 9$AI$), which is the ratio of compulsory floating-point operations to the total DRAM memory traffic.
-The high arithmetic intensity makes good use of GPU computing resources to obtain good performance.''}
+%\jled{the next sentence change to ``On the one hand, a larger matrix has a higher arithmetic intensity 9$AI$), which is the ratio of compulsory floating-point operations to the total DRAM memory traffic.
+%The high arithmetic intensity makes good use of GPU computing resources to obtain good performance.''}
 On the one hand, a large matrix has a high ratio of 
 floating-point operations to the store operations of matrix $C$, which is more close to the hardware arithmetic intensity. 
-On the other hand, a larger matrix has a better load balance on GPU by increasing the workload of the threading CUDA cores \jled{change to ``number of threading blocks''}. 
+On the other hand, a larger matrix has a better load balance on GPU by increasing the workload of the threading CUDA
+cores.
+%\jled{change to ``number of threading blocks''}. 
 The number of threading blocks range in $4 \times 4, 8 \times 8, \dots, 64 \times 64$ from left to right in Figure~\ref{fig:sgemm_tn}.
 % $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. 
 Since Kepler has $13$ SMs in total, matrix $768\times 768$ suffers more from load imbalance because of only a few ($16$) blocks. 
@@ -100,8 +102,8 @@ sAI = \frac {rx\times
 ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}.
 \end{equation}
 This function implies that larger register blocks get the higher shared memory arithmetic intensity.
-The optimal solution should be in the case of $rx=ry$\jled{what about C is not square matrix?}. 
-For global memory, we have a similar conclusion.\jled{Add another equation for $AI$}
+The optimal solution should be in the case of $rx=ry$. %\jled{what about C is not square matrix?}. 
+For global memory, we have a similar conclusion.%\jled{Add another equation for $AI$}
 
 However, register blocking size is limited by number of registers per thread. 
 %the maximum number of threads in one block.
@@ -119,8 +121,10 @@ Since $4\times 4$ leads to low data reuse in register files, Figure~\ref{fig:blo
 We choose $12\times12$ over $8\times8$ because
 $12\times12$ blocking has higher $sAI$ and instruction level parallelism. 
 With respect to 
-instruction scheduling optimization as Figure~\ref{fig:position}, it has more slots to insert scheduling instructions, making the {\tt LDS} overhead being more easily amortized. 
-Thus, $12*12+4*12=192$ registers are used by {\tt LDx} and {\tt FFMA} instructions, and totally $236$ registers with other address indices\jled{what other?}.
+instruction scheduling optimization as Table~\ref{tab:position}, it has more slots to insert scheduling instructions,
+making the {\tt LDS} overhead being more easily amortized. 
+Thus, $12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with
+other address indices.%\jled{what other?}.
 The number of registers per SM restricts us to launch up to $256$ threads. 
 In our implementation, we have $256$ threads per block. 
 Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
@@ -133,7 +137,7 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 \end{center}
 \end{figure}
 
-Only one thread block per SM is active\jled{why?}, thus the thread occupancy is $256/1024=12.5\%$.
+Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/1024=12.5\%$.
 With our high instruction level parallelism, the thread parallelism becomes low.
 However, our SGEMM's high performance confirms that instruction level parallelism plays an more important role on GPU.
 Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
@@ -214,7 +218,6 @@ It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG}
 We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} will cause $2*10/384 = 5.2\%$ loss. Other penalty 
 comes from synchronization and writing $C$ matrix in the block.
 
-
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.35]{roofline}
@@ -222,7 +225,6 @@ comes from synchronization and writing $C$ matrix in the block.
 \label{fig:roofline}
 \end{center}
 \end{figure}
-
 
 \begin{figure}[htbp]
 \begin{center}
