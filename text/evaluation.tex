@@ -145,6 +145,13 @@ Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
 
 In order to examine performance gain of different optimization strategies, we construct several intermediate 
 implementations by incrementally applying our microarchitectural optimizations.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.65]{tn_prof}
+    \caption{Evaluation of the incremental optimizations.}
+\label{fig:th_prof}
+\end{center}
+\end{figure}
 
 {\it Baseline:}~~The baseline includes conventional optimizations including register blocking, global
 memory double buffering, shared memory double buffering and unrolling, without assembly level optimization.
@@ -157,33 +164,41 @@ Besides, the baseline cannot apply dual issue optimization either.
 No optimization on instruction scheduling for this version.
 
 {\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
-Though Kepler has a L1 data cache, but it is designed for local rather than global memory access. ~\cite{xx}
+Though Kepler has a L1 data cache, but it is designed for local rather than global memory access~\cite{gk110}.
 % So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LDx}. 
-When {\tt LDGx} is used, {\tt TEXDEPBAR} is required before the data access due to weak consistence of texture cache~\cite{lukyanov2014efficient}.
+{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LD}. 
+When {\tt LDG} is used, {\tt TEXDEPBAR} is required before the data access due to weak consistence of texture cache~\cite{lukyanov2014efficient}.
 
 {\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
 %Single issue is controlled by setting control code to $0x40$. %\jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
 For dual issued code, {\tt NOP} may be inserted for instruction alignment.
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.65]{tn_prof}
-    \caption{Evaluation of the incremental optimizations.}
-\label{fig:th_prof}
-\end{center}
-\end{figure}
-
 Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
 As long as the number of instructions is changed, rescheduling instruction order is needed to achieve good performance.
-Compared to the baseline implementation, we gain $2.6\times$\jled{on average or maximum?} speedup by applying all the optimization.
+Compared to the baseline implementation, SGEMM gain up to $2.6\times$ speedup by applying all the optimization.
 Register bank conflict eliminating improves around $10\%$ performance. 
 Wider load instruction ({\tt LD128} improves $27\%-35\%$, texture cached
 load instruction {\tt LDG128} improves $5\%-12\%$.
 Dual issue improves the most, $84\%-106\%$.
 
 \subsubsection{Upper Bound Analysis}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.35]{roofline}
+    \caption{Global memory roofline model using log-log scale. ``GM Bandwidth'' means global memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
+\label{fig:roofline}
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.35]{roofline_sm}
+    \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
+\label{fig:roofline}
+\end{center}
+\end{figure}
 
 
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, 
@@ -216,19 +231,3 @@ With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ 
 It needs $4*144*4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
 We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} will cause $2*10/384 = 5.2\%$ loss. Other penalty 
 comes from synchronization and writing $C$ matrix in the block.
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.35]{roofline}
-    \caption{Global memory roofline model using log-log scale. ``GM Bandwidth'' means global memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
-\label{fig:roofline}
-\end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.35]{roofline_sm}
-    \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
-\label{fig:roofline}
-\end{center}
-\end{figure}
