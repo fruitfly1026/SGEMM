@@ -24,7 +24,7 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. Hence, we
 % TODO by jli
 
 \begin{algorithm}
-      \caption{Immediate Solver \jled{what about changing ``pushback'' to ``put'' with an increment for p?} \jled{What about use register solver for this algorithm?}}
+    \caption{Immediate Solver} %\jled{what about changing ``pushback'' to ``put'' with an increment for p?} \jled{What about use register solver for this algorithm?}}
       \label{algo:int_solver}
   \begin{algorithmic}[1]
       % \LineComment {input is pairs of full instruction and 64-bit encoding}
@@ -119,7 +119,7 @@ of {\tt IADD RX, RY, 0ximm} (the RX and RY are arbitrary register operands, 0xim
 as shown in Figure~\ref{fig:imm}. As specified in~\cite{cuda2015programming}, NVIDIA GPU uses little-endian 
 representation, then we set the bits higher than the $23$ to $1$ bit by bit, and observe the the disassembled code. 
 Immediate value increases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$ is for integer 
-immediate. No {\tt fffff} immediate was got even if we set bit $42$ to be $1$.  
+immediate.%No {\tt fffff} immediate was got even if we set bit $42$ to be $1$.  
 
 \begin{figure}[htbp]
 \begin{center}
@@ -136,28 +136,28 @@ based on NVIDIA PTX syntax, and generate encoding by using NVDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand 
 mask. However, the uncompleteness of NVIDIA document hinders us to find out all the opcodes and instruction modifiers. 
 Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
-In general, each instruction has $3$ register operands, and one $4-bit$ predicate register, $64-8*3-4=36$ bits are left 
+In general, each instruction has $3$ register operands, and one 4-bit predicate register, $64-8*3-4=36$ bits are left 
 to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By 
-randomly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode and other bits 
-represent flags. Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find 
+randomly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode.
+%and other bits represent flags. 
+Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find 
 the minimal opcode without any flags. 
-
 
 \begin{algorithm}
       \caption{Opcode Solver}\label{algo:opcode}
   \begin{algorithmic}[1]
       \State \textbf {Input:} instMap (A map of instructions and their 64-bit encodings)
-      \State \textbf {Onput:} Opcodes' binary positions for each input instruction
+      \State \textbf {Onput:} Opcodes' positions in 64-bit encoding
       \For {$i \gets 0, N$}
-	  \LineComment {fetch an instruction from generated database \jled{what's the database?}}
+	  %\LineComment {fetch an instruction from generated database \jled{what's the database?}}
       \State $inst \gets instMap[i]$
       \State $enc \gets inst.enc64$
 	  \LineComment {check each bit of $enc$ for opcode}
       \For {$j \gets 0, 63$}
-	  \LineComment {if bit $j$ doesn't belong to any operand and it is 0 \jled{what about enc[j]!=0? No need to check if it is opcode?}}
-      \LineComment {set bit $j$ to $1$}
+      \LineComment {if bit $j$ not operand bit and its value is 0} % \jled{what about enc[j]!=0? No need to check if it is opcode?}}
       \If {notOprd($enc[j]$) and $enc[j] = 0$}
+      \LineComment {set bit $j$ to $1$}
       \State nEnc = setbit($enc, j, 1$)
 	  \LineComment {disassemble new encoding nEnc}
       \State nInst=nvdisasm(nEnc)
@@ -168,7 +168,7 @@ the minimal opcode without any flags.
       \EndIf
       \EndFor
       \EndFor
-      \State \textbf{Return} opBits \jled{All instructions' opcodes are stored in opBits?}
+      \State \textbf{Return} opBits %\jled{All instructions' opcodes are stored in opBits?}
   \end{algorithmic}
 \end{algorithm}
 
@@ -204,11 +204,10 @@ the minimal opcode without any flags.
 
 Modifier(also called flags) defines a specific behavior for an instruction. For example,
 {\tt LD} instruction has type-size modifiers, such as {\tt .u8}, {\tt .s8}, {\tt .u16}, {\tt .32}, {\tt .64} and {\tt 
-.128}. {\tt LD} also has cache operation modifier, such as {\tt .ca}(cache at all level) and {\tt .cg}(cache at global 
+.128}. {\tt LD} also has cache operation modifier, such as {\tt .CS}(cache streaming) and {\tt .cg}(cache at global 
 level). Modifiers are much more complicated because its position spans accross the reminding bits and one instruction 
 may have more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. In 
 order to reduce search space, we observe that the default value for modifier is $0$. That is, modifier works when at 
 least one bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to 
 observe whether flags will change.
-
-\jled{Maybe add a assembler section here.}
+%\jled{Maybe add a assembler section here.}
