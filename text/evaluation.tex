@@ -188,7 +188,7 @@ Dual issue improves the most, $84\%-106\%$.
 \begin{center}
 \includegraphics[scale=0.35]{roofline}
     \caption{Global memory roofline model using log-log scale. ``GM Bandwidth'' means global memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
-\label{fig:roofline}
+\label{fig:roofline_global}
 \end{center}
 \end{figure}
 
@@ -196,12 +196,12 @@ Dual issue improves the most, $84\%-106\%$.
 \begin{center}
 \includegraphics[scale=0.35]{roofline_sm}
     \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
-\label{fig:roofline}
+\label{fig:roofline_shared}
 \end{center}
 \end{figure}
 
 
-We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to $3$ kinds of resources, 
+We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to three kinds of resources, 
 shared
 memory, global memory and computation power. In register blocking loop, each thread compute $bm*bn*bk$, read $bm*bk$
 and $bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
@@ -218,9 +218,19 @@ shared memory ration,
 \end{displaymath}
 
 On Kepler GPU the minimum bandwidth requirement is $1173$GB/s, and for each SM of Kepler, bandwidth requirement is
-$1173/13=90$ GB/s.
-The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth, which is
-higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
+$1173/13=90$ GB/s. The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth in
+theory, which is higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
+
+SGEMM has different computation to memory ratio in terms of  global memory and shared memory, so we draw two roofline models. 
+The slope of slash lines in Figure~\ref{fig:roofline_global} is bandwidth of global memory. The x-axis is computation to global
+memory access ratio of an application. For SGEMM, by $12\times12$, the ratio is $48$, by $8\times 8$ blocking, the ratio
+is $32$. The horizontal black lines corresponding to our {\tt FFMA} throughput optimization which including elimanating
+register banks, choosing proper load width. Our SGEMM currently achieves at the red line. This figure demonstrates that
+by $12\times12$ blocking, SGEMM is not global memory bounded.
+The slope of slash lines in Figure~\ref{fig:roofline_shared} is bandwidth of shared memory. The x-axis is computation to
+shared memory access ratio of an application. For SGEMM, by $12\times12$, the ratio is $3$, by $8\times 8$ blocking, the ratio is $2$. 
+This figure shows by our optimization,  SGEMM will not be bounded by shared memory. However, if we use {\tt LDS.128} instead of
+{\tt LDS.64}, even $12\times 12$ blocking, SGEMM will be bounded by shared memory.
 
 The loss to peak performance can be explained as the following reasons. As we have shown in 
 Section~\ref{sec:assembler}, {\tt FFMA} throughput can achieve $97.67\%$. The loss is about $2.33\%$, which may comes 
