@@ -131,27 +131,31 @@ This rule will guide the performance tuning of SGEMM code.
 
 
 {\em {\bf Observation 2--[Control Code]}:
-Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction execution.}
+Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction issue.}
 
 Starting with the Kepler architecture, NVIDIA has been moving some control logics off the chip and into kernel
 instructions which are determined by the assembler~\cite{lai,maxas}. This evolution provides programmers the opportunity to
-make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls $7$ instructions exactly as Figure~\ref{fig:assemblycode}.
+make globally optimal scheduling decisions and other control optimizations if an assembler is available. The disassembly
+code from sample programs and cuBLAS library indicates that every $64$-bit control binary code controls $7$ instructions
+exactly as Figure~\ref{fig:assemblycode} shows.
 % a control code is placed before $7$ instructions, and it
 We identify that both the highest $6$ bits and lowest
-$2$ bits are {\em opcodes}, and the middle $56$ bits are used to control the execution of $7$
-instructions, each of which is assigned to $8$ control bits.
+$2$ bits are {\em opcode} of schedualing instruction, and the middle $56$ bits are used to control the execution of $7$
+instructions, each of which is assigned to $8$ bits control code.
 
-For the $8$ control bits, we identify their meanings by statically examining the disassembly codes of cuBLAS and
+We figure out control code meanings by statically examining the disassembly codes of cuBLAS and
 dynamically benchmarking instruction sequence of different control codes.
-In this way, we discover bit-$4$ marks global memory dependency barrier, bit-$5$ represents shared memory dependency barrier, and bit-$7$ indicates a texture cache dependency barrier due to its weak consistent memory model.
+In this way, we discover bit-$4$ represents shared memory dependency barrier, bit-$5$ represents global memory dependency
+barrier, and bit-$7$ indicates a texture cache dependency barrier due to its weak consistent cache model.
 Some unexpected values are loaded if the any $4-7$ bits is not set.
-\jled{Wrong bit number, bit-4 not 4th bit! What about bit-$6$?? Please check the correctness.}
+%\jled{Wrong bit number, bit-4 not 4th bit! What about bit-$6$?? Please check the correctness.}
 % We verify the $7$\textsuperscript{th} bit of the control
 % code of {\tt TEXDEPBAR} instruction is set to $1$, to
 % indicate a texture dependency barrier of texture cache due to its weak consistent memory model.
 We use {\tt FFMA} instruction's behaviors to crack $0-3$ bits of its control code.
 Figure~\ref{fig:control_code}(\subref{fig:control_throughput}) and
-Figure~\ref{fig:control_code}(\subref{fig:control_latency}) show {\tt FFMA}'s throughput and latency  when its $8$ control bits varies from $0$ to $255$.
+Figure~\ref{fig:control_code}(\subref{fig:control_latency}) show {\tt FFMA}'s throughput and latency when its control
+code varies from $0$ to $255$.
 % Thus, most throughputs achieve the maximum when the control code's value is smaller than {\tt 0x20} because of no set suspension.
 % Obvious periodicity is shown with size $16$ after the control code's value reaches {\tt 0x20}.
 After 0x20, both the throughput and latency show obvious periodicity.
@@ -162,10 +166,11 @@ Our microbenchmarking reveals some specific patterns of control codes:
 % Furthermore, the microbenchmarking reveals some specific patterns of control codes:
 
 \begin{itemize}
-\item When the control bits are set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
+\item When the control code is set to be 0x00, the scheduler suspends a warp of the instructions for $16$ cycles.
 \item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, \dots, 15$.
 \item 0x20 means single issue mode, while 0x04 means dual-issue mode.
-While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum. \jled{relation with Figure?}
+While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach the maximum.
+        %\jled{relation with Figure?}
 \end{itemize}
 
 {\em {\bf Observation 3--[Arithmetic Throughput]}:
