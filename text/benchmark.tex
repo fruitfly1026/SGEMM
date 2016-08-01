@@ -1,29 +1,24 @@
-\subsection{Correlating Microarchitecture with Performance\jled{change to ``Benchmarking''?}}
+\subsection{Benchmarking} %Correlating Microarchitecture with Performance\jled{change to ``Benchmarking''?}}
 \label{sec:benchmark}
 
 
 To explore NVIDIA Kepler architecture, we a create microbenchmark tailored for each characteristic.
 % Our following observations are drawn from analyzing the execution time of the microbenchmarks.
-Each program from the microbenchmark is basically a main function wrapping CUDA kernel code with timing around.
-Timing ticks are recorded in a general register by reading the clock register (using clock()) and then time is calculated and written to global memory.
-% The clock values are
-% first stored in registers, then written to global memory at the
-% end of the kernel to avoid slow global memory accesses from
-% interfering with the timing measurements.
+Our kernel code is  written in assembly and compiled into {\tt cubin} by our assembler. Then a main function with CUDA API 
+will call {\tt cubin}.
+All assembly kernel codes are designed small enough to fit into the L1 instruction cache.
 For timing accuracy, the same CUDA kernel code is duplicated for several times, then the average is used for our analysis.
-% The general structure of a microbenchmark consists of GPU
-% kernel code containing timing code around a code section (typically an unrolled loop running multiple times) that exercises
-% the hardware being measured. 
-All CUDA kernel codes are designed small enough to fit into the L1 instruction cache.
-We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses. 
-Other than timing information, we also use instruction latency and throughput as performance criteria.
-Instruction throughput is defined as the maximum number of a particular type of launched instructions per a clock cycle.
-% when the operands of each instruction are independent of the preceding instructions.
-We use similar testing method with Fog's in~\cite{fog}.
-
+Timing ticks are recorded by {\tt S2R R0, SR\_CLOCKLO} instruction, in which {\tt SR\_CLOCKLO} is the clock register,  
+and then time is calculated and written to global memory.
+%We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses. 
+Two metrics are benchmarked: latency and throughput. Latency is tested by a succession of dependented instructions by
+launching $1$ block of $32$ threads. Throughput is tested by a succession of independent instructions by launching enough
+threads(e.g. $26$ blocks, each block with $512$ threads for kepler) to make full use of CUDA cores and bandwidth.
+%We use similar testing method with Fog's in~\cite{fog}.
 
 We tune the assembly codes of our microbenchmark using the assembler in Figure~\ref{fig:workflow}.
-From the tuning process, we correlate microarchitecture characteristics with the benchmark performance, which is useful to optimize program snippets in real applications.
+From the tuning process, we correlate microarchitecture characteristics with the benchmark performance, which is useful
+to optimize program snippets in real applications.
 % According to the performance tuning results, we 
 The correlation is presented as some meaningful observations, which are categorized into four microarchitectural features:  {\tt 
 control} function, {\tt register} allocation, {\tt arithmetic} throughput, and {\tt memory} operation.
