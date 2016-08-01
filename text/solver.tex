@@ -1,25 +1,25 @@
 \subsection{Instruction Solver}
 
-\jled{How sample programs used in here? No mention.}
-%We wrote simple PTX code generator, which generate PTX code with various modifiers specified.
-%Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump}. In this way, we generate real assembly
-%instruction and their 64-bit encoding, which is the input of solver algorithm.
-We disassmble libcublas.so to generate instruction and their corresponing 64-bit encodings. There are $1537123$ different encodings of cublas 7.0 library in total.
-An instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. We express these information in a struct
+%\jled{How sample programs used in here? No mention.}
+We wrote a simple PTX code generator, which generates PTX code with various modifiers specified.
+Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump} to generate real assembly. 
+As Figure~\ref{fig:imm} shows an assembly instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. We express these information in a struct
 varaible $instMap$, which is input of our solver.
+%In this way, we generate real assembly instruction and their 64-bit encoding, which is the input of solver algorithm.
+%We disassmble libcublas.so to generate instruction and their corresponing 64-bit encodings. There are $1537123$ different encodings of cublas 7.0 library in total.
 
 An operand could be register({\tt R5}), 
 global memory({\tt [R6+0x20]}), constant memory({\tt C[0x2][0x40]}), shared memory ({\tt [0x50]}),
 immediate values({\tt 0x9} and{\tt1.5}), or predicate register({\tt P3})~\cite{ptx2015isa}. %represented by different .
 And we observe the name of operand is always related with a number, hence the encoding of operand can be inferred by its name.
 For instance, the register operand {\tt R5} is inferred as $101$ in binary format, while immediate value {\tt 0x9} is $1001$. 
-Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
-The encodings of opcodes and modifiers are mnemonic symbols, therefore
-, they can not be speculated by names. 
-\jled{We design a greedy algorithm on a pruned search space to determine the position of opcode.}
+%Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
+The encodings of opcodes and modifiers are mnemonic symbols, therefore, they can not be speculated by names. 
+They must be enumerate in their encoding space, and we design a heuristic algorithm on a pruned search space to
+determine the position of opcode and modifier.
 Modifiers are instruction-sensitive, that is modifiers in the same type may be different encodings for different instructions. 
 For instance, masks of type-size
-modifier for {\tt LD} and {\tt LDG} are at different binary positions. So we process each instruction's modifier separately. 
+modifier for {\tt LD} and {\tt LDG} are at different binary positions. Hence, we process each instruction's modifier separately. 
 
 % TODO by jli
 
