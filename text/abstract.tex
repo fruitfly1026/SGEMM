@@ -9,7 +9,8 @@ The performance boost is achieved on the basis of tuning {\tt FFMA} throughput a
 hardware peak by activating dual issue and eliminating bank conflicts, then add other non-FFMA instruction with little
 penalty by choosing proper width of global load and shared memory load instructions, and instruction scheduling. 
 The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 17\% higher than cuBLAS's SGEMM on Kepler GPU.
-Then, we use a roofline model to analyze the upper bound of SGEMM.\jled{suggest remove this sentence.}
+% Then, we use a roofline model to analyze the upper bound of SGEMM.
+We build two roofline models for shared and global memory separately, which reveal that even for compute-intensive SGEMM kernel, without appropriately optimizations or good resource usage, its performance could also be memory-bound.\jled{Please check this sentence! Or remove it.}
 % $17\%$ higher than Cublas. 
 \end{abstract}
 
