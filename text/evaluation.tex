@@ -139,6 +139,7 @@ However, our SGEMM's high performance confirms that instruction level parallelis
 Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
 
 \subsubsection{Profiling Microarchitectural Optimization}
+
 In order to examine performance gain of different optimization strategies, we construct several intermediate 
 implementations by incrementally applying our microarchitectural optimizations.
 
@@ -217,7 +218,7 @@ comes from synchronization and writing $C$ matrix in the block.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.35]{roofline}
-    \caption{Global memory roofline model using log-log scale.}
+    \caption{Global memory roofline model using log-log scale. ``GM Bandwidth'' means global memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
 \label{fig:roofline}
 \end{center}
 \end{figure}
@@ -226,7 +227,7 @@ comes from synchronization and writing $C$ matrix in the block.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.35]{roofline_sm}
-    \caption{Shared memory roofline model using log-log scale.}
+    \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical bandwidth. Horizontal lines correspond to our incremental optimizations.}
 \label{fig:roofline}
 \end{center}
 \end{figure}
