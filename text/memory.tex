@@ -1,0 +1,14 @@
+\subsection{Memory Movement}
+% According to the optimization observation on memory access suggested by microbenchmark,
+According to our benchmarking observations, we use {\tt LDG.128} to load data from global memory through texture cache
+and {\tt LDS.64} to load data from shared memory.
+We also have additional reasons to adopt them in SGEMM kernel.
+First, using {\tt LDG.128} reduces load instructions, hence reduce {\tt non-FFMA}s. %\jled{use load instead of non-FFMA. Use non-FFMA seems complicated.}
+In the inner loop of Algorithm~\ref{gemm}, we need three {\tt LDG.128} instead of twelve {\tt LDS.32} to read twelve
+words from $A$ column.
+Second, the shared memory transaction size is 256 bytes, which forces each request being split into multiple transactions.
+% it is another story for shared memory.
+If we use {\tt LDS.128}, we can not infer the time of the second transaction by inspecting the inner loop, so it is
+difficult to eliminate potential bank conflicts between {\tt LDS.128}s and {\tt FFMA}s.
+However, it's determinable for {\tt LDS.64}, since a transaction just happens two cycles after the instruction is
+issued. \jled{don't understand this sentence.}
