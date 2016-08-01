@@ -1,13 +1,5 @@
-@inproceedings{tan,
-  title={Fast implementation of DGEMM on Fermi GPU},
-  author={Tan, Guangming and Li, Linchuan and Triechle, Sean and Phillips, Everett and Bao, Yungang and Sun, Ninghui},
-  booktitle={Proceedings of 2011 International Conference for High Performance Computing, Networking, Storage and Analysis},
-  pages={35},
-  year={2011},
-  organization={ACM}
-}
 @inproceedings{lai,
-  title={Performance upper bound analysis and optimization of sgemm on fermi and kepler gpus},
+  title={Performance upper bound analysis and optimization of sgemm on {Fermi} and {Kepler} {GPUs}},
   author={Lai, Junjie and Seznec, Andr{\'e}},
   booktitle={Code Generation and Optimization (CGO), 2013 IEEE/ACM International Symposium on},
   pages={1--10},
@@ -15,7 +7,7 @@
   organization={IEEE}
 }
 @inproceedings{volkov,
-  title={Benchmarking GPUs to tune dense linear algebra},
+  title={Benchmarking {GPUs} to tune dense linear algebra},
   author={Volkov, Vasily and Demmel, James W},
   booktitle={High Performance Computing, Networking, Storage and Analysis, 2008. SC 2008. International Conference for},
   pages={1--11},
@@ -23,7 +15,7 @@
   organization={IEEE}
 }
 @inproceedings{wong,
-  title={Demystifying GPU microarchitecture through microbenchmarking},
+  title={Demystifying {GPU} microarchitecture through microbenchmarking},
   author={Wong, Henry and Papadopoulou, Misel-Myrto and Sadooghi-Alvandi, Maryam and Moshovos, Andreas},
   booktitle={Performance Analysis of Systems \& Software (ISPASS), 2010 IEEE International Symposium on},
   pages={235--246},
@@ -38,46 +30,14 @@
   year={2015},
   organization={ACM}
 }
-
-@misc{top500_2015_nov,
-        author = {Hans Meuer and Erich Strohmaier and Jack Dongarra and Horst Simon}, 
-        title = {Top500},
-        howpublished = {\url{http://www.top500.org/system/177975}}
-}
-@misc{nervana_sgemm_wiki,
-    author = {Scott Gray},
-    title = {NervanaGPU},
-    howpublished = {\url{https://github.com/NervanaSystems/maxas/wiki/SGEMM}}
-}
-@misc{maxas,
-    author = {Scott Gray},
-    title = {MaxAs},
-    howpublished = {\url{https://github.com/NervanaSystems/maxas}}
-}
-@misc{decuda,
-    author = {Wladimir J. van der Laan },
-    title = {Decuda},
-    howpublished = {\url{https://github.com/laanwj/decuda}}
-}
-@misc {envytools,
-    title={Envytools},
-    howpublished = {\url{https://github.com/envytools/envytools}}
-}
 @article{bernstein2012usable,
-  title={Usable assembly language for GPUs: a success story.},
+  title={Usable assembly language for {GPUs}: a success story.},
   author={Bernstein, Daniel J and Chen, Hsieh-Chung and Cheng, Chen-Mou and Lange, Tanja and Niederhagen, Ruben and Schwabe, Peter and Yang, Bo-Yin},
   journal={IACR Cryptology ePrint Archive},
   volume={2012},
   pages={137},
   year={2012}
 }
-
-@misc{asfermi,
-    author = {Yunqing Hou},
-    title = {AsFermi},
-    howpublished = {\url{https://code.google.com/archive/p/asfermi/wikis}}
-}
-
 @incollection{bottou2010large,
   title={Large-scale machine learning with stochastic gradient descent},
   author={Bottou, L{\'e}on},
@@ -87,7 +47,7 @@
   publisher={Springer}
 }
 @misc{ptx2015isa,
-  title = {PARALLEL THREAD EXECUTION ISA v4.3},
+  title = {PARALLEL THREAD EXECUTION {ISA} v4.3},
   howpublished  = {\url{http://docs.nvidia.com/cuda/parallel-thread-execution/#axzz42f7ftJVy}},
   author = {NVIDIA},
   year={September 2015}
@@ -100,19 +60,19 @@
 }
 
 @article{cubin2015util,
-  title={CUDA BINARY UTILITIES},
+  title={{CUDA} BINARY UTILITIES},
   author={NVidia},
   year={September 2015}
 }
 
 @article{cuda2015best,
-  title={CUDA C programming best practices guide v7.5},
+  title={{CUDA C} programming best practices guide v7.5},
   howpublished  = {\url{http://docs.nvidia.com/cuda/cuda-c-best-practices-guide/#axzz42f7ftJVy}},
   author={NVidia},
   year={September 2015}
 }
 @article{nvcc,
-  title={CUDA COMPILER DRIVER NVCC v7.5},
+  title={{CUDA} COMPILER DRIVER NVCC v7.5},
   howpublished  = {\url{http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/#axzz42f7ftJVy}},
   author={NVidia},
   year={September 2015}
@@ -124,26 +84,27 @@
   year={2012}
 }
 @misc{gk110,
-    title = {NVIDIAs Next Generation CUDA TM Compute Architecture:Kepler TM GK110 The Fastest, Most
-        Efficient HPC Architecture Ever Built},
+    title = {NVIDIAs Next Generation {CUDA} Compute Architecture: {Kepler} {GK110}, The Fastest, Most
+        Efficient {HPC} Architecture Ever Built},
     author={Nvidia},
     howpublished={White Paper},
     year={2012}
 }
 @misc{fermi,
-  title={Next Generation CUDA TM Compute Architecture: Fermi},
+  title={Next Generation CUDA Compute Architecture: {Fermi}},
   howpublished={White Paper},
   author={NVIDIA},
   year={2009}
 }
 @techreport{magma,
-  title={An improved MAGMA GEMM for Fermi GPUs, University of Tennessee Computer Science Technical Report},
+  title={An improved {MAGMA GEMM for Fermi GPUs}, University of Tennessee Computer Science Technical Report},
   author={Nath, R and Tomov, S and Dongarra, J},
   year={2010},
   institution={UTCS-10-655, July}
 }
 @article{fog,
-  title={Instruction tables: Lists of instruction latencies, throughputs and micro-operation breakdowns for Intel, AMD and VIA CPUs},
+  title={Instruction tables: Lists of instruction latencies, throughputs and micro-operation breakdowns for {Intel},
+      {AMD} and {VIA CPUs}},
   author={Fog, Agner},
   journal={Denmark (Lyngby): Technical University of Denmark},
   year={2012}
@@ -157,7 +118,7 @@
   note={US Patent 8,639,882}
 }
 @incollection{mei,
-  title={Benchmarking the memory hierarchy of modern GPUs},
+  title={Benchmarking the memory hierarchy of modern {GPUs}},
   author={Mei, Xinxin and Zhao, Kaiyong and Liu, Chengjian and Chu, Xiaowen},
   booktitle={Network and Parallel Computing},
   pages={144--156},
@@ -183,7 +144,7 @@
   publisher={ACM}
 }
 @inproceedings{lapack,
-  title={LAPACK: A portable linear algebra library for high-performance computers},
+  title={{LAPACK:} A portable linear algebra library for high-performance computers},
   author={Anderson, Edward and Bai, Zhaojun and Dongarra, Jack and Greenbaum, Anne and McKenney, Alan and Du Croz, Jeremy and Hammerling, Sven and Demmel, James and Bischof, C and Sorensen, Danny},
   booktitle={Proceedings of the 1990 ACM/IEEE conference on Supercomputing},
   pages={2--11},
@@ -196,7 +157,7 @@
     publisher={}
 }
 @techreport{chien,
-  title={Hand Tuned SGEMM on GT200 GPU},
+  title={Hand Tuned {SGEMM} on {GT200} GPU},
   author={Chien, Lung-Sheng},
   year={2010},
   institution={Tech. rep., Department of Mathematics, Tsing Hua University, Taiwan}
@@ -215,7 +176,7 @@
   year={2001}
 }
 @misc{intel2007intel,
-  title={Intel math kernel library},
+  title={Intel Math kernel library},
   author={Intel, MKL},
   year={2007},
   publisher={ed}
@@ -286,3 +247,49 @@ title={AMD Core Math Library (ACML)},
   year={2010},
   organization={San Jose, CA}
 }
+@inproceedings{wu2016gpucc,
+  title={gpucc: an open-source GPGPU compiler},
+  author={Wu, Jingyue and Belevich, Artem and Bendersky, Eli and Heffernan, Mark and Leary, Chris and Pienaar, Jacques and Roune, Bjarke and Springer, Rob and Weng, Xuetian and Hundt, Robert},
+  booktitle={Proceedings of the 2016 International Symposium on Code Generation and Optimization},
+  pages={105--116},
+  year={2016},
+  organization={ACM}
+}
+@inproceedings{tan,
+  title={Fast implementation of DGEMM on Fermi GPU},
+  author={Tan, Guangming and Li, Linchuan and Triechle, Sean and Phillips, Everett and Bao, Yungang and Sun, Ninghui},
+  booktitle={Proceedings of 2011 International Conference for High Performance Computing, Networking, Storage and Analysis},
+  pages={35},
+  year={2011},
+  organization={ACM}
+}
+@misc{top500_2015_nov,
+        author = {Hans Meuer and Erich Strohmaier and Jack Dongarra and Horst Simon}, 
+        title = {Top500},
+        howpublished = {\url{http://www.top500.org/system/177975}}
+}
+@misc{nervana_sgemm_wiki,
+    author = {Scott Gray},
+    title = {NervanaGPU},
+    howpublished = {\url{https://github.com/NervanaSystems/maxas/wiki/SGEMM}}
+}
+@misc{maxas,
+    author = {Scott Gray},
+    title = {MaxAs},
+    howpublished = {\url{https://github.com/NervanaSystems/maxas}}
+}
+@misc{decuda,
+    author = {Wladimir J. van der Laan },
+    title = {Decuda},
+    howpublished = {\url{https://github.com/laanwj/decuda}}
+}
+@misc {envytools,
+    title={Envytools},
+    howpublished = {\url{https://github.com/envytools/envytools}}
+}
+@misc{asfermi,
+    author = {Yunqing Hou},
+    title = {AsFermi},
+    howpublished = {\url{https://code.google.com/archive/p/asfermi/wikis}}
+}
+
