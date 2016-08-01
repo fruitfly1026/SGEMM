@@ -3,11 +3,12 @@
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.5]{reg}
-\caption{An illustration of register bank allocation. The number in the cell is register number.
-    The leftmost column registers are allocated to one block-column of $A$, the
+\caption{An illustration of register allocation in SGEMM. The number in the cell is register index.
+Different colors denote the mapping of register banks: green$\rightarrow$bank0,
+blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.
+The leftmost column registers are allocated to one block-column of $A$, the
 topmost row registers are allocated to one block-row of $B$, and the others are registers for
-a $12 \times 12$ sub-matrix $C$. Different colors denote the mapping of register banks as in Table~\ref{tab:ref}: green$\rightarrow$bank0,
-blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.}
+    a $12 \times 12$ sub-matrix $C$.}
 \label{fig:reg}
 \end{center}
 \end{figure}
