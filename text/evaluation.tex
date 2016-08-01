@@ -16,7 +16,7 @@ and $C$, and  the matrix sizes vary in $768\times768$, $1536\times1536$, $3072\t
 \begin{table}[!t]
 \caption{The configuration of NVIDIA Tesla K20m GPU.}
 \centering
-\scalebox{1.0} {
+\scalebox{0.8} {
 \begin{tabular}{|c|c|}
 \hline
 % Metric& Value\\
@@ -128,7 +128,7 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{block}
-    \caption{Evaluation of different blocking sizes\jled{could add $4\times4$ case.}}
+    \caption{Evaluation of different blocking sizes.} %\jled{could add $4\times4$ case.}}
 \label{fig:block}
 \end{center}
 \end{figure}
