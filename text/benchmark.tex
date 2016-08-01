@@ -178,25 +178,25 @@ With a proper control code pattern and register allocation, {\tt FFMA}
 instruction throughput can approach the theoretical peak in dual issue mode.}
 
 It's very intricate to tune instruction execution to improve instruction throughput. The previous work~\cite{lai}
-reports the maximal throughput of {\tt FFMA} per SM as $132$, which is much lower than the theoretical throughput ($192$) on Kepler.
+reports the maximal throughput of {\tt FFMA} per SM as $132$, which is much lower than the theoretical throughput ($192$
+cores per SM) on Kepler.
 Our microbenchmark reveals several key points of optimization to approach theoretical peak on Kepler.
 First, the control code must be set properly to dual issue adjacent instructions. Second, the ratio and interval of
 dual issue {\tt FFMA} instructions must be tuned into a specific pattern.
-Since each warp of extra computing unit is
-shared among two warps, \jled{non clear} when all threads are trying to fully dual issue every two adjacent {\tt FFMA}s, half of the
+Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
+two adjacent {\tt FFMA}s, half of the
 scheduler would stall due to computing resource conflict.
 Thus, the optimal ratio of dual issue to single issue is $2:2$ theoretically, and
-with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn. \jled{not clear}
+with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn. %\jled{not clear}
 Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single  and dual issue pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
 We choose the best {\tt SDDS} pattern in our SGEMM implementation.
 Third, the first instruction of the core loop needs to be aligned. This restriction is
 caused by the aligned position of control code in the instruction sequence.
-Last, {\tt FFMA} dual issue requires $6$ register banks from Table~\ref{tab:reg} \jled{Where is 6 from? Table~\ref{tab:reg}, right?}.
-Instruction order has to be adjusted to fully use Kepler's operand
-collector mechanism~\cite{collector,tarjan2012policy} to avoid register bank conflicts.
-\jled{A new concept: operand collector mechanism. Maybe just don't mention it.}
-As shown in
-Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock \jled{ops/cycle?}, which is very close to the theoretical peak $192$ ops/clock.
+Last, each {\tt FFMA} require $3$ source registers, in dual issue, two {\tt FFMA} requires $6$ source registers.  %\jled{Where is 6 from? Table~\ref{tab:reg}, right?}.
+Instruction order has to be adjusted to fully use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy}
+to avoid register bank conflicts.
+As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock
+, which is very close to the theoretical peak $192$ ops/clock.
 
 \begin{table}[htbp]
 \caption{Floating-point instruction throughput on Kepler}
@@ -221,25 +221,6 @@ Inst &operation&single issue&dual issue\\
 {\em {\bf Observation 4--[Memory]}: For higher memory bandwidth, shared memory prefers 64-bit load
 instruction {\tt LDS.64} while global memory prefers the load instruction with texture cache {\tt LDG}.}
 
-For GPU memory hierarchy we focus on the programmer controllable memory resources, shared memory and global memory.
-On NVIDIA GPU architecture, there are different memory access widths (32-bit, 64-bit, 128-bit) and paths (through normal or texture cache).
-In fact, both NVIDIA documents and previous studies~\cite{tan} pointed out that wider
-instructions have longer pipeline latency.
-Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
-
-
-Intuitively, a wider load operation should achieve higher bandwidth.
-We test the bandwidth of shared memory instructions with different widths, {\tt LDS.32}, {\tt LDS.64},
-and {\tt LDS.128}.
-The instructions are specially arranged to avoid shared memory bank conflict.
-% In this experiment, the amount of data are projected to the number of load instructions.
-Assume the data can be loaded by $N$ {\tt LDS.128} instructions,
-then $2N$ {\tt LDS.64} or $4N$ {\tt LDS.32} instructions are needed.
-Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth of the three instructions by increasing the data volume.
-{\tt LDS.64} achieves the highest bandwidth $137GB/s$, which is about $76\%$ of the peak bandwidth\footnote{The
-theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth = f_{core} \times Width \times Warpsize$ in
-bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, $Warpsize$ is warp size.}.
-
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.6]{lds_bandwidth}
@@ -248,9 +229,29 @@ bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, 
 \end{center}
 \end{figure}
 
+For GPU memory hierarchy we focus on the programmer controllable memory resources, shared memory and global memory.
+On NVIDIA GPU architecture, there are different memory access widths (32-bit, 64-bit, 128-bit) and paths (through normal or texture cache).
+In fact, both NVIDIA documents and previous studies~\cite{tan} pointed out that wider
+instructions have longer pipeline latency.
+Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
+
+Intuitively, a wider load operation should achieve higher bandwidth.
+We test the bandwidth of shared memory instructions with different widths, {\tt LDS.32}, {\tt LDS.64},
+and {\tt LDS.128}.
+The instructions are arranged to avoid shared memory bank conflict.
+% In this experiment, the amount of data are projected to the number of load instructions.
+%Assume the data can be loaded by $4N$ {\tt LDS.32} instructions,
+%then $2N$ {\tt LDS.64} or $4N$ {\tt LDS.32} instructions are needed.
+Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth of the three instructions by increasing the data volume.
+{\tt LDS.64} achieves the highest bandwidth $137GB/s$, which is about $76\%$ of the peak bandwidth\footnote{The
+theoretical shared memory bandwidth for each SM can be calculated as $Bandwidth = f_{core} \times Width \times Warpsize$ in
+bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, $Warpsize$ is warp size.}.
+
 % global memory
 Two paths are used to load data from global memory, through L2 cache by {\tt
 LD} instruction or through texture cache by {\tt LDG} instruction.
 We launch $26$ thread blocks each with $512$ threads, and specifies that each thread accesses $4$ words in a stride of $4 \times blockDim.x \times gridDim.x$.
-Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}.
+The total global memory accessed is $256$MB.
+We benchmark each {\tt LDG.128} achieves $131$GB/s, while {\tt LD.128} only achives $76$GB/s.
+%Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}.
 % , which has been identified by previous work~\cite{tan}.
