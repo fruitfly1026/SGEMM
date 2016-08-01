@@ -6,9 +6,10 @@ performance factors, such as dual issue impact on float arithmetic throughput, m
 bank distribution on performance etc. 
 Based on these disclosed information, we implemented the fastest SGEMM on Kepler GPU. 
 The performance boost is achieved on the basis of tuning {\tt FFMA} throughput as high as 
-hardware peak by activiting dual issue and eliminating bank conflicts, then add other non-FFMA instruction with little
+hardware peak by activating dual issue and eliminating bank conflicts, then add other non-FFMA instruction with little
 penalty by choosing proper width of global load and shared memory load instructions, and instruction scheduling. 
-The optimized SGEMM is $3104$ Gflop/s and efficiency is $88\%$, which is 17\% higher than CUBLAS's SGEMM on Kepler GPU.
-Then, we use a roofline model to analyze the upper bound of SGEMM.
+The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 17\% higher than cuBLAS's SGEMM on Kepler GPU.
+Then, we use a roofline model to analyze the upper bound of SGEMM.\jled{suggest remove this sentence.}
+% $17\%$ higher than Cublas. 
 \end{abstract}
 
