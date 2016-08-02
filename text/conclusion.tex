@@ -3,17 +3,18 @@
 We presented a methodology to demystify GPU's microarchitecture level features and demonstrated its 
 application on tuning SGEMM. The methodology relies on a reverse engineering approach to crack the instruction encoding 
 of GPU architecture, and a profound microbenchmarking at assembly level to correlate architecture features with 
-performance factors, such as dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
+performance factors. These benchmarks figured out dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
 bank distribution on performance etc. These parameters are worthwhile for both hardware and software researchers to 
 understand GPU architecture and program optimization on GPUs. To our best knowledge, this is the 
 first time to describe a detailed decoding solver to crack the instruction encoding. 
-This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. % \jled{``automatically'' change to easily}.
+This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. 
 
 Based on the disclosed correlation between GPU architecture features and program performance, we implemented the
-optimized SGEMM in $3104$ Gflop/s with $88\%$ efficiency on Kepler GPU, which is $17\%$ higher than cuBLAS. 
+fast SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $17\%$ higher than CUBLAS. 
 We also build roofline models to analyze the upper bound of SGEMM.
-Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten some optimizations on compilers or other computational kernels.
-In future, we will apply our methodology to the latest Pascal GPU to reveal GPU architecture features.
+Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten optimizations on
+compilers or other performance critical kernels.
+In future, we will apply our methodology to the latest Pascal GPU to reveal GPU microarchitecture features.
 We also try to apply our insights of GPU microarchitecture to optimize code generation of open source GPU compiler
 GPUCC~\cite{wu2016gpucc}.
 %We also considering 
