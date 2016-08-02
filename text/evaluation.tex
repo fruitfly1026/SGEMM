@@ -234,7 +234,7 @@ The flops:bytes ratio of $12\times12$ blocking SGEMM is $3$, while that of $8\ti
 % For SGEMM, by $12\times12$, the ratio is $3$, by $8\times 8$ blocking, the ratio is $2$. 
 This figure shows, SGEMM will not be bounded by shared memory through our optimization. 
 However, if we use {\tt LDS.128} instead of
-{\tt LDS.64}, SGEMM will be bounded by shared memory even for $12\times 12$ blocking,.
+{\tt LDS.64}, SGEMM will be bounded by shared memory even for $12\times 12$ blocking.
 
 
 
