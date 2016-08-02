@@ -1,15 +1,11 @@
 \subsection{Register Allocation}
 \label{sec:register}
-
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.5]{reg}
 \caption{An illustration of register allocation in SGEMM. The number in the cell is register index.
 Different colors denote the mapping of register banks: green$\rightarrow$bank0,
     blue$\rightarrow$bank1, gray$\rightarrow$bank2, red$\rightarrow$bank3.}
-%The leftmost column registers are allocated to one block-column of $A$, the
-%topmost row registers are allocated to one block-row of $B$, and the others are registers for
-%    a $12 \times 12$ sub-matrix $C$.}
 \label{fig:reg}
 \end{center}
 \end{figure}
@@ -37,7 +33,5 @@ choose $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$ $\begin{bmatrix} 2 & 3 \end{bmatr
 We use different colors to represent the four banks and show the register allocation when computing a $12 \times 12$ sub-matrix of C in Figure~\ref{fig:reg}.
 % We have $2\times2$ bank patterns for SGEMM, these four patterns are equivalent in performance,
 To allocate actual register index, we choose continuous register index so that register index do not get too big to exceed 255 restriction. 
-%\jled{Is the left sentence necessary?}
 It can be verified that every $C_{ij}$, $A_i$ and $B_j$ have different banks in Figure~\ref{fig:reg}, thus register bank conflicts are successfully avoided.
 % for example $C_{01}$'s color is white, $A_0$'s color is green and $B_1$'s color is red, .
-
