@@ -202,25 +202,23 @@ Dual issue improves the most, $84\%-106\%$.
 \subsubsection{Upper Bound Analysis}
 
 
-We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA}. They correspond to three kinds of resources, 
+We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources, 
 shared
-memory, global memory and computation power. In register blocking loop, each thread compute $bm*bn*bk$, read $bm*bk$
-and $bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
+memory, global memory, and computation power. In register blocking loop, each thread computes $bm*bn*bk$and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{displaymath}
     \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
 \end{displaymath}
 According to parameters in our SGEMM implementation, $bm=bn=192$, $bk=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
 requirement for global memory bandwidth in order to achieve peak $3520$ Gflops.
 For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be read from shared memory, in which $tx$,
-$ty$ is block dimension, $rx$, $ry$ is register blocking size. The computation is $bm*bn*bk$. Based on computation
-shared memory ration,
+$ty$ is block dimension, $rx$, $ry$ is register blocking size. The computation is $bm*bn*bk$. Based on the ratio of computation to shared memory access,
 \begin{displaymath}
     \frac{2*bm*bk*bn}{4*tx*ty*(rx*bk + ry *bk)}  = \frac{Gflop/s}{bandwidth}
 \end{displaymath}
 
 
-On Kepler GPU the minimum bandwidth requirement is $1173$GB/s, and for each SM of Kepler, bandwidth requirement is
-$1173/13=90$ GB/s. The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth in
+For Kepler GPU the minimum bandwidth requirement for shared memory is $1173$GB/s, and the bandwidth requirement is
+$1173/13=90$ GB/s for each SM. The hardware can provide $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth in
 theory, which is higher than requirement, and hence neither bandwidth of shared width nor global memory will be bottleneck.
 
 SGEMM has different computation to memory ratio in terms of  global memory and shared memory, so we draw two roofline models. 
