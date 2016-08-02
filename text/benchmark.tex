@@ -194,18 +194,21 @@ Last, each {\tt FFMA} require $3$ source registers, in dual issue, two {\tt FFMA
 Instruction order has to be adjusted to fully use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy}
 to avoid register bank conflicts.
 
-Figure~\ref{fig:warp} shows mapping of {\tt FFMA} instructions to cores on one SM. $4$ warp schedulers are available on
-one SM, and each warp scheduler can issue instruction to $32$ cores. The middle $32$ cores are shared by two warp
-schedulers. This means two warp schedulers must use the shared cores alternately to avoid resource conflicts.
-%Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
-%two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
-The optimal ratio of dual issue to single issue is $2:2$ theoretically, and
-with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn.
-Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single and dual issue
+Figure~\ref{fig:warp} shows mapping of {\tt FFMA} instructions to cores on one SM. There are $32\times 6=192$ cores on
+one SM, the middle $32$ cores are shared by two warp schedulers, $4$ warp schedulers are available. 
+In single mode, each warp scheduler issue instruction to $32$ cores, which
+yields $4\times32/192=66.67\%$efficiency. 
+In dual issue mode, two warp schedulers must use the shared cores alternately to avoid resource conflicts.
+The jagged green and red blocks shows a proper phase shift among two warp's executing pace, so that they could get
+access to the shared computing unit in turn.
+The optimal ratio of dual issue to single issue is $2:2$ theoretically, 
+\( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single and dual issue
 pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
 We choose the best {\tt 1-2-2-1} pattern in our SGEMM implementation.
 As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock
 , which is very close to the theoretical peak $192$ ops/clock.
+%Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
+%two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.7]{warp}
