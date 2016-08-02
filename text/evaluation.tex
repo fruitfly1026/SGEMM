@@ -203,7 +203,7 @@ Dual issue improves the most, $84\%-106\%$.
 
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources, 
 shared
-memory, global memory, and computation power. In register blocking loop, each thread computes $bm*bn*bk$and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
+memory, global memory, and computation power. In register blocking loop, each thread computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{equation}
     \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
     \label{equ:global}
@@ -240,8 +240,8 @@ section~\ref{sec:assembler}, {\tt FFMA} throughput can achieve $97.67\%$.
 The loss is about $2.33\%$, which may come 
 from overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency 
 of {\tt LDS}.
-With $12\times12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA} instructions in the loop.
-With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA} needs $4$ clock cycles in the pipeline.
-It needs $4\times144\times4/6=384$ clock cycles for each thread,  two $128$ bits {\tt LDG} instruction are needed.
-We observe each {\tt LDG} has $10$ clock penalty, the total {\tt LDG} will cause $2\times10/384 = 5.2\%$ loss. Other penalty 
+With $12\times12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA}s in the loop.
+With our designed {\tt FFMA} dual issue pattern, every $6$ {\tt FFMA}s needs $4$ clock cycles in the pipeline.
+It needs $4\times144\times4/6=384$ clocks for each thread, two {\tt LDG.128}s are needed.
+We observe each {\tt LDG} has $10$ clocks penalty, the total {\tt LDG} will cause $2\times10/384 = 5.2\%$ loss. Other penalty 
 comes from synchronization and writing $C$ matrix in the block.
