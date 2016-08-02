@@ -6,7 +6,7 @@ The workflow on Figure~\ref{fig:workflow} consists of three major components: an
 benchmarking. %\jled{(because it is a benchmarking process not just build and use a benchmark)}.
 %and two program sets: sample programs and microbenchmark.
 % a deliberate microbenchmark
-Each sample program in the Figure is a synthetic PTX file which generates specific instructions as our input in the instruction solver.%\jled{xiuxia, check correctness}
+Each sample program in the figure is a synthetic PTX file which generates specific instructions as our input in the instruction solver. %\jled{xiuxia, check correctness}
 Deliberate microbenchmark is designed for the assembler to tune code at assembly language level, to find the correlation
 between microarchitecture and performance.
 %We dissemble a binary library (such as cuBLAS) to provide a high coverage of instructions to instruction solver.
@@ -16,7 +16,7 @@ We first leverage CUDA binary tools ({\tt cuobjdump} or {\tt nvdiasm}) to disass
 % A library might provide a high coverage of instruction sets.
 As introduced in section~\ref{sec:cuda}, these generated assembly files ({\em sass}) provide instruction encoding to be cracked.
 Our instruction solver takes the assembly files as the input to decode each field of 64-bit instructions.
-We design a set of algorithms to solve all fields of a binary instruction, which includes different types of {\em operands}, {\em opcodes} and {\em modifiers}.
+We design a set of algorithms to solve all fields of a binary instruction, which include different types of {\em operands}, {\em opcodes} and {\em modifiers}.
 %The solver uncovers some undocumented ISA specifications,
 %which is used to implement an naive assembler.
 Our assembler is built by translating each field to get $64$ bit binaries, and then encapsulate with ELF header to
