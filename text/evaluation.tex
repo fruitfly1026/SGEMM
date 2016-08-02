@@ -115,15 +115,13 @@ Equation~\ref{equ:reg_block} implies that larger register blocking yields the hi
 and the optimal solution lies at $rx=ry$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
 {\tt LDG.128}, the block size could be $4\times 4$, $8\times 8$ or $12\times 12$. 
-Since $4\times 4$ leads to low data reuse in register files, Figure~\ref{fig:block} plots $8\times8$ and $12\times12$ cases.
-We choose $12\times12$ over $8\times8$ because
-$12\times12$ blocking has higher $sAI$ and instruction level parallelism. 
-With respect to 
-instruction scheduling optimization as Table~\ref{tab:position}, it has more slots to insert scheduling instructions,
-making the {\tt LDS} overhead being more easily amortized. 
-Thus, $12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with
-other address indices.%\jled{what other?}.
-The number of registers per SM restricts us to launch up to $256$ threads. 
+Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:block}.
+Performance of $12\times12$ is bettern than $8\times8$ because $12\times12$ blocking has higher $sAI$ and instruction
+level parallelism. With respect to 
+instruction scheduling optimization like Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA}
+instructions, and latency can be hide easier.
+$12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with
+other address indices. The number of registers per SM restricts us to launch up to $256$ threads. 
 In our implementation, we have $256$ threads per block. 
 Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
 
