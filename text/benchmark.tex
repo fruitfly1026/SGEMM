@@ -51,7 +51,7 @@ control} code,  {\tt arithmetic} throughput, and {\tt memory} operation.
 
 
 {\em {\bf Observation 1--[Register Bank]}:
-Irrespective of single- or dual-issue mode, source registers may cause register bank conflicts that degrades instruction throughput.}
+Source registers may cause register bank conflicts that degrades instruction throughput.}
 \begin{table}[htbp]
     \caption{The efficiency of instruction throughput varies with difference register bank distribution. {\it Inst} :
 instruction pattern, {\it Th/SM}: the instruction throughput per SM, {\it Eff}: efficiency of throughput, {\tt Conf}: register bank conflicts.}
@@ -184,23 +184,26 @@ With a proper control code pattern and register allocation, {\tt FFMA}
 instruction throughput can approach the theoretical peak in dual issue mode.}
 
 It's very intricate to tune instruction execution to improve instruction throughput. The previous work~\cite{lai}
-reports the maximal throughput of {\tt FFMA} per SM as $132$, which is much lower than the theoretical throughput ($192$
-cores per SM) on Kepler.
-Our microbenchmark reveals several key points of optimization to approach theoretical peak on Kepler.
-First, the control code must be set properly to dual issue adjacent instructions. Second, the ratio and interval of
-dual issue {\tt FFMA} instructions must be tuned into a specific pattern.
-Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
-two adjacent {\tt FFMA}s, half of the
-scheduler would stall due to computing resource conflict.
-Thus, the optimal ratio of dual issue to single issue is $2:2$ theoretically, and
-with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn. %\jled{not clear}
-Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single  and dual issue pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
-We choose the best {\tt SDDS} pattern in our SGEMM implementation.
+reports the maximal throughput of {\tt FFMA} per SM as $132$, which is only $68.75\%$ efficiency of the theoretical
+throughput. Our microbenchmark reveals several key points of tuning {\tt FFMA} thoughput to $97\%$ efficiency.
+First, the control code must be set properly to dual issue adjacent instructions. 
+Second, the ratio and interval of dual issue {\tt FFMA} instructions must be tuned into a specific pattern.
 Third, the first instruction of the core loop needs to be aligned. This restriction is
 caused by the aligned position of control code in the instruction sequence.
-Last, each {\tt FFMA} require $3$ source registers, in dual issue, two {\tt FFMA} requires $6$ source registers.  %\jled{Where is 6 from? Table~\ref{tab:reg}, right?}.
+Last, each {\tt FFMA} require $3$ source registers, in dual issue, two {\tt FFMA} requires $6$ source registers..
 Instruction order has to be adjusted to fully use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy}
 to avoid register bank conflicts.
+
+Figure~\ref{fig:warp} shows mapping of {\tt FFMA} instructions to cores on one SM. $4$ warp schedulers are available on
+one SM, and each warp scheduler can issue instruction to $32$ cores. The middle $32$ cores are shared by two warp
+schedulers. This means two warp schedulers must use the shared cores alternately to avoid resource conflicts.
+%Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
+%two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
+The optimal ratio of dual issue to single issue is $2:2$ theoretically, and
+with a proper phase shift among two warp's executing pace, they could get access to the shared computing unit in turn.
+Using the $2:2$ ratio, \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single and dual issue
+pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
+We choose the best {\tt 1-2-2-1} pattern in our SGEMM implementation.
 As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock
 , which is very close to the theoretical peak $192$ ops/clock.
 \begin{figure}[htbp]
