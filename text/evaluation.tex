@@ -99,15 +99,14 @@ The shared memory arithmetic intensity ($sAI$) is defined as the ratio of floati
 \begin{equation}
 sAI = \frac {rx\times 
 ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}.
+    \label{equ:reg_block}
 \end{equation}
 This function implies that larger register blocks get the higher shared memory arithmetic intensity.
-The optimal solution should be in the case of $rx=ry$. %\jled{what about C is not square matrix?}. 
-For global memory, we have a similar conclusion.%\jled{Add another equation for $AI$}
-
+and the optimal solution should be in the case of $rx=ry$. 
 However, register blocking size is limited by number of registers per thread. 
-%the maximum number of threads in one block.
+Each thread needs $rx\times ry$, $rx$ and $ry$ registers to store the result of a sub-matrix of $C$,  a block-column of
+$A$,  a block-row of $B$ in the same loop respectively.
 In order to hide shared memory latency, double-buffered software pipelining is an efficient way. 
-Each thread needs $rx\times ry$ registers to store the result of a sub-matrix of $C$, $rx$ and $ry$ registers to store a block-column of $A$ and a block-row of $B$ in the same loop. 
 For double-buffering, extra $rx$ and $ry$ registers are used to prefetch next block-column of $A$ and block-row of $B$ from shared memory. 
 Since the total number of registers must be less than the maximal number of registers per thread ($256$ on Kepler), we have
 \begin{equation}
