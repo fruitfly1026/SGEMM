@@ -239,14 +239,6 @@ Inst &operation&single issue&dual issue\\
 {\em {\bf Observation 4--[Memory]}: For higher memory bandwidth, shared memory prefers 64-bit load
 instruction {\tt LDS.64} while global memory prefers the load instruction with texture cache {\tt LDG}.}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.5]{lds_bandwidth}
-    \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
-\label{fig:lds_bw}
-\end{center}
-\end{figure}
-
 For GPU memory hierarchy we focus on the programmer controllable memory resources, shared memory and global memory.
 On NVIDIA GPU architecture, there are different memory access widths (32-bit, 64-bit, 128-bit) and paths (through normal or texture cache).
 In fact, both NVIDIA documents and previous studies~\cite{tan} pointed out that wider
@@ -273,3 +265,11 @@ The total global memory accessed is $256$MB.
 We benchmark each {\tt LDG.128} achieves $131$GB/s, while {\tt LD.128} only achives $76$GB/s.
 %Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}.
 % , which has been identified by previous work~\cite{tan}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.5]{lds_bandwidth}
+    \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
+\label{fig:lds_bw}
+\end{center}
+\end{figure}
