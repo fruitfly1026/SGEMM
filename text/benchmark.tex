@@ -28,20 +28,24 @@ control} code,  {\tt arithmetic} throughput, and {\tt memory} operation.
 \begin{figure*}
     \begin{subfigure}[htbp]{0.3\textwidth}
         \includegraphics[width=2.1in]{ctrl}
-        \subcaption{Control code regulates {\tt FFMA} throughput.} %\jled{8-bit control code value} \jled{ops/cycle? or IPC?}}
+        %\subcaption{Control code regulates {\tt FFMA} throughput.} %\jled{8-bit control code value} \jled{ops/cycle? or IPC?}}
+        \subcaption{}
         \label{fig:control_throughput}
     \end{subfigure}
     \begin{subfigure}[htbp]{0.3\textwidth}
         \includegraphics[width=2.1in]{ctrl_latency}
-        \subcaption{Control code regulates {\tt FFMA} latency.} %\jled{8-bit control code value}}
+        \subcaption{}
+        %\subcaption{Control code regulates {\tt FFMA} latency.} %\jled{8-bit control code value}}
         \label{fig:control_latency}
     \end{subfigure}
     \begin{subfigure}[htbp]{0.3\textwidth}
         \includegraphics[width=2.1in]{pattern}
-        \subcaption{Peak {\tt FFMA} throughput(1: single issue, 2: dual issue).}%\jled{Y-axis is performance?}}
+        \subcaption{}
+        %\subcaption{Peak {\tt FFMA} throughput(1: single issue, 2: dual issue).}%\jled{Y-axis is performance?}}
         \label{fig:control_pattern}
     \end{subfigure}
-    \caption{Different control code impact on performance}
+    \caption{Different control code impact on performance(subfigure(\subref{fig:control_pattern}), 1$\rightarrow$single
+    issue, 2$\rightarrow$dual issue).}
     \label{fig:control_code}
 \end{figure*}
 
@@ -119,13 +123,14 @@ From our experiments on Kepler architecture, we observe:
 %    \jled{Is the two numbers fixed?}
 \item Our microbenchmark finds out a proper distribution of registers to eliminate bank conflict.
      The distribution is summarized in Table~\ref{tab:reg}, which consistents to GTX680~\cite{lai}, though K20 is
-        different from GTX680 in register numbers: \\
- bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\
- bank2$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 1$) \\
-bank1$\Leftarrow$($Ridx \% 8 > 4$ \&\& $Ridx \%2 == 0$) \\
-bank3$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx\% 2 == 1$)\\
-where $Ridx$ is the register number.
-This rule will guide the performance tuning of SGEMM code.
+        different from GTX680 in register numbers. 
+        %\\
+% bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\
+% bank2$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 1$) \\
+%bank1$\Leftarrow$($Ridx \% 8 > 4$ \&\& $Ridx \%2 == 0$) \\
+%bank3$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx\% 2 == 1$)\\
+%where $Ridx$ is the register number.
+%This rule will guide the performance tuning of SGEMM code.
 
 \end{itemize}
 
@@ -198,6 +203,13 @@ Instruction order has to be adjusted to fully use Kepler's operand collector mec
 to avoid register bank conflicts.
 As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA}'s throughput to $190$ ops/clock
 , which is very close to the theoretical peak $192$ ops/clock.
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.7]{warp}
+    \caption{Mapping instruction to hardware}
+\label{fig:warp}
+\end{center}
+\end{figure}
 
 \begin{table}[htbp]
 \caption{Floating-point instruction throughput on Kepler}
@@ -218,13 +230,12 @@ Inst &operation&single issue&dual issue\\
 \label{tab:ffma}
 \end{table}
 
-
 {\em {\bf Observation 4--[Memory]}: For higher memory bandwidth, shared memory prefers 64-bit load
 instruction {\tt LDS.64} while global memory prefers the load instruction with texture cache {\tt LDG}.}
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.6]{lds_bandwidth}
+\includegraphics[scale=0.5]{lds_bandwidth}
     \caption{ Bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
 \label{fig:lds_bw}
 \end{center}

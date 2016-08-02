@@ -84,7 +84,7 @@ performance.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.6]{sgemm_tn}
+\includegraphics[scale=0.5]{sgemm_tn}
 \caption{Performance comparison of CUBLAS and the optimized SGEMM }
 \label{fig:sgemm_tn}
 \end{center}
@@ -130,7 +130,7 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.6]{block}
+\includegraphics[scale=0.5]{block}
     \caption{Evaluation of different blocking sizes.} %\jled{could add $4\times4$ case.}}
 \label{fig:block}
 \end{center}
@@ -147,7 +147,7 @@ In order to examine performance gain of different optimization strategies, we co
 implementations by incrementally applying our microarchitectural optimizations.
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.65]{tn_prof}
+\includegraphics[scale=0.5]{tn_prof}
     \caption{Evaluation of the incremental optimizations.}
 \label{fig:th_prof}
 \end{center}
