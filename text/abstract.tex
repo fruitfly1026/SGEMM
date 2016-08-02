@@ -4,11 +4,11 @@ them to tune SGEMM. The methodology relies on a reverse engineering approach to 
 order to build an GPU assembler, and a profound microbenchmarking at assembly level to correlate architecture features with
 performance factors.
 We uncover microbenchmark features, such as  dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
-bank distribution on performance. 
-Based on these features, we implemente the fastest SGEMM on Kepler GPU. 
-The performance boost is achieved on the basis of tuning {\tt FFMA} throughput as high as 
+bank on performance. 
+Based on these features, we implemente the fastest SGEMM on Kepler GPU.
+The performance boost is achieved on the basis of tuning {\tt FFMA} throughput as high as
 hardware peak by activating dual issue and eliminating bank conflicts, then adding other non-FFMA instruction with little
-penalty by choosing proper width of global load and shared memory load instructions, and instruction scheduling. 
-The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 17\% higher than cuBLAS's SGEMM on Kepler GPU.
+penalty by choosing proper width of global/shared load instructions, and instruction scheduling.
+The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 17\% higher than CUBLAS7.0 on Kepler K20 GPU.
 \end{abstract}
 
