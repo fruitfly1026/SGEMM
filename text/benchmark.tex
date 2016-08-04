@@ -194,6 +194,7 @@ Last, each {\tt FFMA} require $3$ source registers, in dual issue, two {\tt FFMA
 Instruction order has to be adjusted to fully use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy}
 to avoid register bank conflicts.
 
+%Figure~\ref{fig:warp} illustrates {\tt FFMA} dual issuing. There are $32\times 6=192$ cores on
 Figure~\ref{fig:warp} shows mapping of {\tt FFMA} instructions to cores on one SM. There are $32\times 6=192$ cores on
 one SM, the middle $32$ cores are shared by two warp schedulers, $4$ warp schedulers are available. 
 In single mode, each warp scheduler issue instruction to $32$ cores, which
@@ -211,8 +212,8 @@ As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA
 %two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.7]{warp}
-    \caption{Mapping instruction to hardware}
+\includegraphics[scale=0.65]{warp}
+    \caption{An illustration of dual issue to achieve peak throughput}
 \label{fig:warp}
 \end{center}
 \end{figure}

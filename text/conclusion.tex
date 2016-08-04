@@ -10,7 +10,7 @@ first time to describe a detailed decoding solver to crack the instruction encod
 This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. 
 
 Based on the disclosed correlation between GPU architecture features and program performance, we implemented the
-fast SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $17\%$ higher than CUBLAS. 
+fastest SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $17\%$ higher than CUBLAS. 
 We also build roofline models to analyze the upper bound of SGEMM.
 Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten optimizations on
 compilers or other performance critical kernels.
