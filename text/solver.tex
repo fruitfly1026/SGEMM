@@ -135,8 +135,8 @@ the minimal opcode without any flags.
 Modifier(also called flags) defines a specific behavior for an instruction. For example,
 {\tt LD} instruction has type-size modifiers, such as {\tt .u8}, {\tt .s8}, {\tt .u16}, {\tt .32}, {\tt .64} and {\tt 
 .128}. {\tt LD} also has cache operation modifier, such as {\tt .CS}(cache streaming) and {\tt .cg}(cache at global 
-level). Modifiers are much more complicated because its position spans accross the reminding bits and one instruction 
+level). Modifiers are much more complicated because its position spans across the reminding bits and one instruction 
 may have more than one kinds of modifiers. By excluding both opcode and operand mask, there remain around $24$ bits. In 
-order to reduce search space, we observe that the default value for modifier is $0$. That is, modifier works when at 
+order to reduce search space, we observe that the default value for an modifier is $0$. That is, modifier works when at 
 least one bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to 
 observe whether flags will change.
