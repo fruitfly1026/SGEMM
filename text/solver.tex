@@ -75,7 +75,7 @@ to predicate. Our solution is to set the bit from the position bit by bit to che
 as expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position 
 of {\tt IADD RX, RY, 0ximm} (the RX and RY are arbitrary register operands, 0ximm is immediate operand) is at bit $23$ 
 as shown in Figure~\ref{fig:imm}. As specified in~\cite{cuda2015programming}, NVIDIA GPU uses little-endian 
-representation, then we set the bits higher than the $23$ to $1$ bit by bit, and observe the the disassembled code. 
+representation, then we set the bits higher than the $23$ to $1$ bit by bit, and observe the disassembled code. 
 Immediate value increases continuely until reaches value {\tt 0x7ffff}, which means that $41\sim23$ is for integer 
 immediate.%No {\tt fffff} immediate was got even if we set bit $42$ to be $1$.  
 
@@ -90,16 +90,16 @@ immediate.%No {\tt fffff} immediate was got even if we set bit $42$ to be $1$.
 \subsubsection{Opcode}
 Unlike operand, opcodes and modifiers do not show their encodings literally. One possible way to crack the operand 
 encoding is to write intermediate codes
-based on NVIDIA PTX syntax, and generate encoding by using NVDIA toolchain.
+based on NVIDIA PTX syntax, and generate encoding by using NVIDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand 
-mask. However, the uncompleteness of NVIDIA document hinders us to find out all the opcodes and instruction modifiers. 
-Another feasible way is to enumerate all of possible binary combinations after striping out operand mask.
+mask. However, the uncompleteness of NVIDIA document hinders us from finding out all the opcodes and instruction modifiers. 
+Another feasible way is to enumerate all the possible binary combinations after striping out operand mask.
 In general, each instruction has $3$ register operands, and one 4-bit predicate register, $64-8*3-4=36$ bits are left 
 to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By 
 randomly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode.
 %and other bits represent flags. 
-Thus, we only enumerate these opcode bits which generate a acceptable search space. Finally, we find 
+Thus, we only enumerate these opcode bits which generate an acceptable search space. Finally, we find 
 the minimal opcode without any flags. 
 
 \begin{algorithm}[htbp]
