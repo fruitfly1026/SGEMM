@@ -1,21 +1,21 @@
 \subsection{Instruction Solver}
 
 %\jled{How sample programs used in here? No mention.}
-We wrote a simple PTX code generator, which generates PTX code with various modifiers specified.
-Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump} to generate real assembly. 
-As Figure~\ref{fig:imm} shows an assembly instruction consists of three fields: {\tt opcode}, {\tt operand} and {\tt modifier}. We express these information in a struct
-varaible $instMap$, which is input of our solver.
+We wrote a simple PTX code generator, which generates PTX code with various modifiers.
+Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump} o generate real assembly. 
+As Figure~\ref{fig:imm} shows an assembly instruction consists of three fields: {\tt opcode}, {\tt operand}, and {\tt modifier}. We express these information in a struct
+variable $instMap$, which is the input of our solver.
 %In this way, we generate real assembly instruction and their 64-bit encoding, which is the input of solver algorithm.
 %We disassmble libcublas.so to generate instruction and their corresponing 64-bit encodings. There are $1537123$ different encodings of cublas 7.0 library in total.
 
 An operand could be register({\tt R5}), 
 global memory({\tt [R6+0x20]}), constant memory({\tt C[0x2][0x40]}), shared memory ({\tt [0x50]}),
 immediate values({\tt 0x9} and{\tt1.5}), or predicate register({\tt P3})~\cite{ptx2015isa}. %represented by different .
-And we observe the name of operand is always related with a number, hence the encoding of operand can be inferred by its name.
+And we observe the name of an operand is always related with a number, so the encoding of operand can be inferred by its name.
 For instance, the register operand {\tt R5} is inferred as $101$ in binary format, while immediate value {\tt 0x9} is $1001$. 
 %Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
-The encodings of opcodes and modifiers are mnemonic symbols, therefore, they can not be speculated by names. 
-They must be enumerate in their encoding space, and we design a heuristic algorithm on a pruned search space to
+The encodings of opcodes and modifiers are mnemonic symbols which can not be expressed as binary literally. 
+They must be enumerated in their encoding space, and we design a heuristic algorithm on a pruned search space to
 determine the position of opcode and modifier.
 Modifiers are instruction-sensitive, that is modifiers in the same type may be different encodings for different instructions. 
 For instance, masks of type-size
@@ -58,21 +58,21 @@ modifier for {\tt LD} and {\tt LDG} are at different binary positions. Hence, we
   \end{algorithmic}
 \end{algorithm}
 \subsubsection{Operand: Fixed Length Field}
-Algorithm~\ref{algo:int_solver} shows pseudocode for immediate typed operand decoding process. 
-The basic idea is that match binary encoding of operand in $64$ instruction encoding and find
-position until the postion is unique. The input instructions are from disassembly code (i.e., NVIDIA CUBLAS library).
-First, we randomly pick up an instruction that has the field we want to probe, and represent the field in binary by its 
-name. Second, we match the operand binary in $64$-bit instruction encoding, and find possible positions. Third, we 
-intersect current candidates with previous ones, if the number of candidates is $1$, we find the position. Otherwise, 
+Algorithm~\ref{algo:int_solver} shows pseudocode for immediate operand decoding process. 
+The basic idea is matching the binary encoding of the an operand in $64$-bit instruction encoding and finding
+position until the position is unique. The input instructions are from disassembly code.
+First, we randomly pick up an instruction that has the field we want to probe and represent the field in binary by its 
+name. Second, we match the operand binary in $64$-bit instruction encoding and find possible positions. Third, we 
+intersect current candidates with previous ones. If the number of candidates is $1$, we find the position. Otherwise, 
 we set the current candidate to the previous one and randomly pick next instruction to repeat the procedure.
-Other operand type such as register operand can be use similar routine by matching the corresponding operand binary.
+Other operand types such as register operand can use similar routine by matching the corresponding operand binary.
 
 Once operand position is found, we need to probe or verify the length of operand encoding. Some are easy to be
 deduced, for example, each thread can use at most $256=2^{8}$ registers, we could predict the length of register 
 operand mask to be $8$.
 However, other operand types like immediate $0x48$ or subscript of constant memory $C[0x2][0x05]$, are more complicated 
-to predicate. Our solution is to set the bit from the position bit by bit to check whether the operand value is grown 
-as we expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position 
+to predicate. Our solution is to set the bit from the position bit by bit to check whether the operand value grows
+as expected. For instance, by using Algorithm~\ref{algo:int_solver}, we find out that the immediate operand position 
 of {\tt IADD RX, RY, 0ximm} (the RX and RY are arbitrary register operands, 0ximm is immediate operand) is at bit $23$ 
 as shown in Figure~\ref{fig:imm}. As specified in~\cite{cuda2015programming}, NVIDIA GPU uses little-endian 
 representation, then we set the bits higher than the $23$ to $1$ bit by bit, and observe the the disassembled code. 
@@ -93,7 +93,7 @@ encoding is to write intermediate codes
 based on NVIDIA PTX syntax, and generate encoding by using NVDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand 
 mask. However, the uncompleteness of NVIDIA document hinders us to find out all the opcodes and instruction modifiers. 
-Another feasible way is to emulate all of possible binary combinations after striping out operand mask.
+Another feasible way is to enumerate all of possible binary combinations after striping out operand mask.
 In general, each instruction has $3$ register operands, and one 4-bit predicate register, $64-8*3-4=36$ bits are left 
 to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By 
