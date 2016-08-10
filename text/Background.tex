@@ -13,7 +13,7 @@ nvcc}. To help developers understand {\em cubin} files, CUDA toolkit introduces 
 GT200 to Maxwell architecture~\cite{gtx980}. These binary tools only provide very limited functionalities for users. 
 For instance, both {\tt cuobjdump} and {\tt nvdiasm} disassemble {\em cubin} files to {\em sass} files, which are 
 readable assembly codes for examining possible performance issues in GPU programs. For each instruction in the 
-executable code sections, the tools list its address in hexadecimal, mnemonics in string, and encoded number in 
+executable code sections, the tools list its address in hexadecimal, mnemonics in a string, and encoded number in 
 hexadecimal. For example, an {\tt IADD} instruction might be printed as follows: \\\\
 $/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\\\
 Unfortunately, these tools do not enable us to modify the assembly codes directly for tuning performance. What we can 
@@ -29,13 +29,13 @@ instruction format (in Section~\ref{sec:assembler}).
 %purpose of completeness, we describe a blocking algorithm which is similar to that in other 
 %literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
 The state of art implementation of SGEMM on GPU~\cite{magma,nervana_sgemm_wiki,lai,tan} is using two level blocking:
-shared memory blocking and register blocking to exploite data reuse through memory hierarchy.
+shared memory blocking and register blocking to exploit data reuse through memory hierarchy.
 SGEMM is to evaluate the product $C = C + AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and $m\times n$
 matrices respectively. 
 Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on the result matrix $C$. 
 Each thread block with $tx*ty$ threads is responsible to compute a $bm*bn$ submatrix in $C$, where $bm, bn$ are the 
 number of rows and columns of the submatrix $A$ and $B$ respectively. We need read a $bm*bk$ from $A$ and a $bk*bn$ sub-matrix from 
-$B$ for each thread block, where $bk$ is unroll factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and 
+$B$ for each thread block, where $bk$ is the unrolling factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and 
 $M*N$ grids of $bm*bk$, $bk*bn$ and $bm*bn$ blocks, where $M=\Bigl\lfloor \frac{m+bm-1}{bm} \Bigr\rfloor$, 
 $K=\Bigl\lfloor \frac{k+bk-1}{bk} \Bigr\rfloor$, $N=\Bigl\lfloor \frac{n+bn-1}{bn} \Bigr\rfloor$.
 
@@ -66,7 +66,7 @@ accum} are register variables. $rx$ and $ry$ are register blocking sizes}
 
 The volume of float point computations inside the while loop of Algorithm~\ref{gemm} is $2\times rx\times ry \times bk$ 
 in operations, and Table~\ref{tab:dm} estimates data movement volume through registers, shared memory, and global 
-memory for each threads inside while loop.
+memory for each thread inside while loop.
 These parameters demonstrate that SGEMM performance is affected by the hierarchical memory blocking and unrolling 
 factors in the inner loops.
 The tuning of these factors is conducted in two folds--memory bandwidth and latency. In fact, with the estimations in 

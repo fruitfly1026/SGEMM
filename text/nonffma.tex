@@ -1,12 +1,12 @@
 \subsection{Schedule non-FFMA Instructions}
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to
-assure the correct program without losing performance. In order to tolerate instruction latency, the
+assure the correct program without losing performance. To tolerate instruction latency, the
 distance of dependent instructions needs to be larger than their latency. The distance is approximated as
 \begin{equation}
 \label{eq:inst}
 distance = \frac{4\times\#instructions}{7}.
 \end{equation}
-A $7$-instruction scheduling block costs $4$ clock cycles to be issued in dual issue mode.
+A $7$-instruction scheduling block costs four clock cycles to be issued in dual issue mode.
 Therefore, if we assume two interleave instructions have a distance $L$, at least $\frac{L*7}{4}$ instructions are needed.
 % two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed.
 Besides, the remained number of slots
@@ -16,17 +16,17 @@ to insert these instructions is estimated as
 \#slots = \frac{rx\times ry\times bk}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
 $rx\times ry\times bk$ yields the total number of {\tt FFMA}s for one thread inside register blocking loop in Algorithm~\ref{gemm}, where $rx$ and $ry$ are register blocking size and $bk$ is the unrolling factor.
-$ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is $6$ by our
+$ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is six by our
 $1$-$2$-$2$-$1$ dual issue pattern in section~\ref{sec:benchmark}.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} because of their long latencies. The
-schedule slots are illustrated in two dimension in Table~\ref{tab:position}.
+schedule slots are illustrated in two dimensions in Table~\ref{tab:position}.
 Note that we use double buffers to hide the latency of {\tt LDG} from global memory, which is $200$ clock cycles.
-Every $4$ loops require $2$ {\tt LDG}s to load data from global memory to registers, $4$ {\tt STS}s to store data from
+Every four loops require two {\tt LDG}s to load data from global memory to registers, four {\tt STS}s to store data from
 registers to shared memory. A read after write (RAW) dependency exists between {\tt
 LDG} and {\tt STS}.
 From equation~\ref{eq:inst}, $\frac{200\times 7}{4} = 350$ instructions are needed between them.
 We put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and $P[65][2]$ respectively in Table~\ref{tab:position}.
-Thus, $143-77 + 144\times 2 + 65=419$ ($>350$) instructions are between them, which is enough to hide latency of {\tt LDG}s.
+Thus, $143-77 + 144\times 2 + 65=419$ ($>350$) instructions are between them, which is enough to hide the latency of {\tt LDG}s.
 % resulting in a distance of $\frac{4\times 419}{7}=239$ clocks,.
 
 The arrangement of {\tt LDS}s, loading data from shared memory for double buffers of $A$ and $B$, follows the same approach with {\tt LDG}s.
@@ -34,9 +34,9 @@ A {\tt LDS} has a latency of $40$ clock cycles, thus $\frac{40\times 7}{4}=70$ i
 In Table~\ref{tab:position}, {\tt LDS} in $P[11][3]$ reads data from {\tt STS} in $P[65][2]$,
 the distance between them is more than $40$ clock cycles.
 At the end, a {\tt BAR.SYNC} is inserted after {\tt STS} but before {\tt LDS} to make sure that data in shared memory is ready.
-Other instructions such as {\tt XOR}, {\tt IADD}, {\tt ISETP} are inserted according to data dependency, they doesn't influence the performance because of their short latencies.
+Other instructions such as {\tt XOR}, {\tt IADD}, and {\tt ISETP} are inserted according to data dependency; they don't influence the performance because of their short latencies.
 \begin{table}[htbp]
-\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by 4 times. The first column
+\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by four times. The first column
 records slot numbers and the first row represents iteration number.}
 \label{tab:position}
 \captionsetup{font=scriptsize}
