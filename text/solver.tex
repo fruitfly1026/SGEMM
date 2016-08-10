@@ -94,7 +94,7 @@ based on NVIDIA PTX syntax, and generate encoding by using NVIDIA toolchain.
 Then, opcode can be got by stripping out operand mask, and flag can be found by stripping out both opcode and operand 
 mask. However, the uncompleteness of NVIDIA document hinders us from finding out all the opcodes and instruction modifiers. 
 Another feasible way is to enumerate all the possible binary combinations after striping out operand mask.
-In general, each instruction has $3$ register operands, and one 4-bit predicate register, $64-8*3-4=36$ bits are left 
+In general, each instruction has three register operands, and one 4-bit predicate register, $64-8*3-4=36$ bits are left 
 to probe.
 In fact, we can further prune the search space by recognizing possible position by algorithm~\ref{algo:opcode}. By 
 randomly probing bit by bit, we find that both the top $10$ bits and lower $2$ bits represent opcode.

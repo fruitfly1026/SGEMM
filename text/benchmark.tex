@@ -162,7 +162,7 @@ code varies from $0$ to $255$.
 After 0x20, both the throughput and latency show obvious periodicity.
 For each period, by increasing the value of $0-3$ bits, the {\tt FFMA} throughput drops and its latency raise by different rates. 
 %\jled{the period size is different! why?}
-This phenomenon implies that the $4$ lower bits stores the number of stall cycles before issuing
+This phenomenon implies that the four lower bits stores the number of stall cycles before issuing
 an instruction.
 Our microbenchmarking reveals some specific patterns of control codes:
 % Furthermore, the microbenchmarking reveals some specific patterns of control codes:
@@ -186,13 +186,13 @@ First, the control code must be set properly to dual issue adjacent instructions
 Second, the ratio and interval of dual issue {\tt FFMA} instructions must be tuned into a specific pattern.
 Third, the first instruction of the core loop needs to be aligned. This restriction is
 caused by the aligned position of control code in the instruction sequence.
-Last, each {\tt FFMA} requires $3$ source registers, in dual issue, two {\tt FFMA} requires $6$ source registers, but
-Kepler only provides 4 register banks.
+Last, each {\tt FFMA} requires three source registers, in dual issue, two {\tt FFMA} requires six source registers, but
+Kepler only provides four register banks.
 Instruction order must be adjusted to use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy} to avoid register bank conflicts. 
 
 %Figure~\ref{fig:warp} illustrates {\tt FFMA} dual issuing. There are $32\times 6=192$ cores on
 Figure~\ref{fig:warp} illustrate the mapping of {\tt FFMA} instructions to cores in dual issue mode on one SM. There are $32\times 6=192$ cores on
-one SM, the middle $32$ cores are shared by two warp schedulers, and $4$ warp schedulers are available per SM. 
+one SM, the middle $32$ cores are shared by two warp schedulers, and four warp schedulers are available per SM. 
 In single mode, each warp scheduler issue instruction to $32$ cores, which
 yields $4\times32/192=66.67\%$efficiency. 
 In dual issue mode, two warp schedulers must use the shared cores alternately to avoid resource conflicts.
@@ -258,7 +258,7 @@ bytes, where $f_{core}$ is the frequency of a CUDA core, $Width$ is bank width, 
 % global memory
 Two paths are used to load data from global memory, through L2 cache by {\tt
 LD} instruction or texture cache by {\tt LDG} instruction.
-We launch $26$ thread blocks each with $512$ threads, and specifies that each thread accesses $4$ words in a stride of $4 \times blockDim.x \times gridDim.x$.
+We launch $26$ thread blocks each with $512$ threads, and specifies that each thread accesses four words in a stride of $4 \times blockDim.x \times gridDim.x$.
 The total global memory accessed is $256$MB.
 We benchmark each {\tt LDG.128} achieves $131$GB/s, while {\tt LD.128} only achieves $76$GB/s.
 %Our benchmark confirms that {\tt LDG} achieves higher bandwidth than {\tt LD}.
