@@ -9,23 +9,23 @@ assembly level. For the early architecture G80, Decuda~\cite{decuda} demonstrate
 limited number of assembly instructions. Then, for almost each new generation of CUDA architecture, there are several 
 efforts on developing assembly toolchains. Both Hou's Asfermi~\cite{asfermi} and Bernstein's 
 cudaasm-qhasm~\cite{bernstein2012usable} are assemblers for Fermi architecture. Gray built MaxAs~\cite{maxas} assembler 
-for Maxwell architecture by reverse engineering the encoding of Maxwell GPU. Our work provide a complete assembler for 
+for Maxwell architecture by reverse engineering the encoding of Maxwell GPU. Our work provides a complete assembler for 
 Kepler architecture. A remarkable advantage of our assembly toolchain is the compatibility with CUDA's {\tt cuobjdump}. 
-As a comparison, although Envytools~\cite{envytools} supports PTX instruction translated to binary $64$ bit 
+As a comparison, although Envytools~\cite{envytools} supports PTX instruction translated to binary $64$-bit 
 instructions for serval GPU architectures, it cannot generate a compatible {\tt cubin} format which directly used by 
 the CUDA driver APIs. Besides, no prior work presents the detailed instruction decoding algorithms process as ours.
 
 %We share the same idea of performance microbenchmarking with other works. 
 Wong et.al.~\cite{wong} performed a 
 comprehensive benchmarking work on GT200 and provided pipeline latency data and
-memory feature. Mei~\cite{mei} benchmarked memory hierachy
-of Fermi, Kepler and Maxwell GPU, which including cache, shared memory etc. However neither of them benchmarked 
+memory feature. Mei~\cite{mei} benchmarked memory hierarchy
+of Fermi, Kepler and Maxwell GPU, which including cache, shared memory etc. However, neither of them benchmarked 
 vectorized load instruction like {\tt LD} and {\tt LDS}. Due to lack of considering vectorized load instructions and 
-too less instruction inside loop, the results is not so accurate. Neither of them considered dual issue modes of 
-arithmetic instructions. We leverage the our complete assembler to crack control codes which reveal more 
+too less instructions inside the loop, the results is not so accurate. Neither of them considered dual issue mode of 
+arithmetic instructions. We leverage the complete assembler to crack control codes which reveal more 
 microarchitecture details for tuning application performance.
 
-With respect to GEMM optimization in microarchitectural level, there are several work which inspires the implementation 
+With respect to GEMM optimization in microarchitectural level, some work inspires us on the implementation 
 on specific GPUs. For example, we adopt the proved effective optimization techniques like shared memory/register 
 blocking and double-buffering~\cite{volkov}~\cite{tan}. Further, Tan et.al.~\cite{tan} implemented fast DGEMM by using 
 assembly level optimization, such as software pipelining, vector memory operations, instruction scheduling. 
@@ -33,5 +33,5 @@ Lai~\cite{lai} presented performance analysis and optimization work of SGEMM on 
 Lai didn't consider dual issue mode by setting control code, which can boost performance significantly. Scott 
 Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM in assembly on Maxwell GPU. Since Maxwell does not 
 support {\tt FFMA} dual issue, the optimization is much easier than
-Kepler. In contrast, we present a more complete case of applying microarchitectural features by combining instruction 
-scheduling, register allocation and memory access paths. 
+Kepler. In contrast, we present a complete case of applying microarchitectural features by combining instruction 
+scheduling, register allocation, and memory access paths. 
