@@ -133,7 +133,7 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 \end{center}
 \end{figure}
 
-Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/1024=12.5\%$.
+Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/2048=12.5\%$.
 With our high instruction level parallelism, the thread parallelism becomes low.
 However, our SGEMM's high performance confirms that instruction level parallelism plays an important role on GPU.
 Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
