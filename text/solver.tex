@@ -1,7 +1,7 @@
 \subsection{Instruction Solver}
 
 %\jled{How sample programs used in here? No mention.}
-We wrote a simple PTX code generator, which generates PTX code with various modifiers.
+We wrote a simple PTX instruction generator, which generates PTX instruction with various modifiers.
 Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump} o generate real assembly. 
 As Figure~\ref{fig:imm} shows an assembly instruction consists of three fields: {\tt opcode}, {\tt operand}, and {\tt modifier}. We express these information in a struct
 variable $instMap$, which is the input of our solver.
