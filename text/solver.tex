@@ -140,3 +140,42 @@ may have more than one kinds of modifiers. By excluding both opcode and operand 
 order to reduce search space, we observe that the default value for an modifier is $0$. That is, modifier works when at 
 least one bit is set. We can check possible positions of modifiers by greedily set the remaining bits one by one to 
 observe whether flags will change.
+\begin{algorithm}[htbp]
+      \caption{Modifier Solver}\label{algo:opcode}
+  \begin{algorithmic}[1]
+	  \State \textbf{Input:} instMap (A map of instructions and their 64-bit encodings)
+      \State \textbf{Output:} print modifier mask
+      \For {$i \gets 0, N$}
+      \State $inst \gets instMap[i]$
+      \State $enc \gets inst.enc64$
+      \For {$j \gets 0, 63$}
+      \State nEnc=xor(enc, j)
+	\LineComment{if bit j changed only modifier}
+      \If modifierChanged(nInst, inst) 
+		\LineComment{bit j is flag control modifier of inst}
+		\State put(j, modifierBits)
+		\EndIf
+	  \EndFor
+		\LineComment {enumerate in modifier encoding space}
+		\State modifierEnc=Enumerate(modifierbits)
+		\State modifierInstMap=Nvdisasm(InstsBits)
+		\LineComment{clean invalid nninst}
+		\State{modifierInstMap=valid(modifierInstMap)}
+		\LineComment{collect all the  modifiers}
+		\State modifier=allflags(modifiers)
+        \For {$k \gets 0, modifiers.length()$}
+		\State modifierCode= FFFFFFFFFFFFFFF
+        \For {$l \gets 0, modifierInstMap.length()$}
+        \State modifierCode \&= modifierInstMap[l].enc
+		\EndFor
+            \LineComment{remove opcode encoding infomation}
+             \State modifierCode $\oplus$ = opcode 
+		\EndFor
+    		\State print (inst, modifierCode, modifier)                       
+	  \EndFor
+      
+  \end{algorithmic}
+\end{algorithm}
+
+            
+
