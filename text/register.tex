@@ -20,7 +20,7 @@ register.
 % in order to use $128$-bit load, one destination register $RN$ is given,
 % results will be written to
 % four $32$-bit registers: {\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}.
-We discover an undocumented restriction that $N\%4=0$ to avoid illegal instruction error.
+We discover an undocumented restriction that $N\%4=0$, otherwise illegal instruction error will be reported.
 % It's not hard to understand this restriction,
 The four words alignment restriction for {\tt LDG.128} simplifies hardware logic and cuts down power.
 Since we use {\tt LDG.128} to load $A$ and $B$, there are two bank allocation choices limited by $N\%4==0$ restriction and Kepler's bank distribution (Table~\ref{tab:reg}).

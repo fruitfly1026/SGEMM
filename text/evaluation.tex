@@ -152,7 +152,7 @@ implementations by incrementally applying our microarchitectural optimizations.
 
 {\it Baseline:}~~The baseline includes conventional optimizations including register blocking, global
 memory double buffering, shared memory double buffering and unrolling, without assembly level optimization.
-For example, the baseline uses default $32-bit$ {\tt LD} rather than $128-bit$ {\tt LDG} instruction to load data from global memory.
+For example, the baseline uses default $32$-bit {\tt LD} rather than $128$-bit {\tt LDG} instruction to load data from global memory.
 Registers are allocated orderly first for $C$, from $0$ to $143$, then for $A$ and $B$. 
 In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ 2-way bank conflicts and $64/(144*4)=11.11\%$ 3-way bank conflicts. 
 Besides, the baseline cannot apply dual issue optimization either.
@@ -169,13 +169,13 @@ When {\tt LDG} is used, {\tt TEXDEPBAR} is required before the data access due t
 
 {\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
 %Single issue is controlled by setting control code to $0x40$. %\jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
-For dual issued code, {\tt NOP} may be inserted for instruction alignment.
+In dual issued mode, {\tt NOP} may be inserted for 7-instruction alignment.
 
 Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
 As long as the number of instructions changes, rescheduling instruction order is needed to achieve good performance.
 Compared to the baseline implementation, SGEMM gain up to $2.6\times$ speedup by applying all the optimization.
 Register bank conflict eliminating improves around $10\%$ performance. 
-Wider load instruction ({\tt LD128} improves $27\%-35\%$, texture cached
+Wider load instruction {\tt LD128} improves $27\%-35\%$, texture cached
 load instruction {\tt LDG128} improves $5\%-12\%$.
 Dual issue improves the most, $84\%-106\%$.
 
@@ -203,7 +203,7 @@ Dual issue improves the most, $84\%-106\%$.
 
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources, 
 shared
-memory, global memory, and computation power. In register blocking loop, each thread computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
+memory, global memory, and computation power. In register blocking loop, each thread block computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{equation}
     \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
     \label{equ:global}
