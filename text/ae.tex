@@ -6,14 +6,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Abstract}
 
-The artifact contains three parts of our work: KeplerAs assembler, optimized SGEMM code and reverse engeering instruction encoding code. It can support the Algorithm $2$, $3$ and Figure $9$ in our PPoPP 2017 paper: Demystifying GPU Microarchitecture to Tune SGEMM Performance. To validate the results, run the test scripts and check the results in the according text output files.
+The artifact contains three parts of our work: KeplerAs assembler, optimized SGEMM code, and reverse-engineering instruction encoding code. It can support the Algorithm $2$, $3$ and Figure $9$ in our PPoPP 2017 paper: Demystifying GPU Microarchitecture to Tune SGEMM Performance. To validate the results, run the test scripts and check the results in the according text output files.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Description}
 
 \subsubsection{Check-list (artifact meta information)}
-
-{\em Fill in whatever is applicable with some informal keywords and remove the rest}
+%{\em Fill in whatever is applicable with some informal keywords and remove the rest}
 
 {\small
 \begin{itemize}
@@ -27,7 +26,7 @@ The artifact contains three parts of our work: KeplerAs assembler, optimized SGE
   \item {\bf Hardware: NVIDIA K20 GPU}
   %\item {\bf Run-time state: }
  % \item {\bf Execution: }
-  \item {\bf Output: Runtime and functionality}
+  \item {\bf Output: Runtime and functionality of assembler and solver}
   \item {\bf Experiment workflow: Git clone project; run the test scripts; observe the results}
   %\item {\bf Experiment customization: }
   \item {\bf Publicly available?: Yes }
@@ -66,9 +65,9 @@ Install software listed in software dependencies section.
 For the convenience of the artifact evaluation, we provide a series
 of shell scripts which run the solver  we have described in Algorithm 2 and 3 of the paper and store the results in the output text files. Below are the steps to download our code, build, run the experiments, and observe the results.
 
-Clone https://github.com/PAA-NCIC/PPoPP2017\_artifact, then following commands below.
+Clone https://github.com/PAA-NCIC/PPoPP2017\_artifact, then follow commands below.
 
-Intalling the assembler.
+Install the assembler.
 \begin{lstlisting} [frame=tb]
 $ cd PPoPP2017_artifact/KepelerAs
 $ perl Makefile.PL
@@ -93,5 +92,14 @@ $ ./solver.sh
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Evaluation and expected result}
 %{\em Obligatory}
-Figure $9$ in our paper presented the performance of our optimized SGEMM and cuBLAS SGEMM. For SGEMM step, the expected results contain Gflop/s. We expected solver generate bits information about opcodes, modifiers and operands.
+First, our KeplerAs GPU assembler is expected to compiler assembly code correctly to cubin which should be demonstrated by SGEMM example.
+Second, Figure $9$ in our paper presented the performance of our optimized SGEMM and cuBLAS SGEMM. We expect results contain Gflop/s by running sgemm experiment. %We expected solver generate bits information about opcodes, modifiers and operands.
+Third, we expect the solver to crack ISA encodings automatically, and generate opcode, operand and modifier encodings information in corresponding text files. These information can be used to build a GPU assembler.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Experiment customization}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Notes}
+The solver might run a little long(hours in estimation).
+Opcode solver, modifier solver and operand solver runs 10 miniutes, 30 miniutes and 20 miniutes respectively on Intel(R) Xeon(R) CPU E5-2670. 
 
