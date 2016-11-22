@@ -36,7 +36,7 @@ microarchitecture by decoding instruction formats automatically, generating ISA-
 microarchitecture.} Most SGEMM analyses are circumscribed at the levels of either CUDA or PTX due to short of 
 bare-metal tools on GPUs. Unfortunately, these studies cannot directly diagnose compiler deficiency or hardware 
 defect. In fact, by observing the disassembled code of SGEMM in CUDA, we find that the generated control code is  
-inefficient in exploiting {\tt FFMA}(FP32 Fused Multiply Add) dual issue (See Figure~\ref{fig:assemblycode} in section~\ref{sec:optimization}). 
+inefficient in exploiting {\tt FFMA} (FP32 Fused Multiply Add) dual issue (See Figure~\ref{fig:assemblycode} in section~\ref{sec:optimization}). 
 It indicates that NVCC generated code does not 
 completely utilize all cores in an SM (streaming processor), leaving 
 them idle at most of the time. 

@@ -17,7 +17,7 @@ cells denote {\tt FFMA} execution order. Dashed ellipses across two cells mean t
 \end{center}
 \end{figure*}
 
-It's unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all
+It is unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all
 the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, four warp schedulers will consume
 $128$ cores. The reminding $192-128=64$ cores are divided into two 32-core groups, each $32$ cores
 are shared by two warp schedulers. Two warp schedulers must negotiate who will use the extra $32$ shared cores to avoid

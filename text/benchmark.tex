@@ -118,7 +118,7 @@ From our experiments on Kepler architecture, we observe:
 \item Destination register will not contribute to bank conflict, no matter which bank is assigned to it.
 \item When source registers have 2-way or 3-way register bank conflicts, the throughput of float instruction will drop by 2.33\% and 17.17\% respectively in single issue mode.
 \item Our microbenchmark finds out a proper distribution of registers to eliminate bank conflict.
-     Table~\ref{tab:reg} lists registers and their corresponding banks, which consistent to GTX680~\cite{lai}, though 
+     Table~\ref{tab:reg} lists registers and their corresponding banks, which is consistent with GTX680~\cite{lai}, though 
         K20 is different from GTX680 in maximal registers per thread and instruction encoding.
         %\\
 % bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\

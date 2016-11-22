@@ -23,7 +23,7 @@ register.
 We discover an undocumented restriction that $N\%4=0$, otherwise illegal instruction error will be reported.
 % It's not hard to understand this restriction,
 The four words alignment restriction for {\tt LDG.128} simplifies hardware logic and cuts down power.
-Since we use {\tt LDG.128} to load $A$ and $B$, there are two bank allocation choices limited by $N\%4==0$ restriction and Kepler's bank distribution (Table~\ref{tab:reg}).
+Since we use {\tt LDG.128} to load $A$ and $B$, there are two bank allocation choices limited by $N\mod4==0$ restriction and Kepler's bank distribution (Table~\ref{tab:reg}).
 We assume allocate $A$ matrix bank $\begin{bmatrix} 0 \\ 1  \end{bmatrix}$,
     $B$ bank $\begin{bmatrix} 2 & 3 \end{bmatrix}$ as shown in Figure~\ref{fig:reg}, two choices left for $C$,
 $\begin{bmatrix} 1 & 2 \\ 3 & 0  \end{bmatrix}$ and
