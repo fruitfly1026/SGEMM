@@ -19,8 +19,8 @@ Our instruction solver takes the assembly files as the input to decode each fiel
 We design a set of algorithms to solve all fields of a binary instruction, which include different types of {\em operands}, {\em opcodes} and {\em modifiers}.
 %The solver uncovers some undocumented ISA specifications,
 %which is used to implement an naive assembler.
-Our assembler is built by translating each field to get $64$-bit binaries and then encapsulate with ELF header to
-generate a cubin, which can be used by CUDA driver API.
+Our assembler is built by translating each field to get $64$-bit binaries and then encapsulate them with an ELF header to
+generate a cubin, which can be used by CUDA driver APIs.
 In the benchmarking workflow, the deliberate microbenchmark is tuned at assembly language level using the assembler.
 Some GPU microarchitecture features are explored during this tuning process, which will guide the optimization of real programs.
 % In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.

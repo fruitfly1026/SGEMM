@@ -9,13 +9,13 @@ Besides, we highlight tunable factors that determine SGEMM's performance on GPU 
 %through memory hierarchy. On GPUs, we should consider both shared memory blocking and register blocking. For the 
 %purpose of completeness, we describe a blocking algorithm which is similar to that in other 
 %literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
-The state of art implementation of SGEMM on GPU~\cite{magma,nervana_sgemm_wiki,lai,tan} is using two level blocking:
+The state of art implementation of SGEMM on GPU~\cite{magma,nervana_sgemm_wiki,lai,tan} uses two level blocking:
 shared memory blocking and register blocking to exploit data reuse through memory hierarchy.
 SGEMM is to evaluate the product $C = C + AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and $m\times n$
 matrices respectively. 
 Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on the result matrix $C$. 
 Each thread block with $tx*ty$ threads is responsible to compute a $bm*bn$ submatrix in $C$, where $bm, bn$ are the 
-number of rows and columns of the submatrix $A$ and $B$ respectively. We need read a $bm*bk$ from $A$ and a $bk*bn$ sub-matrix from 
+number of rows and columns of the submatrix $A$ and $B$ respectively. We need to read a $bm*bk$ from $A$ and a $bk*bn$ sub-matrix from 
 $B$ for each thread block, where $bk$ is the unrolling factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and 
 $M*N$ grids of $bm*bk$, $bk*bn$ and $bm*bn$ blocks, where $M=\Bigl\lfloor \frac{m+bm-1}{bm} \Bigr\rfloor$, 
 $K=\Bigl\lfloor \frac{k+bk-1}{bk} \Bigr\rfloor$, $N=\Bigl\lfloor \frac{n+bn-1}{bn} \Bigr\rfloor$.
@@ -47,13 +47,13 @@ accum} are register variables. $rx$ and $ry$ are register blocking sizes}
 
 The volume of float point computations inside the while loop of Algorithm~\ref{gemm} is $2\times rx\times ry \times bk$ 
 in operations, and Table~\ref{tab:dm} estimates data movement volume through registers, shared memory, and global 
-memory for each thread inside while loop.
+memory for each thread inside the while loop.
 These parameters demonstrate that SGEMM performance is affected by the hierarchical memory blocking and unrolling 
 factors in the inner loops.
 The tuning of these factors is conducted in two folds--memory bandwidth and latency. In fact, with the estimations in 
 Table~\ref{tab:dm}, it is relatively easy to tune proper parameters to eliminate the bound of memory 
 bandwidth~\cite{magma}~\cite{tan}. The difficulty lies in latency, which is closely related to specific 
-microarchitectures such as instruction sequence, instruction type and so on. However, the microarchitectural 
+microarchitectures such as instruction sequence and instruction type. However, the microarchitectural 
 optimizations depend on the availability of an assembler and deep understanding of microarchitectural features.
 
 \begin{table}[htbp]

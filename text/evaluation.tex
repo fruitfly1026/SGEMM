@@ -9,7 +9,7 @@ We present
 a quantitative analysis of the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
 
 The experiments are conducted on NVIDIA K20m GPU with its hardware configuration summarized in 
-Table~\ref{table:k20}. We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrix for $A$, $B$
+Table~\ref{table:k20}. We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices for $A$, $B$
 and $C$, and  the matrix sizes vary in $768\times768$, $1536\times1536$, $3072\times3072$, $6144\times6144$, $12288\times12288$.
 %\jled{C size? What about A and B?}
 
@@ -65,7 +65,7 @@ Figure~\ref{fig:sgemm_tn} reports the performance of cuBLAS SGEMM and our optimi
 When matrix size is $12288\times12288$, the optimized SGEMM achieves $3104$ GFlop/s with $88\%$ efficiency, while cuBLAS gets $2509$ GFlop/s with $71\%$ efficiency. 
 Our SGEMM achieves $17\%$ performance improvement over cuBLAS.
 
-The overall trend Figure~\ref{fig:sgemm_tn} is that SGEMM performance increases with matrix sizes. 
+The overall trend in Figure~\ref{fig:sgemm_tn} is that SGEMM performance increases with matrix sizes. 
 %\jled{the next sentence change to ``On the one hand, a larger matrix has a higher arithmetic intensity 9$AI$), which is the ratio of compulsory floating-point operations to the total DRAM memory traffic.
 %The high arithmetic intensity makes good use of GPU computing resources to obtain good performance.''}
 On the one hand, a large matrix has a high ratio of 
@@ -75,8 +75,8 @@ cores.
 %\jled{change to ``number of threading blocks''}. 
 The number of threading blocks ranges in $4 \times 4, 8 \times 8, \dots, 64 \times 64$ from left to right in Figure~\ref{fig:sgemm_tn}.
 % $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. 
-Since Kepler has $13$ SMs in total, matrix $768\times 768$ suffers more from load imbalance because of only a few ($16$) blocks. 
-This is why a significant performance growth from $768$ to $1536$ for SGEMM. 
+Since Kepler has $13$ SMs in total, matrix $768\times 768$ suffers more from load imbalance because of few ($16$) blocks. 
+This is why there is a significant performance growth from $768$ to $1536$ for SGEMM. 
 With respect to performance improvement over cuBLAS, our optimizations benefit more on larger matrices. 
 The higher arithmetic intensity of larger matrices makes their performance increasingly bounded by the GPU microarchitecture rather than memory. 
 Therefore, our microarchitecture-level optimization plays an important role on tuning 
@@ -92,8 +92,8 @@ performance.
 
 \subsection{Performance Analysis}
 
-\subsubsection{Register Blocking Size Influence}
-Table~\ref{tab:dm} summarized computation and data movement volume of blocking SGEMM algorithm.
+\subsubsection{the Influence of Register Blocking Size}
+Table~\ref{tab:dm} summarizes computation and data movement volume of blocking SGEMM algorithm.
 The volume of data moving from shared memory to global memory is $rx\times bk+ ry\times bk$, and computation volume is $rx\times ry\times bk$. 
 The shared memory arithmetic intensity ($sAI$) is defined as the ratio of floating-point operations to the shared memory traffic, which is 
 \begin{equation}
@@ -118,7 +118,7 @@ Because data load must be aligned in $128$-bit using
 Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:block}.
 Performance of $12\times12$ is better than $8\times8$ because $12\times12$ blocking has higher $sAI$ and instruction
 level parallelism. With respect to 
-instruction scheduling optimization like Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA}
+instruction scheduling optimization in Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA}
 instructions, and latency can be hidden easier.
 $12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with
 other address indices. The number of registers per SM restricts us to launch up to $256$ threads. 
@@ -136,7 +136,7 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/2048=12.5\%$.
 With our high instruction level parallelism, the thread parallelism becomes low.
 However, our SGEMM's high performance confirms that instruction level parallelism plays an important role on GPU.
-Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
+The Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
 
 \subsubsection{Profiling Microarchitectural Optimization}
 
@@ -161,7 +161,7 @@ Besides, the baseline cannot apply dual issue optimization either.
 No optimization of instruction scheduling for this version.
 
 {\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
-Though Kepler has a L1 data cache, but it is designed for local rather than global memory access~\cite{gk110}.
+Though Kepler has a L1 data cache, it is designed for local rather than global memory access~\cite{gk110}.
 % So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
 {\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LD}. 
@@ -173,11 +173,12 @@ In dual issued mode, {\tt NOP} may be inserted for 7-instruction alignment.
 
 Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
 As long as the number of instructions changes, rescheduling instruction order is needed to achieve good performance.
-Compared to the baseline implementation, SGEMM gain up to $2.6\times$ speedup by applying all the optimization.
+Compared to the baseline implementation, SGEMM gains up to $2.6\times$ speedup by applying all the optimizations.
 Register bank conflict eliminating improves around $10\%$ performance. 
-Wider load instruction {\tt LD128} improves $27\%-35\%$, texture cached
+Wider load instruction {\tt LD128} contributes $27\%-35\%$ performance, texture cached
 load instruction {\tt LDG128} improves $5\%-12\%$.
-Dual issue improves the most, $84\%-106\%$.
+Dual issue achieves the highest improvement, i.e. 84\%-106\%.
+%improves the most, $84\%-106\%$.
 
 
 \begin{figure}[htbp]
@@ -201,17 +202,17 @@ Dual issue improves the most, $84\%-106\%$.
 \subsubsection{Upper Bound Analysis}
 
 
-We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources, 
+We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
 shared
-memory, global memory, and computation power. In register blocking loop, each thread block computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
+memory, global memory, and computation power. In the register blocking loop, each thread block computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{equation}
     \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
     \label{equ:global}
 \end{equation}
 According to parameters in our SGEMM implementation, $bm=bn=192$, $bk=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
-requirement for global memory bandwidth in order to achieve peak $3520$ Gflops.
-For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be read from shared memory, in which $tx$,
-$ty$ is block dimension, $rx$, $ry$ is register blocking size. The computation is $bm*bn*bk$. Based on the ratio of computation to shared memory access,
+requirement for global memory bandwidth in order to achieve the theoretical peak $3520$ Gflops.
+For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be read from shared memory, in which $tx$ and
+$ty$ are thread blocking dimensions, $rx$ and $ry$ are register blocking sizes. The computation is $bm*bn*bk$. Based on the ratio of computation to shared memory access,
 \begin{equation}
     \frac{2*bm*bk*bn}{4*tx*ty*(rx*bk + ry *bk)}  = \frac{Gflop/s}{bandwidth}
     \label{equ:shared}

@@ -3,7 +3,7 @@ Single Precision General Matrix Multiply (SGEMM), as one
 of the basic routines in BLAS library~\cite{blas}, performs a multiplication of two single-precision matrices. 
 It has been extensively used in many scientific and engineering 
 computing applications. 
-Recently, increasing efforts have been made to tune SGEMM performance, as it is a performance 
+Recently, increasing efforts have been made to tune the performance of SGEMM , as it is a performance 
 critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
 %In convolutional neural network (CNN), the most expensive fully-connected and convolution layers can be implemented using
 %SGEMM~\cite{chetlur2014cudnn}.
@@ -26,7 +26,7 @@ each generation of GPUs.
 \item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
     Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal
         way, only the abstract CUDA model is encouraged. The main reason is the significant changes of GPU architecture
-        between generations. For example, graphic features, register bank distribution, and floating-point 
+        among generations. For example, graphic features, register bank distribution, and floating-point 
 instructions dual
         issue of the recent ISAs are totally different from the previous generations~\cite{fermi}. Fortunately, researchers have made
         some initial progress on performance tuning tools, including benchmarking~\cite{mei, volkov, wong} and designing disassemblers~\cite{asfermi,bernstein2012usable,decuda,maxas} on a 
@@ -49,7 +49,7 @@ build a robust performance model of SGEMM.
 In this paper, we crack instruction encoding by performing a tough reverse engineering work and then build an 
 assembler to generate CUDA binary files. Because of the compatible grammar of CUDA {\tt 
 cuobjdump}~\cite{cubin2015util}, we use CUDA toolchains~\cite{nvcc} to compile CUDA codes to a {\em cubin} file and 
-then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the base 
+then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the basis
 of generated codes instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that 
 demystify plenty of GPU microarchitecture details such as instruction issue, warp scheduling, register bank distribution, 
 and control code, which are helpful to understand and optimize the performance of a computational kernel. We apply a collection of 
