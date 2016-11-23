@@ -1,8 +1,20 @@
 \section{Generality}
 \label{sec:generality}
-Our proposed methodology (depicted as Figure 1), which consists of instruction solver, building assembler and benchmarking, is adaptive to different GPUs. We explain the portability of the key techniques used in our methodology as follows:
-Our solver can automatically crack new GPU ISA encoding without any changes by feeding new GPU disassembly. It's applicable to any fixed length GPU ISA encoding. The input of our solver is from PTX, which is downward compatible among GPU generations. The input of solver is disassembly code. Our code on github demonstrated this.
-Only less than 1000 lines need to be modified to build an assembler for a new GPU. This estimation is based on the fact that GPU ISA is relatively stable, that is, only ISA encoding would change, and a few new instructions and features would be extended. About 100 opcodes' encodings, 40 kinds of operand positions need to be adjusted for a new GPU. In future we could make a tool to automatically generate  assembler from our solver information.
-Our benchmarks for detecting register bank behavior and memory behavior can be ported to other GPUs with few modifications. Additional benchmarks need to be designed to explore the extended instructions and new features of a new GPU.
+Our proposed methodology (depicted as Figure 1), which consists of instruction solver, building assembler and 
+benchmarking, is adaptive to different GPUs. We explain the portability of the key techniques used in our methodology 
+as follows:
+Our solver can automatically crack new GPU ISA encoding without any changes by feeding new GPU disassembly. It's 
+applicable to any fixed length GPU ISA encoding. The input of our solver is from PTX, which is downward compatible 
+among GPU generations. The input of solver is disassembly code. Our code on github demonstrated this.
+Only less than 1000 lines need to be modified to build an assembler for a new GPU. This estimation is based on the fact 
+that GPU ISA is relatively stable, that is, only ISA encoding would change, and a few new instructions and features 
+would be extended. About 100 opcodes' encodings, 40 kinds of operand positions need to be adjusted for a new GPU. In 
+future we could make a tool to automatically generate  assembler from our solver information.
+Our benchmarks for detecting register bank behavior and memory behavior can be ported to other GPUs with few 
+modifications. Additional benchmarks need to be designed to explore the extended instructions and new features of a new 
+GPU.
 
-The workflow demonstrated by optimizing SGEMM can be followed by most computational intensive algorithms on Kepler GPUs. First, by eliminating register bank conflicts and activating dual issue, the FFMA throughput could approach its peak. Then non-FFMA instructions need to be carefully scheduled without affecting the FFMA throughput. We have boosted the convolution algorithm by applying this workflow, which outperforms NVIDIA's cuDNN.
+The workflow demonstrated by optimizing SGEMM can be followed by most computational intensive algorithms on Kepler 
+GPUs. First, by eliminating register bank conflicts and activating dual issue, the FFMA throughput could approach its 
+peak. Then non-FFMA instructions need to be carefully scheduled without affecting the FFMA throughput. We have boosted 
+the convolution algorithm by applying this workflow, which outperforms NVIDIA's cuDNN.
