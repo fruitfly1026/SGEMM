@@ -4,7 +4,7 @@ To our knowledge, this paper provides the first comprehensive study of demystify
 is correlated with performance tuning in SGEMM. This section briefly discusses related work in assembler, 
 microbenchmarking and SGEMM optimization.
 
-The lack of assembler for public use motivates a series of work on developing toolchains to facilitate tuning codes in 
+{\em {\bf ISA Encoding and GPU Assembler}}:The lack of assembler for public use motivates a series of work on developing toolchains to facilitate tuning codes in 
 assembly level. For the early architecture G80, Decuda~\cite{decuda} demonstrated the feasibility to operate the 
 limited number of assembly instructions. After that, for almost each new generation of CUDA architecture, there are several 
 efforts on developing assembly toolchains. Both Hou's Asfermi~\cite{asfermi} and Bernstein's 
@@ -16,7 +16,7 @@ for serval GPU architectures, it is not able to generate a compatible {\tt cubin
 the CUDA driver APIs. Besides, no prior work presents the detailed instruction decoding algorithms process as ours.
 
 %We share the same idea of performance microbenchmarking with other works. 
-Wong et.al.~\cite{wong} performed a 
+{\em {\bf Benchmarking}}: Wong et.al.~\cite{wong} performed a 
 comprehensive benchmarking work on GT200 and provided pipeline latency data and
 memory features. Mei~\cite{mei} benchmarked memory hierarchy including cache, shared memory on Fermi, Kepler and Maxwell GPU
 However, neither of them benchmarked 
@@ -28,7 +28,7 @@ Neither of them considered dual issue mode of
 arithmetic instructions. We leverage the complete assembler to crack control codes which reveal more 
 microarchitecture details for tuning application performance.
 
-With respect to GEMM optimization in microarchitectural level, some work inspires our implementation 
+{\em {\bf Matrix Multiplication Tuning}}: With respect to GEMM optimization in microarchitectural level, some work inspires our implementation 
 on specific GPUs. For example, we adopt the proved effective optimization techniques like shared memory/register 
 blocking and double-buffering~\cite{volkov}~\cite{tan}. Further, Tan et.al.~\cite{tan} implemented fast DGEMM by using 
 assembly level optimization, such as software pipelining, vector memory operations, and instruction scheduling. 
