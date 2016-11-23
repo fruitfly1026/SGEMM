@@ -1,6 +1,13 @@
-\subsection{Instruction Solver}
-
+\subsection{GPU ISA encoding Solver and GPU assembler}
+We need GPU ISA encoding information in order to build a GPU assembler.
+However, GPU vendors do not release these information as CPU vendors do.
+Previous third-party GPU assembler work~\cite{decuda,asfermi,maxas} also
+involves cracking GPU ISA encoding, however no cracking process is described.
+It seems that they do it handy. CPU instruction decoding~\cite{collberg1997reverse,engler2000derive} use CPU assembler to generate CPU ISA encoding automatically. Our solver is proposed to make cracking GPU ISA
+encoding easy,automatic and portable to future GPU.
+%We do not know whether their methods is able to crack ISA encodings of next generation GPU.
 %\jled{How sample programs used in here? No mention.}
+
 We wrote a simple PTX instruction generator, which generates PTX instruction with various modifiers.
 Then compile PTX file to cubin by {\tt ptxas}, and disassemble it by {\tt cuobjdump} o generate real assembly. 
 As Figure~\ref{fig:imm} shows an assembly instruction consists of three fields: {\tt opcode}, {\tt operand}, and {\tt modifier}. We express these information in a struct
