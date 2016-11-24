@@ -84,11 +84,46 @@ performance.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.5]{sgemm_tn}
+\includegraphics[scale=0.5]{tn_192}
 \caption{Performance comparison of CUBLAS and the optimized SGEMM }
 \label{fig:sgemm_tn}
 \end{center}
 \end{figure}
+
+
+\begin{figure*}
+    \begin{subfigure}[htbp]{0.5\textwidth}
+        \includegraphics[width=3.0in]{1k2k4k}
+        %\subcaption{Control code regulates {\tt FFMA} throughput.} %\jled{8-bit control code value} \jled{ops/cycle? or IPC?}}
+        \subcaption{}
+        \label{fig:control_throughput}
+    \end{subfigure}
+    %\hspace{20mm}
+    \begin{subfigure}[htbp]{0.5\textwidth}
+\begin{center}
+        \includegraphics[width=3.0in]{1k4k1k}
+\end{center}
+        \subcaption{}
+        %\subcaption{Control code regulates {\tt FFMA} latency.} %\jled{8-bit control code value}}
+        \label{fig:control_latency}
+    \end{subfigure}
+    \begin{subfigure}[htbp]{0.5\textwidth}
+        \includegraphics[width=3.1in]{4k1k4k}
+        \subcaption{}
+        %\subcaption{Peak {\tt FFMA} throughput(1: single issue, 2: dual issue).}%\jled{Y-axis is performance?}}
+        \label{fig:control_pattern}
+    \end{subfigure}
+    %\hspace{20mm}
+    \begin{subfigure}[htbp]{0.5\textwidth}
+        \includegraphics[width=3.1in]{4k2k1k}
+        \subcaption{}
+        %\subcaption{Peak {\tt FFMA} throughput(1: single issue, 2: dual issue).}%\jled{Y-axis is performance?}}
+        \label{fig:control_pattern}
+    \end{subfigure}
+    \caption{Different control code impact on performance(subfigure(\subref{fig:control_pattern}), 1$\rightarrow$single
+    issue, 2$\rightarrow$dual issue).}
+    \label{fig:control_code}
+\end{figure*}
 
 \subsection{Performance Analysis}
 
@@ -115,7 +150,7 @@ Equation~\ref{equ:reg_block} implies that larger register blocking yields the hi
 and the optimal solution lies at $r_x=r_y$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
 {\tt LDG.128}, the block size could be $4\times 4$, $8\times 8$ or $12\times 12$. 
-Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:block}.
+Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:sgemm_tn}.
 Performance of $12\times12$ is better than $8\times8$ because $12\times12$ blocking has higher $sAI$ and instruction
 level parallelism. With respect to 
 instruction scheduling optimization in Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA}
@@ -125,13 +160,13 @@ other address indices. The number of registers per SM restricts us to launch up 
 In our implementation, we have $256$ threads per block. 
 Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.5]{block}
-    \caption{Evaluation of different blocking sizes.} %\jled{could add $4\times4$ case.}}
-\label{fig:block}
-\end{center}
-\end{figure}
+%\begin{figure}[htbp]
+%\begin{center}
+%\includegraphics[scale=0.5]{block}
+%    \caption{Evaluation of different blocking sizes.} %\jled{could add $4\times4$ case.}}
+%\label{fig:block}
+%\end{center}
+%\end{figure}
 
 Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/2048=12.5\%$.
 With our high instruction level parallelism, the thread parallelism becomes low.
