@@ -1,24 +1,25 @@
 \section{Introduction}
-Single Precision General Matrix Multiply (SGEMM), as one 
-of the basic routines in BLAS library~\cite{blas}, performs a multiplication of two single-precision matrices. 
+Single-precision General Matrix Multiply (SGEMM), as one 
+of the basic routines in a BLAS library~\cite{blas,intel2007intel,amd2014}, performs a multiplication of two single-precision matrices. 
 It has been extensively used in many scientific and engineering 
 computing applications. 
-Recently, increasing efforts have been made to tune the performance of SGEMM , as it is a performance 
-critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
+Recently, increasing efforts have been made to tune the performance of SGEMM, because of its critical performance effect on deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
+% as it is a performance critical kernel in
 %In convolutional neural network (CNN), the most expensive fully-connected and convolution layers can be implemented using
 %SGEMM~\cite{chetlur2014cudnn}.
 %In the presence of statistical approximation and estimation errors, the computation of deep learning is not sensitive to
 %high precision~\cite{Gupta}. In this work, we focus on SGEMM optimization.
 
-As GPU provides higher peak float-point performance and memory bandwidth over CPU contemporarily, people tend to adopt GPUs to accelerate
-computation-intensive computations. %In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
-Hardware vendors provide BLAS libraries tuned on their own processors, such as MKL and ACML~\cite{intel2007intel,amd2014} for multicore 
-x86 CPUs and cuBLAS and CLMath~\cite{nvidia2008cuBLAS, clmath} for
-GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. OpenBLAS~\cite{xianyi2012openblas} achieves the best performance in most cases on multicore CPUs based on hand-tuned assembly codes.
-Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{tan,lai,nervana_sgemm_wiki,
-chien, volkov} achieve better performance than cuBLAS for either SGEMM or DGEMM by tuning assembly codes. However, 
-these scattered works leave two issues to be addressed to accomplish the microarchitecture based performance tuning on 
-each generation of GPUs.
+As GPUs provide higher peak floating-point performance and memory bandwidth than CPUs contemporarily, researchers tend to adopt GPUs to accelerate compute-intensive applications and operations. 
+%In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
+Hardware vendors provide BLAS libraries specifically tuned for their own processors, such as Intel MKL~\cite{intel2007intel} and AMD ACML~\cite{amd2014} for multicore x86 CPUs and NVIDIA cuBLAS~\cite{intel2007intel} and AMD CLMath~\cite{clmath} for GPUs. 
+However, we always witness performance improvement from third-party implementations over these vendor libraries. 
+For example, OpenBLAS~\cite{xianyi2012openblas}, based on its hand-tuned assembly codes, achieves the highest performance in most cases on a multicore x86\jli{correct?} CPU.
+Although an OpenBLAS-like library is absent from GPUs, several % ongoing 
+efforts~\cite{tan,lai,nervana_sgemm_wiki,
+chien, volkov} have achieved better performance than cuBLAS for (S/D)GEMM by tuning assembly codes on NVIDIA GPUs. 
+However, % accomplish the microarchitecture based performance tuning on every GPU generation
+the disperse work leaves two issues to be addressed for diligently tuning the program performance on the microarchitecture of every GPU generation.
 
 \begin{itemize}
 \item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
