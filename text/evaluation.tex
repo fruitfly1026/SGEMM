@@ -94,25 +94,25 @@ performance.
 
 \subsubsection{the Influence of Register Blocking Size}
 Table~\ref{tab:dm} summarizes computation and data movement volume of blocking SGEMM algorithm.
-The volume of data moving from shared memory to global memory is $rx\times bk+ ry\times bk$, and computation volume is $rx\times ry\times bk$. 
+The volume of data moving from shared memory to global memory is $r_x\times b_k+ r_y\times b_k$, and computation volume is $r_x\times r_y\times b_k$. 
 The shared memory arithmetic intensity ($sAI$) is defined as the ratio of floating-point operations to the shared memory traffic, which is 
 \begin{equation}
-sAI = \frac {rx\times 
-ry\times bk} {rx\times bk+ ry\times bk} = \frac{1}{\frac{1}{rx} + \frac{1}{ry}}.
+sAI = \frac {r_x\times 
+r_y\times b_k} {r_x\times b_k+ r_y\times b_k} = \frac{1}{\frac{1}{r_x} + \frac{1}{r_y}}.
     \label{equ:reg_block}
 \end{equation}
 Register blocking size is limited by the maximal number of registers per thread. 
-Each thread needs $rx\times ry$, $rx$ and $ry$ registers to store the result of a sub-matrix of $C$,  a block-column of
+Each thread needs $r_x\times r_y$, $r_x$ and $r_y$ registers to store the result of a sub-matrix of $C$,  a block-column of
 $A$,  a block-row of $B$ in the same loop respectively.
-To hide shared memory latency, double-buffered software pipelining is used. Thus, extra $rx$ and $ry$ registers
+To hide shared memory latency, double-buffered software pipelining is used. Thus, extra $r_x$ and $r_y$ registers
 are used to prefetch next block-column of $A$ and $B$ from shared memory. 
 Since the total number of registers must be less than the maximal number of registers per thread ($256$ on Kepler), we have
 \begin{equation}
-    rx\times ry + rx\times 2 + ry\times 2 < 256.
+    r_x\times r_y + r_x\times 2 + r_y\times 2 < 256.
 \label{equ:reg_restrict}
 \end{equation}
 Equation~\ref{equ:reg_block} implies that larger register blocking yields the higher shared memory arithmetic intensity,
-and the optimal solution lies at $rx=ry$ with restriction~\ref{equ:reg_restrict}. 
+and the optimal solution lies at $r_x=r_y$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
 {\tt LDG.128}, the block size could be $4\times 4$, $8\times 8$ or $12\times 12$. 
 Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:block}.
@@ -204,17 +204,17 @@ Dual issue achieves the highest improvement, i.e. 84\%-106\%.
 
 We estimate the upper bound factors: {\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
 shared
-memory, global memory, and computation power. In the register blocking loop, each thread block computes $bm*bn*bk$ and reads $bm*bk+bn*bk$ words. The upper bound of global memory bandwidth can be modeled as:
+memory, global memory, and computation power. In the register blocking loop, each thread block computes $b_m*b_n*b_k$ and reads $b_m*b_k+b_n*b_k$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{equation}
-    \frac{2*bm*bn*bk}{4*(bm*bk + bn*bk)} = \frac{Gflop/s}{bandwidth}
+    \frac{2*b_m*b_n*b_k}{4*(b_m*b_k + b_n*b_k)} = \frac{Gflop/s}{bandwidth}
     \label{equ:global}
 \end{equation}
-According to parameters in our SGEMM implementation, $bm=bn=192$, $bk=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
+According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $Gflop/s=3520$, so $73$ GB/s is the minimal
 requirement for global memory bandwidth in order to achieve the theoretical peak $3520$ Gflops.
-For shared memory, inside each loop, $(rx*bk + ry * bk)*tx*ty$ words will be read from shared memory, in which $tx$ and
-$ty$ are thread blocking dimensions, $rx$ and $ry$ are register blocking sizes. The computation is $bm*bn*bk$. Based on the ratio of computation to shared memory access,
+For shared memory, inside each loop, $(r_x*b_k + r_y * b_k)*t_x*t_y$ words will be read from shared memory, in which $t_x$ and
+$t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking sizes. The computation is $b_m*b_n*b_k$. Based on the ratio of computation to shared memory access,
 \begin{equation}
-    \frac{2*bm*bk*bn}{4*tx*ty*(rx*bk + ry *bk)}  = \frac{Gflop/s}{bandwidth}
+    \frac{2*b_m*b_k*b_n}{4*t_x*t_y*(r_x*b_k + r_y *b_k)}  = \frac{Gflop/s}{bandwidth}
     \label{equ:shared}
 \end{equation}
 
