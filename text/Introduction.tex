@@ -10,13 +10,11 @@ critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sge
 %In the presence of statistical approximation and estimation errors, the computation of deep learning is not sensitive to
 %high precision~\cite{Gupta}. In this work, we focus on SGEMM optimization.
 
-As GPU provides higher peak Gflop/s over CPU contemporarily, people tend to adopt GPUs to accelerate
+As GPU provides higher peak float-point performance and memory bandwidth over CPU contemporarily, people tend to adopt GPUs to accelerate
 computation-intensive computations. %In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
 Hardware vendors provide BLAS libraries tuned on their own processors, such as MKL and ACML~\cite{intel2007intel,amd2014} for multicore 
-x86 CPUs and cuBLAS and CLMath~\cite{nvidia2008cublas, clmath} for
-GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. For
-multicore CPUs, based on hand-tuned assembly codes, OpenBLAS~\cite{xianyi2012openblas} achieves the best performance in 
-most cases.
+x86 CPUs and cuBLAS and CLMath~\cite{nvidia2008cuBLAS, clmath} for
+GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. OpenBLAS~\cite{xianyi2012openblas} achieves the best performance in most cases on multicore CPUs based on hand-tuned assembly codes.
 Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{tan,lai,nervana_sgemm_wiki,
 chien, volkov} achieve better performance than cuBLAS for either SGEMM or DGEMM by tuning assembly codes. However, 
 these scattered works leave two issues to be addressed to accomplish the microarchitecture based performance tuning on 
@@ -25,11 +23,12 @@ each generation of GPUs.
 \begin{itemize}
 \item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
     Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal
-        way, only the abstract CUDA model is encouraged. The main reason is the significant changes of GPU architecture
-        among generations. For example, graphic features, register bank distribution, and floating-point 
-instructions dual
-        issue of the recent ISAs are totally different from the previous generations~\cite{fermi}. Fortunately, researchers have made
-        some initial progress on performance tuning tools, including benchmarking~\cite{mei, volkov, wong} and designing disassemblers~\cite{asfermi,bernstein2012usable,decuda,maxas} on a 
+        way, only the abstract CUDA model is encouraged. NVIDIA engineers hand
+        tune routines of cuBLAS and other libraries in assembly, leaving other algorithms unoptimized.
+        %The main reason is the significant changes of GPU architecture
+        %among generations. For example, graphic features, register bank distribution, and floating-point instructions dual
+        %issue of the recent ISAs are totally different from the previous generations~\cite{fermi}. 
+        Fortunately, researchers have made some initial progress on performance tuning tools, including benchmarking~\cite{mei, volkov, wong} and designing assemblers~\cite{asfermi,bernstein2012usable,decuda,maxas} on a 
 specific GPU architecture, to pursue extreme performance. We attempt to develop a methodology that provides a systematic way to identify 
 microarchitecture by decoding instruction formats automatically, generating ISA-compatible binaries, and benchmarking.
 \item {\em There is a lack of a comprehensive understanding of SGEMM's performance in terms of low-level GPU 
@@ -46,38 +45,45 @@ throughput, register allocation, and shared/global memory transactions. The unde
 build a robust performance model of SGEMM.
 \end{itemize}
 
-In this paper, we crack instruction encoding by performing a tough reverse engineering work and then build an 
+In this paper, we propose an GPU ISA encoding solver to crack GPU ISA encoding automatically by feeding GPU disassembly code,
+and then build an 
 assembler to generate CUDA binary files. Because of the compatible grammar of CUDA {\tt 
 cuobjdump}~\cite{cubin2015util}, we use CUDA toolchains~\cite{nvcc} to compile CUDA codes to a {\em cubin} file and 
-then disassemble it to generate assembly codes. This approach supports users to optimize any code segment on the basis
+then disassemble it to generate assembly codes. This approach allows users to optimize any code segment on the basis
 of generated codes instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that 
 demystify plenty of GPU microarchitecture details such as instruction issue, warp scheduling, register bank distribution, 
 and control code, which are helpful to understand and optimize the performance of a computational kernel. We apply a collection of 
 optimizations to improve SGEMM performance incrementally. More specifically, we make the following contributions:
 \begin{itemize}
-\item We propose a reverse engineering approach to crack the instruction encoding of GPU architecture.
-An assembler is developed to directly tune the assembly codes generated by CUDA compiler.
+\item We propose a GPU ISA encoding solver to crack the GPU ISA encoding
+    automatically for different generations of GPUs by feeding corresponding disassembly codes.
+%instruction encoding of GPU architecture.
+An assembler for Kepler GPU is developed to directly tune the assembly codes generated by CUDA compiler.
 \item We design a set of benchmarks to reveal microarchitectural features which are undocumented by NVIDIA, 
 especially for control codes that regulate {\tt FFMA} instruction dual issue.
 They are necessary to understand and tune the performance of GPU programs.
 \item We implement the highest performance SGEMM routines on NVIDIA Kepler by applying the demystified 
 microarchitecture-level optimizations. The optimized SGEMM achieves the maximal floating-point efficiency of 88\%, 
-which is 17\% higher than CUBLAS.
+which is 15\% higher than cuBLAS.
 \end{itemize}
 
-Albeit Kepler is not the latest generation GPU, the {\tt FFMA} dual-issue feature will not be
-outdated. During our exploring of the method to fully exploit the arithmetic
-dual-issue feature of Kepler, we find that NVCC can not generate dual issue code efficiently even for computation
-intensive SGEMM which prevents dual issue feature further development in the succeeding GPUs. The Dual-issue feature would return in future
-GPU design when scalability of thread level parallelism and frequency of GPU are too hard to improve.
+%Albeit Kepler is not the latest generation GPU, the {\tt FFMA} dual-issue feature will not be
+%outdated. During our exploring of the method to fully exploit the arithmetic
+%dual-issue feature of Kepler, we find that NVCC can not generate dual issue code efficiently even for computation
+%intensive SGEMM which prevents dual issue feature further development in the succeeding GPUs. The Dual-issue feature would return in future
+%GPU design when scalability of thread level parallelism and frequency of GPU are too hard to improve.
 Although this work demonstrates the effectiveness on NVIDIA Kepler architecture, the approach is general-purpose for 
-other NVIDIA GPU architectures by minor adjustments of instruction solver and benchmarking. To the best of our 
+other NVIDIA GPU architectures by minor adjustments of instruction solver and benchmarking. 
+To the best of our 
 knowledge, it is the first time to provide a detailed description of how to crack the instruction encoding for NVIDIA 
-GPUs~\footnote{We'll open the source codes to public in GitHub after the double-blind review.}. The experience of 
+GPUs~\footnote{Code:https://github.com/PAA-NCIC/PPoPP2017\_artifact} automatically. 
+The experience of 
 exploring bare-metal optimizations is valuable to compiler development and performance tuning.
 
 The rest of this paper is organized as follows. Section~\ref{sec:background} introduces the CUDA binary utilities and a 
 blocking SGEMM algorithm. Section~\ref{sec:assembler} presents the instruction solver algorithms and microbenchmarking 
 insights. Section~\ref{sec:optimization} applies a series of microarchitectural optimizations to SGEMM. We report 
-experimental results on section~\ref{sec:experiment}. Section~\ref{sec:related} summarizes the related work. Finally, 
+experimental results on section~\ref{sec:experiment}.
+Section~\ref{sec:generality} discusses the generality and portability of our methodology for different GPUs and different algorithms.
+Section~\ref{sec:related} summarizes the related work. Finally, 
 section~\ref{sec:conclusion} concludes this work. 
