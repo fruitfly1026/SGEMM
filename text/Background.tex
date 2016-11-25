@@ -114,35 +114,41 @@ shared$\Rightarrow$register ({\tt LDS})& $r_x\times b_k + r_y\times b_k$\\
 }
 \label{tab:dm}
 \end{table}
+
+
 \subsection{CUDA Binary Utilities}
 \label{sec:cuda}
+
 %NVIDIA does not release its GPU assembler to public, they release other tool-chains:ptxas, nvcc.
-Though no official GPU assembler is public avaible, NVIDIA provides PTX assembly compiler {\tt PTXAS}, disassembly tools {\tt cuobjdump} and {\tt nvdisasm} which make it possible to build a GPU assembler by third-party.
-For instance, both {\tt cuobjdump} and {\tt nvdisasm} disassemble {\em cubin} files to {\em sass} files, which are 
-readable assembly codes for examining possible performance issues in GPU programs. For each instruction in the 
-executable code sections, the tools list its address in hexadecimal, mnemonics in a string, and encoded number in 
-hexadecimal. For example, an {\tt IADD} instruction might be printed as follows: \\\\
-$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\\\
-Unfortunately, these tools do not enable us to modify the assembly codes directly for tuning performance. What we can 
-do is to refine CUDA C codes after examining the read-only assembly codes iteratively. Therefore, an assembler is 
-required to manipulate assembly codes. Although NVIDIA does not release its internal assembler and instruction encoding 
-format, the disassembled code and the released pseudo assembly references~\cite{ptx2015isa}, provide us clues to crack 
-instruction format (in Section~\ref{sec:assembler}).
+To our best knowledge, no official GPU assembler is publicly available.
+NVIDIA provides PTX assembly compiler {\tt PTXAS}, disassembly tools {\tt cuobjdump}, and {\tt nvdisasm}, which makes it possible to build a GPU assembler by a third party.
+Both {\tt cuobjdump} and {\tt nvdisasm} disassemble {\em cubin} files to {\em sass} files which are human-readable assembly codes for examining potential performance issues in CUDA programs. 
+For every instruction in executable code sections, these tools list its address in a hexadecimal, the mnemonics in a string, and the encoded number in another hexadecimal. 
+For example, an {\tt IADD} instruction may be recorded as follows: \\\\
+{\small
+$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\
+}
+
+Unfortunately, programmers cannot use these tools to directly modify the read-only {\em sass} assembly codes for performance tuning, but only refine CUDA codes and then re-examine the new generated assembly codes iteratively.
+Therefore, an assembler is desiderated to manipulate assembly codes. 
+Though NVIDIA hasn't released the internal assembler and instruction encoding format, the disassembled codes in {\em sass} files and the public pseudo assembly references~\cite{ptx2015isa} provide clues to crack its instruction format and then build our own assembler (section~\ref{sec:assembler}).
 %NVIDIA provides {\tt PTXAS} to compile PTX assembly to cubin.
 %PTX is a low-level parallel thread execution virtual machine and instruction set architecture (ISA)~\cite{}.
 %The goals for PTX include the following:
-PTX defines a virtual machine and ISA for general purpose parallel thread execution.
+
+
+Though NVIDIA provides its assembly language PTX and its compiler {\tt PTXAS}, PTX targets a stable machine-independent ISA that could span multiple GPU generations.
+Its machine-independent property is convenient for compilers design but also brings several drawbacks:
+First, PTX use pseudo-registers, programmers cannot control its register allocation. 
+Second, PTX has no control code information which is used in Kepler and Maxwell GPUs to do warp scheduling.
+Therefore, even for PTX codes, we also use {\tt PTXAS} to compile them to \emph{cubin} and then use disassemble tool {\tt cuobjdump} to generate their native assembly codes. 
+This paper uses disassembled codes in {\em sass} files as the input of the GPU ISA encoding solver.
+% , it is a kind of pseudo-assembly. 
+ % for compilers to target.
+% PTX defines a virtual machine and ISA for general purpose parallel thread execution.
 %PTX programs are translated at install time to the target hardware instruction set. The
 %PTX-to-GPU translator and driver enable NVIDIA GPUs to be used as programmable
 %parallel computers. 
-The goal of PTX is to provide a stable machine-independent
-ISA that spans multiple GPU generations for compilers to target.
-Since PTX assembly is machine-independent, it is a kind of pseudo-assembly. There are several disadvantages of it:
-First, PTX assembly use pseudo-registers, you can not control register
-allocation. Second, as Kepler and Maxwell GPU use control code to do warp
-scheduling, but in PTX assembly no control code information.
-By using {\tt PTXAS}, we could compile PTX code to Cubin, then use disassemble
-tool {\tt cuobjdump} to generate the native assembly with control code. The disassembly is the input of GPU ISA solver.
 %PTX exposes the GPU as a data-parallel computing device.
 %We can only use CUDA/OpenCL and PTX on NVIDIA GPU, no assembly is supported publicly by NVIDIA company. 
 %\jled{introduce instruction and some mentioned opcodes in this paper.}
