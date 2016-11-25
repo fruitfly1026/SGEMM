@@ -1,58 +1,60 @@
 \section{Introduction}
-Single Precision General Matrix Multiply (SGEMM), as one 
-of the basic routines in BLAS library~\cite{blas}, performs a multiplication of two single-precision matrices. 
+Single-precision General Matrix Multiply (SGEMM), as one 
+of the basic routines in a BLAS library~\cite{blas,intel2007intel,amd2014}, performs a multiplication of two single-precision matrices. 
 It has been extensively used in many scientific and engineering 
 computing applications. 
-Recently, increasing efforts have been made to tune the performance of SGEMM , as it is a performance 
-critical kernel in deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
+Recently, increasing efforts have been made to tune the performance of SGEMM, because of its critical performance effect on deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
+% as it is a performance critical kernel in
 %In convolutional neural network (CNN), the most expensive fully-connected and convolution layers can be implemented using
 %SGEMM~\cite{chetlur2014cudnn}.
 %In the presence of statistical approximation and estimation errors, the computation of deep learning is not sensitive to
 %high precision~\cite{Gupta}. In this work, we focus on SGEMM optimization.
 
-As GPU provides higher peak float-point performance and memory bandwidth over CPU contemporarily, people tend to adopt GPUs to accelerate
-computation-intensive computations. %In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
-Hardware vendors provide BLAS libraries tuned on their own processors, such as MKL and ACML~\cite{intel2007intel,amd2014} for multicore 
-x86 CPUs and cuBLAS and CLMath~\cite{nvidia2008cuBLAS, clmath} for
-GPUs. However, we always witness improvement from third-party implementations over these vendors' libraries. OpenBLAS~\cite{xianyi2012openblas} achieves the best performance in most cases on multicore CPUs based on hand-tuned assembly codes.
-Although there is a lack of an OpenBLAS-like library on GPUs, several ongoing efforts~\cite{tan,lai,nervana_sgemm_wiki,
-chien, volkov} achieve better performance than cuBLAS for either SGEMM or DGEMM by tuning assembly codes. However, 
-these scattered works leave two issues to be addressed to accomplish the microarchitecture based performance tuning on 
-each generation of GPUs.
+As GPUs provide higher peak floating-point performance and memory bandwidth than CPUs contemporarily, researchers tend to adopt GPUs to accelerate compute-intensive programs. 
+%In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
+Hardware vendors provide BLAS libraries specifically tuned for their own processors, such as Intel MKL~\cite{intel2007intel} and AMD ACML~\cite{amd2014} for multicore x86 CPUs and NVIDIA cuBLAS~\cite{intel2007intel} and AMD CLMath~\cite{clmath} for GPUs. 
+However, we always witness performance improvement from third-party implementations over these vendor libraries. 
+For example, OpenBLAS~\cite{xianyi2012openblas}, based on its hand-tuned assembly codes, achieves the highest performance in most cases on a multicore x86\jli{correct?} CPU.
+Although an OpenBLAS-like library is absent from GPUs, several % ongoing 
+efforts~\cite{tan,lai,nervana_sgemm_wiki,
+chien, volkov} have achieved better performance than cuBLAS for (S/D)GEMM by tuning assembly codes on NVIDIA GPUs. 
+However, % accomplish the microarchitecture based performance tuning on every GPU generation
+the disperse work leaves two issues to be addressed for diligently tuning the SGEMM performance on the microarchitecture of every GPU generation.
 
 \begin{itemize}
-\item {\em There is a lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
-    Unlike general-purpose CPU community where a series of toolchains are available to tune performance in a bare metal
-        way, only the abstract CUDA model is encouraged. NVIDIA engineers hand
-        tune routines of cuBLAS and other libraries in assembly, leaving other algorithms unoptimized.
-        %The main reason is the significant changes of GPU architecture
-        %among generations. For example, graphic features, register bank distribution, and floating-point instructions dual
-        %issue of the recent ISAs are totally different from the previous generations~\cite{fermi}. 
-        Fortunately, researchers have made some initial progress on performance tuning tools, including benchmarking~\cite{mei, volkov, wong} and designing assemblers~\cite{asfermi,bernstein2012usable,decuda,maxas} on a 
-specific GPU architecture, to pursue extreme performance. We attempt to develop a methodology that provides a systematic way to identify 
-microarchitecture by decoding instruction formats automatically, generating ISA-compatible binaries, and benchmarking.
-\item {\em There is a lack of a comprehensive understanding of SGEMM's performance in terms of low-level GPU 
-microarchitecture.} Most SGEMM analyses are circumscribed at the levels of either CUDA or PTX due to short of 
-bare-metal tools on GPUs. Unfortunately, these studies cannot directly diagnose compiler deficiency or hardware 
-defect. In fact, by observing the disassembled code of SGEMM in CUDA, we find that the generated control code is  
-inefficient in exploiting {\tt FFMA} (FP32 Fused Multiply Add) dual issue (See Figure~\ref{fig:assemblycode} in section~\ref{sec:optimization}). 
-It indicates that NVCC generated code does not 
-completely utilize all cores in an SM (streaming processor), leaving 
-them idle at most of the time. 
-A side effect of the limitation leads to a bias estimation of the performance bound. We 
-present a thorough performance analysis which goes through the whole architecture hierarchy, including instruction 
-throughput, register allocation, and shared/global memory transactions. The understanding of microarchitecture helps us 
-build a robust performance model of SGEMM.
+\item {\em A lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
+  Unlike the general-purpose CPU community where a series of toolchains are available to tune performance in a bare-metal
+  way, only the abstract CUDA model is encouraged in the GPU community. 
+  NVIDIA engineers hand tune their supported % cuBLAS routines and other vendor
+  libraries in GPU assembly language, this leaves other unsupported algorithms hard to be diligently optimized.
+  %The main reason is the significant changes of GPU architecture
+  %among generations. For example, graphic features, register bank distribution, and floating-point instructions dual
+  %issue of the recent ISAs are totally different from the previous generations~\cite{fermi}. 
+  Fortunately, researchers have made some initial progress on performance tuning tools, including benchmarking~\cite{mei, volkov, wong} and designing assemblers~\cite{asfermi,bernstein2012usable,decuda,maxas} on some particular GPU architectures\jli{further check}.
+% to pursue extreme performance. 
+In this paper, we develop a methodology to systematically identify 
+microarchitecture by automatically decoding instruction formats, generating ISA-compatible binaries, and benchmarking.
+\item {\em A lack of comprehensive understanding of the SGEMM performance behavior in terms of the low-level GPU microarchitecture.} 
+Most SGEMM analyses are circumscribed at CUDA or PTX level due to the short of GPU bare-metal tools. 
+Therefore, these studies cannot directly diagnose compiler deficiency or hardware 
+defects. 
+By observing the disassembled codes of CUDA SGEMM, we find that the CUDA compiler (NVCC) generated control codes are deficient in exploiting FP32 Fused Multiply Add ({\tt FFMA}) dual issue (details in section~\ref{sec:ffma-dual}). 
+This indicates the binary codes cannot completely utilize GPU cores but leave some of them idle most of the time. 
+% completely utilize all cores in a streaming processor (SM), 
+A side effect of this compiler deficiency leads to a bias estimation of the performance bound. 
+This paper presents a thorough performance analysis which goes through the whole architecture hierarchy, including instruction 
+throughput, register allocation, and shared/global memory transfers. 
+The identified microarchitecture features help us build robust performance models of SGEMM and other programs.
 \end{itemize}
 
-In this paper, we propose an GPU ISA encoding solver to crack GPU ISA encoding automatically by feeding GPU disassembly code,
-and then build an 
-assembler to generate CUDA binary files. Because of the compatible grammar of CUDA {\tt 
-cuobjdump}~\cite{cubin2015util}, we use CUDA toolchains~\cite{nvcc} to compile CUDA codes to a {\em cubin} file and 
-then disassemble it to generate assembly codes. This approach allows users to optimize any code segment on the basis
-of generated codes instead of coding from scratch. By using this assembler, we design a set of microbenchmarks that 
-demystify plenty of GPU microarchitecture details such as instruction issue, warp scheduling, register bank distribution, 
-and control code, which are helpful to understand and optimize the performance of a computational kernel. We apply a collection of 
+In this paper, we propose a GPU ISA encoding solver to automatically crack GPU ISA encodings from GPU disassembly codes,
+then we build a GPU assembler to generate binaries from hand-optimized assembly codes.\jli{further check}%CUDA binary files. 
+Taking the advantage of the compatible grammar of CUDA {\tt cuobjdump}~\cite{cubin2015util} with NVCC~\cite{nvcc}, we use NVCC to compile CUDA codes to a {\em cubin} file and 
+then disassemble it to assembly codes. 
+This approach allows users to optimize any code segment based on the generated assembly codes instead of coding from scratch. 
+With this assembler, we design a microbenchmark suite that 
+demystifies plenty of GPU microarchitecture features such as instruction issue, warp scheduling, register bank distribution, and control code\jli{+what?}, to help understand and optimize the performance of a computational program. 
+We apply several a collection of 
 optimizations to improve SGEMM performance incrementally. More specifically, we make the following contributions:
 \begin{itemize}
 \item We propose a GPU ISA encoding solver to crack the GPU ISA encoding
