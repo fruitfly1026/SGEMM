@@ -22,37 +22,67 @@ $m\times n$ matrices respectively, while $alpha$ and $beta$ are scalar constants
 
 Algorithm~\ref{gemm} shows the skeleton of the blocked SGEMM algorithm. 
 Task partition is based on the result matrix $C$. 
-Every $t_x \times t_y$ thread block is responsible to compute a $b_m \times b_n$ matrix block of $C$, where $b_m$ is also the number of rows of the corresponding $A$ matrix block and $b_n$ is also the  
-number of columns of the $B$ matrix block. 
-We need to read a $b_m*b_k$ from $A$ and a $b_k*b_n$ sub-matrix from 
-$B$ for each thread block, where $b_k$ is the unrolling factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and 
-$M*N$ grids of $b_m*b_k$, $b_k*b_n$ and $b_m*b_n$ blocks, where $M=\Bigl\lfloor \frac{m+b_m-1}{b_m} \Bigr\rfloor$, 
-$K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
+Every $t_x \times t_y$ thread block is responsible to compute a $b_m \times b_n$ matrix block of $C$ by reading an $A$'s $b_m \times b_k$ block and a $B$'s $b_k \times b_n$ block, where $b_k$ is the unrolling factor.
+% where $b_m$ is also the number of rows of $A$'s matrix block, $b_n$ is also the number of columns of $B$'s matrix block. 
+% Each thread block reads a $b_m \times b_k$ from $A$ and a $b_k*b_n$ sub-matrix from $B$ for each thread block, where $b_k$ is the unrolling factor. 
+Therefore, $A$, $B$, and $C$ are divided into $M*K$, $K*N$ and 
+$M*N$ grids with $b_m \times b_k$, $b_k \times b_n$, and $b_m \times b_n$ blocks/grid, where $M=\Bigl\lfloor \frac{m+b_m-1}{b_m} \Bigr\rfloor$, 
+$K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{Blocked SGEMM algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em 
-accum} are register variables. $r_x$ and $r_y$ are register blocking sizes}
+  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.}
   \label{gemm}
+  {\footnotesize
   \begin{algorithmic}[1]
-	\LineComment {The size of a thread block: $t_x*t_y$}
-	\LineComment {Registers: accum[$r_x*r_y$], rA[$2*r_x$], rB[$2*r_y$]}
-	\State $smA[b_m][b_k] \gets$ a $b_m * b_k$ block of $A$
-	\State $smB[b_k][b_n] \gets$ a $b_k * b_n$ block of $B$
-	\Do
-      \For {{$i \gets 1, b_k$}}
-      %\Comment {\color {mygray} {Unrolling for loop}}
-      \Comment {{Unrolling for loop}}
-      \State {\color {black} {$rA[0...r_x]\gets$ a column of $smA$}}
-	\State $rB[0...r_y]\gets$ a row of $smB$
-	\State $accum[0...r_x][0...r_y]\gets accum[0...r_x][0...r_y]+rA[0...r_x]*rB[0...r_y]$
-	\EndFor
-	\State $smA[b_k][b_m]\gets$ a $b_m*b_k$ block of $A$
-	\State $smB[b_k][b_n]\gets$ a $b_k*b_n$ block of $B$
+	\LineComment {Shared memory variables: $sm_A$ and $sm_B$}
+	\LineComment {Registers variables: $accum[r_x \times r_y]$, $r_A[r_x]$, $r_B[r_y]$, $r'_A[r_x]$, $r'_B[r_y]$.}
+	\State $sm_A \gets$ a $b_m \times b_k$ block of $A$
+	\State $sm_B \gets$ a $b_k \times b_n$ block of $B$
 	\State \textbf{sync}
-	\doWhile {pointer in $B$ is not out of range}
-	\State \textbf{merge} $accum[0...r_x][0...r_y]$ with a $b_m*b_n$ block of $C$.
+	\Do
+    \For {{$i \gets 0, \dots, b_k-1$}}
+    \LineComment {Thread-local computation with loop unrollong} 
+    \State $r_A \gets sm_A[0, \dots, r_x-1][i]$
+		\State $r_B \gets sm_B[i][0, \dots, r_y-1]$
+		\State $accum \gets accum + r_A \circ r_B$
+		\Comment {$\circ$: outer-product}
+		\State $r'_A \gets sm_A[r_x, \dots, 2r_x-1][i]$
+		\State $r'_B \gets sm_B[i][r_y, \dots, 2r_y-1]$
+		\State $accum \gets accum + r'_A \circ r'_B$
+	\EndFor
+	\State $sm_A \gets$ another $b_m \times b_k$ block of $A$
+	\State $sm_B \gets$ another $b_k \times b_n$ block of $B$
+	\State \textbf{sync}
+	\doWhile {One more valid $b_k \times b_n$ block of $B$ exists\jli{further polish}}
+	\State \textbf{merge} $accum$ with a $b_m \times b_n$ block of $C$.
   \end{algorithmic}
+  }
 \end{algorithm}
+
+% \begin{algorithm}
+%   \caption{SGEMM blocking algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em 
+% accum} are register variables. $r_x$ and $r_y$ are register blocking sizes}
+%   \label{gemm}
+%   \begin{algorithmic}[1]
+% 	\LineComment {The size of a thread block: $t_x*t_y$}
+% 	\LineComment {Registers: accum[$r_x*r_y$], rA[$2*r_x$], rB[$2*r_y$]}
+% 	\State $smA[b_m][b_k] \gets$ a $b_m * b_k$ block of $A$
+% 	\State $smB[b_k][b_n] \gets$ a $b_k * b_n$ block of $B$
+% 	\Do
+%       \For {{$i \gets 1, b_k$}}
+%       %\Comment {\color {mygray} {Unrolling for loop}}
+%       \Comment {{Unrolling for loop}}
+%       \State {\color {black} {$rA[0...r_x]\gets$ a column of $smA$}}
+% 	\State $rB[0...r_y]\gets$ a row of $smB$
+% 	\State $accum[0...r_x][0...r_y]\gets accum[0...r_x][0...r_y]+rA[0...r_x]*rB[0...r_y]$
+% 	\EndFor
+% 	\State $smA[b_k][b_m]\gets$ a $b_m*b_k$ block of $A$
+% 	\State $smB[b_k][b_n]\gets$ a $b_k*b_n$ block of $B$
+% 	\State \textbf{sync}
+% 	\doWhile {pointer in $B$ is not out of range}
+% 	\State \textbf{merge} $accum[0...r_x][0...r_y]$ with a $b_m*b_n$ block of $C$.
+%   \end{algorithmic}
+% \end{algorithm}
 
 The volume of float point computations inside the while loop of Algorithm~\ref{gemm} is $2\times r_x\times r_y \times b_k$ 
 in operations, and Table~\ref{tab:dm} estimates data movement volume through registers, shared memory, and global 
@@ -73,9 +103,9 @@ optimizations depend on the availability of an assembler and deep understanding 
 \hline
     Data path& Volume(in words)\\
 \hline
-    global$\Rightarrow$register ({\tt LDG})& $\frac{r_x*\times r_y \times b_k}{b_m} + \frac{r_x\times r_y \times b_k}{b_n}$ \\
+    global$\Rightarrow$register ({\tt LDG})& $\frac{r_x \times r_y \times b_k}{b_m} + \frac{r_x\times r_y \times b_k}{b_n}$ \\
 \hline
-register$\Rightarrow$shared ({\tt STS})& $\frac{r_x*\times r_y \times b_k}{b_m} + \frac{r_x\times r_y \times b_k}{b_n}$ \\
+register$\Rightarrow$shared ({\tt STS})& $\frac{r_x \times r_y \times b_k}{b_m} + \frac{r_x\times r_y \times b_k}{b_n}$ \\
 \hline
 shared$\Rightarrow$register ({\tt LDS})& $r_x\times b_k + r_y\times b_k$\\
 \hline
