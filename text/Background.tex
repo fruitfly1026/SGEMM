@@ -109,26 +109,6 @@ allocation. Second, as Kepler and Maxwell GPU use control code to do warp
 scheduling, but in PTX assembly no control code information.
 By using {\tt PTXAS}, we could compile PTX code to Cubin, then use disassemble
 tool {\tt cuobjdump} to generate the native assembly with control code. The disassembly is the input of GPU ISA solver.
-\begin{algorithm}
-    \caption{PTX assembly code snippet}
-  \label{gemm}
-  \begin{algorithmic}[1]
-      \State \hspace{2mm} .version 4.2
-      \State \hspace{2mm} .target sm\_35
-      \State \hspace {2mm} .entry bench(.param .u64 I) \{
-          \State \hspace{5mm}   .reg .b64   ptr;
-\State   \hspace{5mm}    .reg .b32   r32i<3>;
-\State   \hspace{5mm}    .reg .b32   r32o<1>;
-\State  \hspace{5mm}     ld.param.u64 ptr, [I];
-\State  \hspace{5mm}     cvta.to.global.u64  ptr, ptr;
-\State   \hspace{5mm}    ldu.global.b32 r32i0, [ptr+0];
-\State   \hspace{5mm}    ldu.global.b32 r32i1, [ptr+4];
-\State  \hspace{5mm}     ldu.global.b32 r32i2, [ptr+8];
-\State  \hspace{5mm}     fma.rm.f32 r32o0, r32i0, r32i1, r32i2;
-\State   \hspace{5mm}    st.global.b32 [ptr+0], r32o0;
-\State \}
-  \end{algorithmic}
-\end{algorithm}
 %PTX exposes the GPU as a data-parallel computing device.
 %We can only use CUDA/OpenCL and PTX on NVIDIA GPU, no assembly is supported publicly by NVIDIA company. 
 %\jled{introduce instruction and some mentioned opcodes in this paper.}

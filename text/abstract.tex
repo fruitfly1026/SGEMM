@@ -9,7 +9,7 @@ Based on these features, we implement the fastest SGEMM on Kepler GPU.
 The performance boost is achieved on the basis of tuning {\tt FFMA} throughput to the
 hardware peak by activating dual issue and eliminating bank conflicts, then adding other non-FFMA instructions with little
 penalty by choosing proper width of global/shared load instructions, and instruction scheduling.
-The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 12\% higher than cuBLAS7.0 on NVIDIA Kepler K20 GPU.
+The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 15\% higher than cuBLAS7.0 on NVIDIA Kepler K20 GPU.
 We believe that our SGEMM optimization can serve as an example of how to optimize other float computation-intensive algorithm on GPU.
 \end{abstract}
 

@@ -4,8 +4,16 @@ To our knowledge, this paper provides the first comprehensive study of demystify
 is correlated with performance tuning in SGEMM. This section briefly discusses related work in assembler, 
 microbenchmarking and SGEMM optimization.
 
-{\em {\bf ISA Encoding and GPU Assembler}}:The lack of assembler for public use motivates a series of work on developing toolchains to facilitate tuning codes in 
-assembly level. For the early architecture G80, Decuda~\cite{decuda} demonstrated the feasibility to operate the 
+{\em {\bf ISA Encoding and GPU Assembler}}:The lack of assembler for public use motivates a series of work on developing toolchains to facilitate tuning codes in assembly level.
+%We need GPU ISA encoding information in order to build a GPU assembler.
+%However, GPU vendors do not release these information as CPU vendors do.
+Third-party GPU assembler work~\cite{decuda,asfermi,maxas} also
+involves cracking GPU ISA encoding, however, no cracking process is described,
+no automatic and general tool is developed to crack future GPU ISA
+encodings. CPU instruction decoding~\cite{collberg1997reverse,engler2000derive} use CPU assembler
+to generate CPU ISA encoding automatically. We have no assembler avaible when cracking GPU ISA encodings. 
+Our solver is proposed to make cracking GPU ISA encoding easy,automatic and portable to future GPU with a GPU disassembler.
+For the early architecture G80, Decuda~\cite{decuda} demonstrated the feasibility to operate the 
 limited number of assembly instructions. After that, for almost each new generation of CUDA architecture, there are several 
 efforts on developing assembly toolchains. Both Hou's Asfermi~\cite{asfermi} and Bernstein's 
 cudaasm-qhasm~\cite{bernstein2012usable} are assemblers for Fermi architecture. Gray built MaxAs~\cite{maxas} assembler 
