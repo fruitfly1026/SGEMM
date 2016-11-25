@@ -82,6 +82,13 @@ With respect to performance improvement over cuBLAS, our optimizations benefit m
 The higher arithmetic intensity of larger matrices makes their performance increasingly bounded by the GPU microarchitecture rather than memory. 
 Therefore, our microarchitecture-level optimization plays an important role on tuning 
 performance.
+Figure~\ref{fig:rectangle} shows performance of different matrix shapes. This
+also demonstrate our $12\times12$ blocking is better than cuBLAS when matrix greater
+than $1000$ and our $8\times8$ blocking implementation, and $8\times8$ blocking
+is better than cuBLAS for all shapes. The performance for matrix shape [W, 4W,
+W] fluctuates seriously than other shapes, it is because each thread iteration
+a longer K=4W than other shape. The parallism grain is more coarse than other
+threee cases.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -95,7 +102,7 @@ performance.
 \begin{figure*}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.0in]{1k2k4k}
-        \subcaption{Matrix shape [K, 2K, 4K]}
+        \subcaption{Matrix shape [W, 2W, 4W]}
         \label{fig:control_throughput}
     \end{subfigure}
     %\hspace{20mm}
@@ -103,22 +110,22 @@ performance.
 \begin{center}
         \includegraphics[width=3.0in]{1k4k1k}
 \end{center}
-        \subcaption{Matrix shape [K, 4K, K]}
+        \subcaption{Matrix shape [W, 4W, W]}
         \label{fig:control_latency}
     \end{subfigure}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.1in]{4k1k4k}
-        \subcaption{Matrix shape [4K, 1K, 4K]}
+        \subcaption{Matrix shape [4W, W, 4W]}
         \label{fig:control_pattern}
     \end{subfigure}
     %\hspace{20mm}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.1in]{4k2k1k}
-        \subcaption{Matrix shape [4K, 2K, K]}
+        \subcaption{Matrix shape [4W, 2W, W]}
         \label{fig:control_pattern}
     \end{subfigure}
     \caption{Rectangle matrice performance}
-    \label{fig:control_code}
+    \label{fig:rectangle}
 \end{figure*}
 
 \subsection{Performance Analysis}
