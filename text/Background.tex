@@ -11,23 +11,26 @@ This section first highlights tunable factors that determine SGEMM performance o
 %through memory hierarchy. On GPUs, we should consider both shared memory blocking and register blocking. For the 
 %purpose of completeness, we describe a blocking algorithm which is similar to that in other 
 %literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
-The state of art implementation of SGEMM on GPU~\cite{magma,nervana_sgemm_wiki,lai,tan} uses two level blocking:
-shared memory blocking and register blocking to exploit data reuse through memory hierarchy.
+The state-of-the-art SGEMM implementation on GPUs~\cite{magma,nervana_sgemm_wiki,lai,tan} uses two-level blocking,
+register and shared memory blocking, to exploit the data reuse through GPU memory hierarchy.
 %SGEMM is to evaluate the product $C = C + AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and $m\times n$
-The GEMM routines compute a scalar-matrix-matrix product and add the result to
-a scalar-matrix product, with general matrices. The operation is defined as $C
+The SGEMM routine computes a scalar-matrix-matrix product and updates the result plus
+a scalar-matrix product on single floating-point precision general matrices and scalars. 
+The operation is defined as $C
 = beta*C + alpha*AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and
-$m\times n$ matrices respectively, while alpha and beta are float scalar constants respectively.
+$m\times n$ matrices respectively, while $alpha$ and $beta$ are scalar constants.
 
-Algorithm~\ref{gemm} shows the skeleton of SGEMM blocking algorithm. Task partition is based on the result matrix $C$. 
-Each thread block with $t_x*t_y$ threads is responsible to compute a $b_m*b_n$ submatrix in $C$, where $b_m, b_n$ are the 
-number of rows and columns of the submatrix $A$ and $B$ respectively. We need to read a $b_m*b_k$ from $A$ and a $b_k*b_n$ sub-matrix from 
+Algorithm~\ref{gemm} shows the skeleton of the blocked SGEMM algorithm. 
+Task partition is based on the result matrix $C$. 
+Every $t_x \times t_y$ thread block is responsible to compute a $b_m \times b_n$ matrix block of $C$, where $b_m$ is also the number of rows of the corresponding $A$ matrix block and $b_n$ is also the  
+number of columns of the $B$ matrix block. 
+We need to read a $b_m*b_k$ from $A$ and a $b_k*b_n$ sub-matrix from 
 $B$ for each thread block, where $b_k$ is the unrolling factor. In this way, $A$, $B$ and $C$ are divided into $M*K$, $K*N$ and 
 $M*N$ grids of $b_m*b_k$, $b_k*b_n$ and $b_m*b_n$ blocks, where $M=\Bigl\lfloor \frac{m+b_m-1}{b_m} \Bigr\rfloor$, 
 $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{SGEMM blocking algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em 
+  \caption{Blocked SGEMM algorithm. {\em smA} and {\em smB} are shared memory variables. {\em rA}, {\em rB} and {\em 
 accum} are register variables. $r_x$ and $r_y$ are register blocking sizes}
   \label{gemm}
   \begin{algorithmic}[1]
