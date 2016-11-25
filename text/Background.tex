@@ -108,7 +108,7 @@ First, PTX assembly use pseudo-registers, you can not control register
 allocation. Second, as Kepler and Maxwell GPU use control code to do warp
 scheduling, but in PTX assembly no control code information.
 By using {\tt PTXAS}, we could compile PTX code to Cubin, then use disassemble
-tool {\tt cuobjdump} to generate the native assembly with control code.
+tool {\tt cuobjdump} to generate the native assembly with control code. The disassembly is the input of GPU ISA solver.
 \begin{algorithm}
     \caption{PTX assembly code snippet}
   \label{gemm}
@@ -129,7 +129,6 @@ tool {\tt cuobjdump} to generate the native assembly with control code.
 \State \}
   \end{algorithmic}
 \end{algorithm}
-
 %PTX exposes the GPU as a data-parallel computing device.
 %We can only use CUDA/OpenCL and PTX on NVIDIA GPU, no assembly is supported publicly by NVIDIA company. 
 %\jled{introduce instruction and some mentioned opcodes in this paper.}
@@ -137,4 +136,3 @@ tool {\tt cuobjdump} to generate the native assembly with control code.
 %be either embedded into a host executable file or generated separately by using the "{\em -cubin}" option of {\tt 
 %nvcc}. To help developers understand {\em cubin} files, CUDA toolkit introduces binary tools and documents on ISAs from 
 %GT200 to Maxwell architecture~\cite{gtx980}. These binary tools only provide very limited functionalities for users. 
-
