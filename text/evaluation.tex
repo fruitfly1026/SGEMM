@@ -3,7 +3,8 @@
 
 
 In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA cuBLAS. 
-Our SGEMM achieves $17\%\sim 25\%$ performance
+Our SGEMM achieves 15\% %$17\%\sim 25\%$ 
+performance
 improvement, which confirms the usefulness of the microarchitectural optimization on GPU. 
 We present 
 a quantitative analysis of the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
@@ -76,19 +77,19 @@ cores.
 %\jled{change to ``number of threading blocks''}. 
 The number of threading blocks ranges in $2 \times 2, 8 \times 8, \dots, 64 \times 64$ from left to right in Figure~\ref{fig:sgemm_tn}.
 % $[768/192,768/192]=[4,4]$ to $[12288/192, 12288/192]$ $=[64,64]$. 
-Since Kepler has $13$ SMs in total, matrix $384\times 384$ suffers more from load imbalance because of few ($4$) blocks. 
-This is why there is a significant performance growth from $384$ to $1536$ for SGEMM. 
+Since Kepler has $13$ SMs in total, matrix $384\times 384$ suffers more from load imbalance because of only $4$ blocks.
+This is why there is a significant performance improvement when size grows from $384$ to $1536$. 
 With respect to performance improvement over cuBLAS, our optimizations benefit more on larger matrices. 
 The higher arithmetic intensity of larger matrices makes their performance increasingly bounded by the GPU microarchitecture rather than memory. 
 Therefore, our microarchitecture-level optimization plays an important role on tuning 
 performance.
 
-Figure~\ref{fig:rectangle} shows performance of different matrix shapes. This
-also demonstrate our $12\times12$ blocking is better than cuBLAS when matrix greater
-than $1000$ and our $8\times8$ blocking implementation, and $8\times8$ blocking
-is better than cuBLAS for all shapes. The performance for matrix shape [W, 4W,
+Figure~\ref{fig:rectangle} shows SGEMM performance of different matrix shapes.
+The result also demonstrate our $12\times12$ blocking is better than cuBLAS and
+our $8\times8$ blocking implementation when matrix greater than $1000$,  and
+$8\times8$ blocking is better than cuBLAS for almost all shapes. The performance for matrix shape [W, 4W,
 W] fluctuates seriously than other shapes, it is because each thread iteration
-a longer K=4W than other shapes. The degree of parallelism is coarser than other
+much longer(K=4W) than other shapes. The degree of parallelism is coarser than other
 three shapes.
 
 \begin{figure}[htbp]
@@ -103,29 +104,29 @@ three shapes.
 \begin{figure*}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.0in]{1k2k4k}
-        \subcaption{Matrix shape [W, 2W, 4W]}
-        \label{fig:control_throughput}
+        \subcaption{Matrix shape [M, K, N]=[W, 2W, 4W]}
+        \label{fig:1k2k4k}
     \end{subfigure}
     %\hspace{20mm}
     \begin{subfigure}[htbp]{0.5\textwidth}
 \begin{center}
         \includegraphics[width=3.0in]{1k4k1k}
 \end{center}
-        \subcaption{Matrix shape [W, 4W, W]}
-        \label{fig:control_latency}
+        \subcaption{Matrix shape [M, K, N]=[W, 4W, W]}
+        \label{fig:1k4k1k}
     \end{subfigure}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.1in]{4k1k4k}
-        \subcaption{Matrix shape [4W, W, 4W]}
-        \label{fig:control_pattern}
+        \subcaption{Matrix shape [M, K, N]=[4W, W, 4W]}
+        \label{fig:4k1k4k}
     \end{subfigure}
     %\hspace{20mm}
     \begin{subfigure}[htbp]{0.5\textwidth}
         \includegraphics[width=3.1in]{4k2k1k}
-        \subcaption{Matrix shape [4W, 2W, W]}
-        \label{fig:control_pattern}
+        \subcaption{Matrix shape [M, K, N]=[4W, 2W, W]}
+        \label{fig:4k2k1k}
     \end{subfigure}
-    \caption{Rectangle matrice performance}
+    \caption{Rectangle matrices performance}
     \label{fig:rectangle}
 \end{figure*}
 
@@ -197,9 +198,9 @@ In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ 2-way bank conflicts and $6
 Besides, the baseline cannot apply dual issue optimization either.
 
 {\it +Reg:}~~The register allocation pattern described in section~\ref{sec:register} is applied to eliminate register bank conflict. 
-No optimization of instruction scheduling for this version.
+%No optimization of instruction scheduling for this version.
 
-{\it +LD128:}~~Use wider global load instruction {\tt LD128} with L2-cached.
+{\it +LD128:}~~Use wider global load instruction {\tt LD.128} with L2-cached.
 Though Kepler has a L1 data cache, it is designed for local rather than global memory access~\cite{gk110}.
 % So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
@@ -212,10 +213,10 @@ In dual issued mode, {\tt NOP} may be inserted for 7-instruction alignment.
 
 Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
 As long as the number of instructions changes, rescheduling instruction order is needed to achieve good performance.
-Compared to the baseline implementation, SGEMM gains up to $2.6\times$ speedup by applying all the optimizations.
+Compared with the baseline implementation, SGEMM gains up to $2.6\times$ speedup by applying all the optimizations.
 Register bank conflict eliminating improves around $10\%$ performance. 
-Wider load instruction {\tt LD128} contributes $27\%-35\%$ performance, texture cached
-load instruction {\tt LDG128} improves $5\%-12\%$.
+Wider load instruction {\tt LD.128} contributes $27\%-35\%$ performance, texture cached
+load instruction {\tt LDG.128} improves $5\%-12\%$.
 Dual issue achieves the highest improvement, i.e. 84\%-106\%.
 %improves the most, $84\%-106\%$.
 
