@@ -7,31 +7,29 @@ involves cracking GPU ISA encodings, whereas no cracking process is explicitly r
 CPU instruction decoding~\cite{collberg1997reverse,engler2000derive} uses CPU assemblers to generate CPU ISA encoding automatically. 
 Our solver is proposed to make cracking GPU ISA encodings easy, automatic and portable to future GPUs.
 %We do not know whether their methods is able to crack ISA encodings of next generation GPU.
-%\jled{How sample programs used in here? No mention.}
 
-An operand could be register({\tt R5}), 
-global memory({\tt [R6+0x20]}), constant memory({\tt C[0x2][0x40]}), shared memory ({\tt [0x50]}),
-immediate values({\tt 0x9} and{\tt1.5}), or predicate register({\tt P3})~\cite{ptx2015isa}. %represented by different .
-And we observe that the name of an operand is always related with a number, so the encoding of an operand can be inferred by its name.
-For instance, the register operand {\tt R5} is inferred as $101$ in binary format, while the immediate value {\tt 0x9} is $1001$. 
+
+Operands could be registers (e.g. {\tt R5}), 
+global memory (e.g. {\tt [R6+0x20]}), constant memory (e.g. {\tt C[0x2][0x40]}), shared memory (e.g. {\tt [0x50]}), immediate values (e.g. {\tt 0x9} and {\tt1.5}), or predicate registers (e.g. {\tt P3})~\cite{ptx2015isa}.
+We observe that an operand name always includes a number, thus the encoding of an operand can be inferred by its name.
+For example, the register operand {\tt R5} is inferred from $101$ in binary format, while the immediate value {\tt 0x9} is $1001$. 
 %Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
-The encodings of opcodes and modifiers are mnemonic symbols which can not be expressed as binary literally. 
-They must be enumerated in their encoding space, and we design a heuristic algorithm on a pruned search space to
-determine the position of opcodes and modifiers.
-Modifiers are instruction-sensitive, that is, modifiers in the same type may be different encodings for different instructions. 
-For instance, masks of type-size
-modifier for {\tt LD} and {\tt LDG} are at different binary positions. Hence, we process each instruction's modifier separately. 
+The encodings of opcodes and modifiers are mnemonic symbols which can not be expressed as binary literally, thus they must be enumerated in their encoding space.
+We design a heuristic algorithm on a pruned search space to determine the positions of opcodes and modifiers.
+Modifiers are instruction-sensitive which means modifiers in the same type may have different encodings for different instructions. 
+As an example, masks of type-size modifier for instructions {\tt LD} and {\tt LDG} are in different binary positions. 
+Hence, every instruction's modifier need to be processed independently. 
 
-We write a simple PTX instruction generator to generate PTX instruction with various modifiers.
-Then compile the PTX files to cubin files by {\tt ptxas}, and disassemble them by {\tt cuobjdump} to generate the real assemblies. 
-Figure~\ref{fig:imm} shows an assembly instruction consisting of three fields: {\tt opcode}, {\tt operand}, and {\tt modifier}. We express these information in a struct
-variable $instMap$, which is the input of our solver.
+We write a simple generator to produce PTX instructions with various modifiers as the samples in figure~\ref{fig:workflow}.
+These PTX files are compiled to cubin files by {\tt ptxas}, and then disassembled by {\tt cuobjdump} to generate their native assemblies. 
+Figure~\ref{fig:imm} shows a native assembly instruction example consisting of {\tt opcode}, {\tt operand}, and {\tt modifier} fields.
+We express a native assembly instruction in a struct variable $instMap$\jli{$inst$}, which is the input of our solver.
 %In this way, we generate real assembly instruction and their 64-bit encoding, which is the input of solver algorithm.
 %We disassmble libcublas.so to generate instruction and their corresponing 64-bit encodings. There are $1537123$ different encodings of cublas 7.0 library in total.
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.5]{imm}
-    \caption{Immediate position in {\tt IADD} instruction}
+    \caption{\jli{delete ``Immediate position in ''}{\tt IADD} instruction}
 \label{fig:imm}
 \end{center}
 \end{figure}
