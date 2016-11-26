@@ -2,10 +2,10 @@
 
 
 We propose a methodology to demystify GPU microarchitecture features and correlate them with programs' performance.
-The workflow in figure~\ref{fig:workflow} consists of three major components: an instruction encoding\jli{replaced decoding} solver, a GPU assembler, and meticulous benchmarking.
+The workflow in Figure~\ref{fig:workflow} consists of three major components: a GPU ISA encoding solver, a GPU assembler, and meticulous benchmarking.
 %and two program sets: sample programs and microbenchmark.
 % a deliberate microbenchmark
-A sample program in figure~\ref{fig:workflow} is a synthetic PTX file which generates specific instructions as the input of the instruction solver.
+A sample program in Figure~\ref{fig:workflow} is a synthetic PTX file which generates specific instructions as the input of the instruction solver.
 Deliberate microbenchmarks are designed for our assembler to tune code at assembly language level and to help figure out the correlation between microarchitecture and performance.
 %We dissemble a binary library (such as cuBLAS) to provide a high coverage of instructions to instruction solver.
 %We use cuBLAS in this work since it contains nearly all needed instructions for SGEMM routine.
@@ -19,7 +19,7 @@ We design a set of algorithms to solve all fields of a binary instruction, which
 %which is used to implement an naive assembler.
 Our assembler translates every instruction field to get $64$-bit binaries and then encapsulates them with an ELF header to generate an executable cubin file.
 % which can be used by CUDA driver APIs.
-In the benchmarking workflow (red arrows in figure~\ref{fig:workflow}), microbenchmarks are tuned at the assembly language level using our assembler.
+In the benchmarking workflow (red arrows in Figure~\ref{fig:workflow}), microbenchmarks are tuned at the assembly language level using our assembler.
 GPU microarchitecture features are explored during benchmarking, which will guide the optimization of real programs.
 % In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.
 

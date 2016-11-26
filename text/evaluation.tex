@@ -87,10 +87,12 @@ performance.
 Figure~\ref{fig:rectangle} shows SGEMM performance of different matrix shapes.
 The result also demonstrate our $12\times12$ blocking is better than cuBLAS and
 our $8\times8$ blocking implementation when matrix greater than $1000$,  and
-$8\times8$ blocking is better than cuBLAS for almost all shapes. The performance for matrix shape [W, 4W,
+$8\times8$ blocking is better than cuBLAS for almost all shapes. The
+performance of both cuBLAS and our SGEMM for matrix shape [W, 4W,
 W] fluctuates seriously than other shapes, it is because each thread iteration
 much longer(K=4W) than other shapes. The degree of parallelism is coarser than other
-three shapes.
+three shapes. In contrast, [4W, W, 4W] is finest parallelism in the four
+rectangle shapes, the result is much smoother.
 
 \begin{figure}[htbp]
 \begin{center}
