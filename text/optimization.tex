@@ -8,10 +8,9 @@ a series of incremental optimizations to improve SGEMM performance on Kepler arc
 go through the architectural hierarchy from CUDA core and register to memory. All the optimization strategies are
 inspired by the observations from our benchmarking.
 \begin{itemize}
-\item At core level, we promote {\tt FFMA} instruction throughput through dual issue by setting control code.
-% with respect to the proper control code pattern.
-\item At register level, we meticulously map operands to registers to avoid bank conflicts in the inner loop of Algorithm~\ref{gemm}.
-\item At memory level, we select appropriate shared memory load/store width and global memory data path to mitigate
+\item At the core level, we promote {\tt FFMA} instruction throughput to approach the peak through dual issue by setting control code.
+\item At the register level, we meticulously map operands to registers to avoid bank conflicts in the inner loop of Algorithm~\ref{gemm}.
+\item At the memory level, we select appropriate shared memory load/store width and global memory data path to mitigate
 latencies.
 \end{itemize}
 \input{text/register}

@@ -4,7 +4,9 @@ According to our benchmarking observations, we use {\tt LDG.128} to load data fr
 and {\tt LDS.64} to load data from shared memory.
 We also have additional reasons to adopt them in SGEMM kernel.
 First, using {\tt LDG.128} reduces load instructions, hence reduce {\tt non-FFMA}s. %\jled{use load instead of non-FFMA. Use non-FFMA seems complicated.}
-In the inner loop of Algorithm~\ref{gemm}, we need three {\tt LDG.128} instead of twelve {\tt LDS.32} to read twelve
-words from $A$ column. Second, the shared memory transaction size is 256 bytes, which forces each request being split into multiple transactions.
+In the inner loop of Algorithm~\ref{gemm}, we need three {\tt LDG.128} instead of twelve {\tt LDG.32} to read twelve
+words from $A$ column. Second, the shared memory transaction size is at most
+$256$ bytes, which forces {\tt LDS.128} memory request being split into
+multiple transactions.
 As we analyzed in section~\ref{sec:experiment}, bandwidth of {\tt LDS.128} is lower than {\tt LDS.64}, which will bound
 SGEMM.
