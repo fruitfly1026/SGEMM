@@ -16,12 +16,19 @@ for serval GPU architectures, it is not able to generate a compatible {\tt cubin
 the CUDA driver APIs. %Besides, no prior work presents the detailed instruction decoding algorithms process as ours.
 It's no doubt that all their work envolves reverse engineering GPU ISA
 encodings. However, neither detailed descriptions are given nor a general tool is developed to crack
-new GPU ISA encoding. We provide a general tool to crack different GPU ISA encoding
+new GPU ISA encoding. 
+%Hsieh use CPU assemblers to generate ISA encoding of CPU platforms~\cite{collberg1997reverse,engler2000derive} to be used by binary tools .
+These CPU instruction reverse engineering work~\cite{collberg1997reverse,hsieh2001reverse} uses an (MIPS, SPARC, Alpha, PowerPC, ARM, or x86) assembler as a tool to crack a CPU instruction set and extracts bit-level instruction encoding information. Its output consists of C declarations that can be used by binary tools. However, we do not have an available GPU assembler, but a disassembler instead. 
+In fact, the lack of GPU assembler makes our reverse engineering on GPUs more meaningful than on CPUs. 
+
+We provide a general tool to crack different GPU ISA encoding
 automatically, and a complete assembler for Kepler architecture.
 %A remarkable advantage of our assembly toolchain is the compatibility with CUDA's {\tt cuobjdump}. 
 
 %We share the same idea of performance microbenchmarking with other works. 
-{\em {\bf Benchmarking}}: Wong et.al.~\cite{wong} performed a 
+{\em {\bf Benchmarking}}: 
+Fog~\cite{fog} did a sound work on benchmarking instruction latency and throughput of several generations of Intel/AMD CPUs and Intel Xeon Phi accelerations. %The benchmarks focused on instruction latency, throughput and memory.
+Wong et.al.~\cite{wong} performed a 
 comprehensive benchmarking work on GT200 and provided pipeline latency data and
 memory features. Mei~\cite{mei} benchmarked memory hierarchy including cache, shared memory on Fermi, Kepler and Maxwell GPU.
 However, neither of them benchmarked 
