@@ -20,19 +20,19 @@ $ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one
 $1$-$2$-$2$-$1$ dual issue pattern in section~\ref{sec:benchmark}.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} because of their long latencies. The
 schedule slots are illustrated in two dimensions in Table~\ref{tab:position}.
-Note that we use double buffers to hide the latency of {\tt LDG} from global memory, which is $200$ clock cycles.
+Note that we use double buffers to hide the latency of {\tt LDG} from global memory, which is $120$ clock cycles.
 Every four loops require two {\tt LDG}s to load data from global memory to registers, four {\tt STS}s to store data from
 registers to shared memory. A read after write (RAW) dependency exists between {\tt
 LDG} and {\tt STS}.
-From equation~\ref{eq:inst}, $\frac{200\times 7}{4} = 350$ instructions are needed between them.
+From equation~\ref{eq:inst}, $\frac{120\times 7}{4} = 210$ instructions are needed between them.
 We put {\tt LDG} and  {\tt STS} in position $P[77][3]$ and $P[65][2]$ respectively in Table~\ref{tab:position}.
-Thus, $143-77 + 144\times 2 + 65=419$ ($>350$) instructions are between them, which is enough to hide the latency of {\tt LDG}s.
+Thus, $143-77 + 144\times 2 + 65=419$ ($>210$) instructions are between them, which is enough to hide the latency of {\tt LDG}s.
 % resulting in a distance of $\frac{4\times 419}{7}=239$ clocks,.
 
 The arrangement of {\tt LDS}s, loading data from shared memory for double buffers of $A$ and $B$, follows the same approach with {\tt LDG}s.
-A {\tt LDS} has a latency of $40$ clock cycles, thus $\frac{40\times 7}{4}=70$ instructions are needed to interleave {\tt LDS} and {\tt FFMA}.
+A {\tt LDS} has a latency of $28$ clock cycles, thus $\frac{28\times 7}{4}=49$ instructions are needed to interleave {\tt LDS} and {\tt FFMA}.
 In Table~\ref{tab:position}, {\tt LDS} in $P[11][3]$ reads data from {\tt STS} in $P[65][2]$,
-the distance between them is more than $40$ clock cycles.
+the distance between them is more than $28$ clock cycles.
 At the end, a {\tt BAR.SYNC} is inserted after {\tt STS} but before {\tt LDS} to make sure that data in shared memory is ready.
 Other instructions such as {\tt XOR}, {\tt IADD}, and {\tt ISETP} are inserted according to data dependency; they don not influence the performance because of their short latencies.
 \begin{table}[htbp]
