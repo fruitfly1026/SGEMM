@@ -36,14 +36,21 @@ general performance tuning and compiler optimizations~\cite{lam1991cache}.
 %For another floating-point intensive algorithm like convolution in deep learning applications, the FFMA throughput can be improved by eliminating register bank conflicts and activating dual issue. Then non-FFMA instructions are carefully scheduled without affecting the FFMA throughput. 
 
 {\em {\bf Convolutional Algorithm Performance}}:
-Figure~\ref{fig:conv} presents the performance of our optimized convolution using the method describe in section~\ref{sec:optimization}.
-The convolution algorithm uses $128\times128$ shared memory blocking and $8\times8$ register blocking. We compare the average convolution performance of all the convolutional layers of convolutional network. 
-Alexnet~\cite{krizhevsky2012imagenet}, Vgg~\cite{simonyan2014very} and Overfeat~\cite{sermanet2013overfeat}.
+Our convolution algorithm implementation uses $128\times128$ shared memory blocking and
+$8\times8$ register blocking. We optimize it at assembly-level using the method describe in section~\ref{sec:optimization}.
+%The configuration of each layer can be found 
+We benchmark three popular convolutional neural network:
+Alexnet~\cite{krizhevsky2012imagenet}, Vgg~\cite{simonyan2014very} and
+Overfeat~\cite{sermanet2013overfeat}.  The configuration of each convolutional
+layer can be found in corresponding papers.
+We compare the average convolution performance of all the convolutional layers in neural network. 
+Figure~\ref{fig:conv} presents the performance of our optimized convolution. %The maximum convolution performance is 2653 Gflop/s.
+Our convolution algorithm implementation is 39\%, 46\% and 62\% higher over cuDNN V4.0 for the three CNN configures on K20 GPU.
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.5]{cudnn}
-\caption{Performance comparison of cuDNN and our optimzied convolution}
+    \caption{Performance comparison of cuDNN and our optimzied convolution on K20 GPU(batch size is 128)}
 \label{fig:conv}
 \end{center}
 \end{figure}
