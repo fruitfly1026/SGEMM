@@ -1,5 +1,5 @@
 \section{Introduction}
-Single floating-point precision General Matrix Multiply (SGEMM)\jli{further check}, as one 
+Single-precision General Matrix Multiply (SGEMM), as one 
 of the basic routines in a BLAS library~\cite{blas,intel2007intel,amd2014}, performs a multiplication of two single-precision matrices. 
 It has been extensively used in many scientific and engineering 
 computing applications. 
@@ -20,7 +20,6 @@ efforts~\cite{tan,lai,nervana_sgemm_wiki,
 chien, volkov} have achieved better performance than cuBLAS for (S/D)GEMM by tuning assembly codes on NVIDIA GPUs. 
 However, % accomplish the microarchitecture based performance tuning on every GPU generation
 the disperse work leaves two issues to be addressed for diligently tuning the SGEMM performance on the microarchitecture of every GPU generation.
-
 \begin{itemize}
 \item {\em A lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
   Unlike the general-purpose CPU community where a series of toolchains are available to tune performance in a bare-metal
@@ -56,6 +55,7 @@ With this assembler, a microbenchmark suite is designed to
 demystify plenty of GPU microarchitecture features such as instruction issue, warp scheduling, and register bank distribution, which help understand and optimize the performance of a computational program. 
 We apply optimization methods corresponding to GPU microarchitecture features to improve SGEMM performance incrementally. 
 More specifically, we make the following contributions:
+
 \begin{itemize}
 \item We propose a GPU ISA encoding solver to automatically crack ISA encodings
      of diverse GPU microarchitectures from disassembly codes.

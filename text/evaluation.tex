@@ -93,6 +93,14 @@ W] fluctuates seriously than other shapes, it is because each thread iteration
 much longer(K=4W) than other shapes. The degree of parallelism is coarser than other
 three shapes. In contrast, [4W, W, 4W] is finest parallelism in the four
 rectangle shapes, the result is much smoother.
+\begin{figure*}[!t]
+\begin{center}
+    \includegraphics[width=\textwidth, trim={0 6.5in 0 0}, clip]{mp4}
+\caption{Performance comparison of cuBLAS and the optimized SGEMM }
+\end{center}
+        \label{fig:1k2k4k}
+\end{figure*}
+
 
 \begin{figure}[htbp]
 \begin{center}
@@ -101,36 +109,6 @@ rectangle shapes, the result is much smoother.
 \label{fig:sgemm_tn}
 \end{center}
 \end{figure}
-
-
-\begin{figure*}
-    \begin{subfigure}[htbp]{0.5\textwidth}
-        \includegraphics[width=3.0in]{1k2k4k}
-        \subcaption{Matrix shape [M, K, N]=[W, 2W, 4W]}
-        \label{fig:1k2k4k}
-    \end{subfigure}
-    %\hspace{20mm}
-    \begin{subfigure}[htbp]{0.5\textwidth}
-\begin{center}
-        \includegraphics[width=3.0in]{1k4k1k}
-\end{center}
-        \subcaption{Matrix shape [M, K, N]=[W, 4W, W]}
-        \label{fig:1k4k1k}
-    \end{subfigure}
-    \begin{subfigure}[htbp]{0.5\textwidth}
-        \includegraphics[width=3.1in]{4k1k4k}
-        \subcaption{Matrix shape [M, K, N]=[4W, W, 4W]}
-        \label{fig:4k1k4k}
-    \end{subfigure}
-    %\hspace{20mm}
-    \begin{subfigure}[htbp]{0.5\textwidth}
-        \includegraphics[width=3.1in]{4k2k1k}
-        \subcaption{Matrix shape [M, K, N]=[4W, 2W, W]}
-        \label{fig:4k2k1k}
-    \end{subfigure}
-    \caption{Rectangle matrices performance}
-    \label{fig:rectangle}
-\end{figure*}
 
 \subsection{Performance Analysis}
 
