@@ -30,7 +30,7 @@ $M*N$ grids with $b_m \times b_k$, $b_k \times b_n$, and $b_m \times b_n$ blocks
 $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.}
+  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.\jli{wait for modification}}
   \label{gemm}
   {\footnotesize
   \begin{algorithmic}[1]
