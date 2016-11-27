@@ -124,9 +124,9 @@ To our best knowledge, no official GPU assembler is publicly available.
 NVIDIA provides PTX assembly compiler {\tt PTXAS}, disassembly tools {\tt cuobjdump}, and {\tt nvdisasm}, which makes it possible to build a GPU assembler by a third party.
 Both {\tt cuobjdump} and {\tt nvdisasm} disassemble {\em cubin} files to {\em sass} files which are human-readable assembly codes for examining potential performance issues in CUDA programs. 
 For every instruction in executable code sections, these tools list its address in a hexadecimal, the mnemonics in a string, and the encoded number in another hexadecimal. 
-For example, an {\tt IADD} instruction may be recorded as follows: \\\\
+For example, an {\tt IADD} instruction may be recorded as follows: \\
 {\small
-$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$\\
+$/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */$
 }
 
 Unfortunately, programmers cannot use these tools to directly modify the read-only {\em sass} assembly codes for performance tuning, but only refine CUDA codes and then re-examine the new generated assembly codes iteratively.
