@@ -62,38 +62,35 @@ In contrast, [4w, w, 4w] with the finest parallelism of the four shapes has the 
 
 \subsection{Performance Analysis}
 
-\subsubsection{Influence of Register Blocking Size}
-Table~\ref{tab:dm} summarizes computation and data movement volume of blocking SGEMM algorithm.
-The volume of data moving from shared memory to global memory is $r_x\times b_k+ r_y\times b_k$, and computation volume is $r_x\times r_y\times b_k$. 
-The shared memory arithmetic intensity ($sAI$) is defined as the ratio of floating-point operations to the shared memory traffic, which is 
+\subsubsection{Influence of Register Blocking Sizes}
+Table~\ref{tab:dm} summarizes data movement volume of the blocked SGEMM algorithm.
+The volume of data moving from shared memory to global memory is $r_x\times b_k+ r_y\times b_k$\jli{This is not shared to global memory, but shared to register in table~\ref{tab:dm}}, and the floating-point computation volume is $r_x\times r_y\times b_k$. 
+The shared memory arithmetic intensity ($sAI$) is defined as the ratio between them:
 \begin{equation}
 sAI = \frac {r_x\times 
 r_y\times b_k} {r_x\times b_k+ r_y\times b_k} = \frac{1}{\frac{1}{r_x} + \frac{1}{r_y}}.
     \label{equ:reg_block}
 \end{equation}
-Register blocking size is limited by the maximal number of registers per thread. 
-Each thread needs $r_x\times r_y$, $r_x$ and $r_y$ registers to store the result of a sub-matrix of $C$,  a block-column of
-$A$,  a block-row of $B$ in the same loop respectively.
-To hide shared memory latency, double-buffered software pipelining is used. Thus, extra $r_x$ and $r_y$ registers
-are used to prefetch next block-column of $A$ and $B$ from shared memory. 
-Since the total number of registers must be less than the maximal number of registers per thread ($256$ on Kepler), we have
+Register blocking sizes $r_x$ and $r_y$ are limited by the register counts per thread. 
+Each thread needs $r_x\times r_y$, $2r_x$ and $2r_y$ registers to store the result of a matrix block of $C$,  two columns of $A$ (double-buffered software pipelining),  two rows of $B$ (double-buffering) respectively in a single iteration of for loop in Algorithm~\ref{gemm}.
+% To hide shared memory latency, double-buffered software pipelining is used. 
+% Thus, extra $r_x$ and $r_y$ registers
+% are used to prefetch next block-column of $A$ and $B$ from shared memory. 
+Since the total number of registers must be less than the maximum register counts per thread ($256$ on Kepler), we have
 \begin{equation}
-    r_x\times r_y + r_x\times 2 + r_y\times 2 < 256.
+    r_x\times r_y + 2r_x + 2r_y < 256.
 \label{equ:reg_restrict}
 \end{equation}
 Equation~\ref{equ:reg_block} implies that larger register blocking yields the higher shared memory arithmetic intensity,
 and the optimal solution lies at $r_x=r_y$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
-{\tt LDG.128}, the block size could be $4\times 4$, $8\times 8$ or $12\times 12$. 
-Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:sgemm_tn}.
-Performance of $12\times12$ is better than $8\times8$ because $12\times12$ blocking has higher $sAI$ and instruction
-level parallelism. With respect to 
-instruction scheduling optimization in Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA}
-instructions, and latency can be hidden easier.
-$12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with
-other address indices. The number of registers per SM restricts us to launch up to $256$ threads. 
-In our implementation, we have $256$ threads per block. 
-Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
+{\tt LDG.128}, the block sizes could be $4\times 4$, $8\times 8$ or $12\times 12$. 
+Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:sgemm_tn} and \ref{fig:1k2k4k}.
+$12\times12$ blocking has better performance than $8\times8$ blocking because $12\times12$ blocking has higher $sAI$ and instruction level parallelism. 
+With respect to instruction scheduling optimization in Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA} instructions, and latency can be better hidden.
+$12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with other address indices. 
+The register counts per SM restricts us to launch up to $256$ threads/block which is in our implementation. 
+Each thread block computes a matrix block $C_{192, 192}$ by multiplying $A_{192,4}$ and $B_{4, 192}$, where $4$ is the unrolling factor.
 
 %\begin{figure}[htbp]
 %\begin{center}
@@ -105,12 +102,12 @@ Each thread block computes a $192\times 192$ sub-matrix of $C$ by multiplying $A
 
 Only one thread block per SM is active due to register limitation, thus the thread occupancy is $256/2048=12.5\%$.
 With our high instruction level parallelism, the thread parallelism becomes low.
-However, our SGEMM's high performance confirms that instruction level parallelism plays an important role on GPU.
-Similar conclusion is mentioned by Volkov in~\cite{volkov2010better}.
+However, our SGEMM's high performance confirms that instruction level parallelism still plays an important role on GPU.
+Similar conclusion has been mentioned by Volkov in~\cite{volkov2010better}.
 
 \subsubsection{Profiling Microarchitectural Optimization}
 
-To examine performance gain of different optimization strategies, we construct several intermediate 
+To examine performance gains of different optimization strategies, we construct several intermediate 
 implementations by incrementally applying our microarchitectural optimizations.
 \begin{figure}[htbp]
 \begin{center}
@@ -145,9 +142,9 @@ Figure~\ref{fig:th_prof} illustrates performance gains of each optimization meth
 As long as the number of instructions changes, instruction rescheduling is needed to achieve good performance.
 Compared with the baseline implementation, SGEMM gains up to $2.6\times$ speedup by applying all the optimizations.
 Register bank conflict eliminating improves around $10\%$ performance. 
-Wider load instruction {\tt LD.128} contributes $27\%-35\%$ performance, texture cached
-load instruction {\tt LDG.128} improves $5\%-12\%$.
-Dual issue achieves the highest improvement, i.e. 84\%-106\%.
+Wider load instruction {\tt LD.128} contributes $27\%$-$35\%$ performance, texture cached
+load instruction {\tt LDG.128} improves $5\%$-$12\%$.
+Dual issue achieves the highest improvement, i.e. $84\%$-$106\%$.
 %improves the most, $84\%-106\%$.
 
 
@@ -169,28 +166,28 @@ Dual issue achieves the highest improvement, i.e. 84\%-106\%.
 \end{center}
 \end{figure}
 
-\subsubsection{Upper Bound Analysis}
 
+\subsubsection{Upper Bound Analysis}
 
 We estimate the upper bound factors: 
 %{\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
-shared memory, global memory, and computation power. In the register blocking loop, each thread block computes $b_m*b_n*b_k$ and reads $b_m*b_k+b_n*b_k$ words. The upper bound of global memory bandwidth can be modeled as:
+shared memory, global memory, and computation power. In the register blocking loop, each thread block computes $b_m \times b_n \times b_k$ and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
 \begin{equation}
-    \frac{2*b_m*b_n*b_k}{4*(b_m*b_k + b_n*b_k)} = \frac{PeakFlops}{Bandwidth_{global}}
+    \frac{2 b_m \times b_n \times b_k}{4 (b_m \times b_k + b_n \times b_k)} = \frac{PeakFlops}{Bandwidth_{global}}
     \label{equ:global}
 \end{equation}
-According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $PeakFlops=3520$G, so $73$ GB/s is the minimal
-requirement for global memory bandwidth in order to achieve the theoretical peak $3520$ Gflops.
-For shared memory, inside each loop, $(r_x*b_k + r_y * b_k)*t_x*t_y$ words will be read from shared memory, in which $t_x$ and
-$t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking sizes. The computation is $b_m*b_n*b_k$. Based on the ratio of computation to shared memory access,
+According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $PeakFlops=3520$Gflop/s, so $73$GB/s is the minimal
+requirement for global memory bandwidth in order to achieve the theoretical peak $3520$Gflop/s.
+For shared memory, inside each loop, $(r_x \times b_k + r_y \times b_k) \times t_x \times t_y$ words will be read from shared memory, in which $t_x$ and
+$t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking sizes. The computation is $b_m \times b_n \times b_k$. Based on the ratio of computation to shared memory access,
 \begin{equation}
-    \frac{2*b_m*b_k*b_n}{4*t_x*t_y*(r_x*b_k + r_y *b_k)}  = \frac{PeakFlops}{Bandwidth_{shared}}
+    \frac{2 b_m \times b_k \times b_n}{4 t_x \times t_y \times (r_x \times b_k + r_y  \times b_k)}  = \frac{PeakFlops}{Bandwidth_{shared}}
     \label{equ:shared}
 \end{equation}
 
 
 The minimum bandwidth requirement of SGEMM for shared memory bandwidth is
-$1173$GB/s on K20 GPU, and $1173/13=90$ GB/s for each SM. The hardware provides
+$1173$GB/s on K20 GPU, and $1173/13=90$GB/s for each SM. The hardware provides
 $200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth in
 theory, which are higher than requirements, and hence neither the bandwidth of
 shared nor global memory will be the bottleneck.
