@@ -50,7 +50,7 @@ If $\widehat{inst}$ is valid and its instruction name is changed, this bit is in
 % Another feasible way is to find the bit positions which represents opcode, then
 % enumerate all the possible binary combinations after stripping out operand masks as Algorithm~\ref{algo:opcode} shows.
 
-From our results of NVIDIA Tesla K20m, we find that the top $10$ bits and the low $2$ bits represent opcode on GPU Kepler architecture.
+From our results of NVIDIA Tesla K20m, we find that the highest $10$ bits and the lowest $2$ bits represent opcode on GPU Kepler architecture.
 This algorithm narrows the opcode search space from $64$ to $12$ bits with an acceptable running time of $O(64N)$, where $N$ is the number of disassembly input generated from PTX samples ($N=xx$ in our experiment)\jli{add sample number}.
 We only enumerate possible opcodes in the pruned $12$ bits and identify all valid ones.
 
