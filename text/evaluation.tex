@@ -9,57 +9,9 @@ improvement, which confirms the usefulness of the microarchitectural optimizatio
 We present 
 a quantitative analysis of the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
 
-The experiments are conducted on NVIDIA K20m GPU with its hardware configuration summarized in 
-Table~\ref{table:k20}. We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices for $A$, $B$
+The experiments are conducted on NVIDIA K20m GPU, and the detailed specification of its hardware configuration can be found in~\cite{}. We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices for $A$, $B$
 and $C$, and  the matrix sizes vary from $384$ to $12288$ with a step $384$.
 %\jled{C size? What about A and B?}
-
-\begin{table}[htbp]
-\caption{The specification of NVIDIA Tesla K20m GPU.}
-\centering
-\scalebox{0.8} {
-\begin{tabular}{|c|c|}
-\hline
-% Metric& Value\\
-Configuration& Value\\
-\hline
-SPs/SM &192\\
-\hline
-SMs&13\\
-\hline
-Cores &2496\\
-\hline
-Frequency&705 MHz\\
-\hline
-Memory Bus Width&320 bit \\
-\hline
-Memory frequency&2600 MHz\\
-\hline
-Bandwidth&208.0 GB/s\\
-\hline
-Peak GFlop/s in SP&3520 Gflop/s\\
-\hline
-Warp scheduler per SM&4\\
-\hline
-Dispatch unit/SM&8\\
-\hline
-Max Registers/thread&256 \\
-\hline
-    32-bit registers/SM&65536 \\ %\jled{Use actual number}\\
-\hline
-LD/ST unit&32 \\
-\hline
-shared memory size&48KB\\
-\hline
-L1 cache size&16 or 48 KB\\
-\hline
-L2 cache size&1536 KB\\
-\hline
-\end{tabular}
-}
-\label{table:k20}
-\end{table}
-
 
 \subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} reports the performance of cuBLAS SGEMM and our optimized SGEMM.
