@@ -2,51 +2,53 @@
 \label{sec:related}
 %To our knowledge, this paper provides the first comprehensive study of demystifying NVIDIA GPU microarchitecture which 
 %is correlated with performance tuning in SGEMM. 
-This section briefly discusses related work in reverse engineering ISA encoding, GPU assembler, microbenchmarking and SGEMM optimization.
+This section briefly discusses the related work in reverse engineering ISA encoding, GPU assembler, microbenchmarking, and SGEMM optimization.
 
-{\em {\bf ISA Encoding Solver and GPU Assembler}}:The lack of assembler for public use motivates a series of work on developing toolchains to facilitate tuning codes in 
-assembly level. 
+{\em {\bf ISA Encoding Solver and GPU Assembler}}:
+CPU instruction reverse engineering work~\cite{collberg1997reverse,hsieh2001reverse} broadly exists by using a MIPS, SPARC, Alpha, PowerPC, ARM, or x86 assembler as a tool to crack CPU instruction sets and extract bit-level instruction encoding information. 
+These work outputs C declarations that can be used by binary tools. 
+However, NVIDIA does not have an available GPU assembler, but a disassembler instead. 
+The lack of a GPU assembler for public use makes our reverse engineering on GPUs more meaningful. 
+
+
+The absence of a GPU assembler motivates a series of work on developing toolchains to facilitate tuning codes at assembly level. 
 For the early architecture G80, Decuda~\cite{decuda} demonstrated the feasibility to operate
-assembly instructions. After that, for almost each new generation of CUDA architecture, there are several 
-efforts on developing assembly toolchains. Both Hou's Asfermi~\cite{asfermi} and Bernstein's 
-cudaasm-qhasm~\cite{bernstein2012usable} are assemblers for Fermi architecture. Gray built MaxAs~\cite{maxas} assembler 
-for Maxwell architecture by reverse engineering the encoding of Maxwell GPU. 
-Although Envytools~\cite{envytools} supports translation of PTX instruction to $64$-bit binaries 
-for serval GPU architectures, it is not able to generate a compatible {\tt cubin} format which can be directly used by 
-the CUDA driver APIs. %Besides, no prior work presents the detailed instruction decoding algorithms process as ours.
-It's no doubt that all their work envolves reverse engineering GPU ISA
-encodings. However, neither detailed descriptions are given nor a general tool is developed to crack
-new GPU ISA encoding. 
+assembly instructions. 
+After that, for almost every generation of GPU architecture, there are several 
+efforts on developing assembly toolchains. 
+Asfermi~\cite{asfermi} and cudaasm-qhasm~\cite{bernstein2012usable} are assemblers for Fermi architecture, and MaxAs~\cite{maxas} assembler is for Maxwell architecture. 
+% by reverse engineering the encoding of Maxwell GPU. 
+Envytools~\cite{envytools} supports translation of PTX instruction to $64$-bit binaries 
+for several GPU architectures, it is not able to generate a compatible {\tt cubin} which can be directly used by the CUDA driver APIs. %Besides, no prior work presents the detailed instruction decoding algorithms process as ours.
+% It's no doubt that 
+Although all their work involves reverse engineering GPU ISA encodings, neither detailed descriptions are given nor a general tool is developed to crack a new GPU ISA encoding. 
 %Hsieh use CPU assemblers to generate ISA encoding of CPU platforms~\cite{collberg1997reverse,engler2000derive} to be used by binary tools .
-These CPU instruction reverse engineering work~\cite{collberg1997reverse,hsieh2001reverse} uses an (MIPS, SPARC, Alpha, PowerPC, ARM, or x86) assembler as a tool to crack a CPU instruction set and extracts bit-level instruction encoding information. Its output consists of C declarations that can be used by binary tools. However, we do not have an available GPU assembler, but a disassembler instead. 
-In fact, the lack of GPU assembler makes our reverse engineering on GPUs more meaningful than on CPUs. 
-
-We provide a general tool to crack different GPU ISA encoding
-automatically, and a complete assembler for Kepler architecture.
+We provide a general toolchain to automatically crack different GPU ISA encodings and a complete assembler for Kepler architecture.
 %A remarkable advantage of our assembly toolchain is the compatibility with CUDA's {\tt cuobjdump}. 
 
 %We share the same idea of performance microbenchmarking with other works. 
 {\em {\bf Benchmarking}}: 
-Fog~\cite{fog} did a sound work on benchmarking instruction latency and throughput of several generations of Intel/AMD CPUs and Intel Xeon Phi accelerations. %The benchmarks focused on instruction latency, throughput and memory.
-Wong et.al.~\cite{wong} performed a 
+Fog~\cite{fog} did a sound work on benchmarking instruction latency and throughput of several generations of Intel and AMD CPUs and Intel Xeon Phi accelerators. %The benchmarks focused on instruction latency, throughput and memory.
+Wong et al.~\cite{wong} performed a 
 comprehensive benchmarking work on GT200 and provided pipeline latency data and
-memory features. Mei~\cite{mei} benchmarked memory hierarchy including cache, shared memory on Fermi, Kepler and Maxwell GPU.
-However, neither of them benchmarked 
-vectorized load instructions like {\tt LD} and {\tt LDS}. 
+memory features. Mei et al.~\cite{mei} benchmarked memory hierarchy including cache, shared memory on Fermi, Kepler and Maxwell GPUs.
+However, they haven't benchmarked dual-issue mode of arithmetic instructions or vectorized load instructions such as {\tt LD} and {\tt LDS}, which leaves non-negligible unexplored performance space. 
 %Due to lack of considering vectorized load instructions and 
 %too less instructions inside the loop, the results is not so accurate.
-No vectorized load instructions are benchmarked and too few instructions inside the loop lead to results with unsatisfying accuracy.
-Neither of them considered dual issue mode of 
-arithmetic instructions. We leverage the complete assembler to crack control codes which reveal more 
-microarchitecture details for tuning application performance.
+% This leads to results with unsatisfying accuracy.
+% No vectorized load instructions are benchmarked and too few instructions inside the loop 
+We leverage the complete assembler to crack control codes which reveal more microarchitecture details for tuning application performance.
 
-{\em {\bf Matrix Multiplication Tuning}}: With respect to GEMM optimization in microarchitectural level, some work inspires our implementation 
-on specific GPUs. For example, we adopt the proved effective optimization techniques like shared memory/register 
-blocking and double-buffering~\cite{volkov}~\cite{tan}. Further, Tan et.al.~\cite{tan} implemented fast DGEMM by using 
+{\em {\bf Matrix Multiplication Tuning}}: With respect to GEMM optimization in microarchitectural level, some work inspires our GPU implementations. 
+For example, we adopt the proved effective optimization techniques such as shared memory/register 
+blocking and double-buffering~\cite{volkov,tan}. 
+Tan et al.~\cite{tan} implemented a fast DGEMM by using 
 assembly level optimization, such as software pipelining, vector memory operations, and instruction scheduling. 
-Lai~\cite{lai} presented performance analysis and optimization work of SGEMM on both Fermi and GTX680 GPUs. However, 
-Lai didn't consider dual issue mode by setting control code, which can boost performance significantly. Scott 
-Gray~\cite{nervana_sgemm_wiki} presented optimization of SGEMM in assembly on Maxwell GPU. Since Maxwell does not 
-support {\tt FFMA} dual issue, the optimization is not as complex as 
-Kepler. In contrast, we present a complete case of applying microarchitectural features by combining 
-register allocation, dual issuing, memory access paths and instruction scheduling.
+Lai et al.~\cite{lai} presented performance analysis and optimization work of SGEMM on both Fermi and GTX680 GPUs. 
+\jli{deleted, because of useless: ``However, 
+they didn't consider dual-issue mode by setting control codes, which can boost performance significantly.'' }
+Gray~\cite{nervana_sgemm_wiki} presented SGEMM optimization in assembly on a Maxwell GPU. 
+\jli{deleted, useless: ``Since Maxwell does not support {\tt FFMA} dual issue, the optimization is not as complex as Kepler.'' }
+However, it is difficult to tune all possible microarchitectural optimizations well without a useful toolchain.
+In this work, we use our toolchain to present a more complete case study of applying microarchitectural features by combining 
+register allocation, dual issuing, memory access paths, and instruction scheduling.
