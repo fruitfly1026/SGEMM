@@ -16,14 +16,14 @@ and $C$. The size of square matrices varies from $384$ to $12288$ with a step $3
 
 \subsection{Overall Performance}
 Figure~\ref{fig:rect} shows SGEMM performance of five different matrix shapes, [W, W, W], [W, 2W, 4W], [W, 4W, W], [4W, W, 4W], and [4W, 2W, W], where W values are shown on x-axis.
-The results demonstrate our $12\times12$ and $8\times8$ blocking implementations are better than cuBLAS for almost all matrix shapes, while $12\times12$ is the best one when matrix greater than $1000$.
+The results demonstrate that our $12\times12$ and $8\times8$ blocking implementations are better than cuBLAS for almost all matrix shapes, while $12\times12$ is the best one when matrix greater than $1000$.
 The performance of both cuBLAS and our SGEMM for matrix shape [W, 4W, W] fluctuates more seriously than other shapes, because its parallelism is coarser and each thread iteration is much longer (K=4W).
 In contrast, [4W, W, 4W] with the finest parallelism of the four shapes has the smoothest results.
 %Figure~\ref{fig:rect} reports the performance of cuBLAS SGEMM and our optimized SGEMM.
 When matrix size is $12288\times12288$, the optimized SGEMM achieves $3104$
 Gflop/s with $88\%$ efficiency, while cuBLAS gets $2705$ GFlop/s with $76\%$ efficiency.
 Our SGEMM achieves $1.15 \times$ performance speedup over cuBLAS.% $12\%$ in efficiency.
-SGEMM performance increases with matrix sizes in Figure~\ref{fig:rect} . 
+SGEMM performance increases with matrix sizes. 
 %\jled{the next sentence change to ``On the one hand, a larger matrix has a higher arithmetic intensity 9$AI$), which is the ratio of compulsory floating-point operations to the total DRAM memory traffic.
 %The high arithmetic intensity makes good use of GPU computing resources to obtain good performance.''}
 One reason is that a larger matrix has a higher ratio of 
@@ -192,7 +192,7 @@ shared nor global memory will be the bottleneck.
 
 SGEMM has different computation to memory access ratio in terms of global memory and shared memory, so we demonstrate
 two roofline models in Figure~\ref{fig:roofline_all}. % and~\ref{fig:roofline_shared}. 
-The slope of slant line in Figure~\ref{fig:roofline_all} is global memory bandwidth. The x-axis is computation to global
+The slope of slant line in Figure~\ref{fig:roofline_all}(a) is global memory bandwidth. The x-axis is computation to global
 memory access ratio of an algorithm. 
 By Equation~\ref{equ:global}, the flops:bytes ratio of $192\times192$ and $128\times128$ shared 
 memory blocking of SGEMM are $48$ and $32$ respectively. The horizontal lines
@@ -200,7 +200,7 @@ show machine's peak performance, the performance of our optimized SGEMM
 , and SGEMM performance without dual issuing.
 This figure demonstrates that SGEMM is not bounded by global memory bandwidth
 for either $128\times128$ or $192\times 192$ shared memory blockings.
-The slope of slant line in Figure~\ref{fig:roofline_all} is the bandwidth of shared memory. The x-axis is computation to
+The slope of slant line in Figure~\ref{fig:roofline_all}(b) is the bandwidth of shared memory. The x-axis is computation to
 shared memory access ratio of an algorithm. 
 By Equation~\ref{equ:shared}, the flops:bytes ratio of $12\times12$, $8\times8$ register blocking SGEMM are $3$ and $2$ respectively. 
 This figure shows SGEMM is not bounded by shared memory through our {\tt LDS} optimization. 

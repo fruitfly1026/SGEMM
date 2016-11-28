@@ -36,7 +36,7 @@ Hence, every instruction's modifier need to be processed independently.
 \subsubsection{Opcode and Modifier Solvers}
 % \subsubsection{Opcode Encoding Solver}
 We design a heuristic algorithm (Algorithm~\ref{algo:opcode}) to crack {\tt opcode} encodings by detecting their bit positions.
-Opcode solver takes $N$ diassembly instructions generated from PTX samples as the input and outputs all opcode positions as $opBits$.
+Opcode solver takes $N$ diassembly instructions generated from PTX samples as the input and outputs all opcode bit positions as $opBits$.
 Each diassembly instruction $inst$ integrates its 64-bit binary code, name, operand types, and operand values as a structure.
 Take the $IADD$ instruction in Equation~\ref{eq:iadd} for example, its binary code is $0x4800000000201c03$, name is $IADD$, operand types is represented a string ``RRR'', and operand values are represented as a tuple $\{ 0,2,0 \}$.
 By flipping the 64 bits one-by-one, we determine whether each bit belongs to opcode.
@@ -51,7 +51,7 @@ If $\widehat{inst}$ is valid and its instruction name is changed, this bit is in
 % enumerate all the possible binary combinations after stripping out operand masks as Algorithm~\ref{algo:opcode} shows.
 
 From our results of NVIDIA Tesla K20m, we find that the highest $10$ bits and the lowest $2$ bits represent opcode on GPU Kepler architecture.
-This algorithm narrows the opcode search space from $64$ to $12$ bits with an acceptable running time of $O(64N)$, where $N$ is the number of disassembly input generated from PTX samples ($N$ is around $2300$ in our experiment). %\jli{add sample number}.
+The time complexity of opcode solver is $O(64N)$, where $N$ is the number of disassembly input generated from PTX samples ($N$ is around $2300$ in our experiment). This algorithm narrows the opcode enumeration space from $2^{64}$ to $2^{12}$. 
 We only enumerate possible opcodes in the pruned $12$ bits and identify all valid ones.
 
 % Thus, we only enumerate these opcode bits which generate an acceptable search space. Finally, we find 
@@ -138,8 +138,7 @@ Since each instruction may have different numbers and types of operands, we iden
 The operand types of an instruction are represented as a string.
 For example, oprdType of the instruction {\tt IADD} R1, R2, C[0x0][0x40] is ``RRC'' and oprdType of {\tt IADD} R1, R2, 0x8 is ``RRI'', where R, C and I represents registers, constant memory and immediates respectively.
 For each instruction with the known opcode, we flip each undetermined bit to get a new instruction $\widehat{inst}$.
-Comparing $inst$ with $\widehat{inst}$ using a simple function ``whichChange'' we confirm which operand value is changed by its position if any, that is $p>0$.
-Otherwise, this bit doesn't belong to the operand field.
+Comparing $inst$ with $\widehat{inst}$ using a simple function ``whichChange'' . This function confirm which operand value is changed by its position if any, otherwise, return a negetive integer.
 Then the visited dictionary is marked as 1.
 Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the number of diassembly instructions with different opcodes.
 

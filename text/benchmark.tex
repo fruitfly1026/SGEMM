@@ -4,9 +4,9 @@
 
 We design a microbenchmark suite to explore NVIDIA GPU microarchitecture features.
 % Our following observations are drawn from analyzing the execution time of the microbenchmarks.
-As shown in Figure~\ref{fig:workflow}, the CUDA kernel code is written in assembly and compiled into {\tt cubin} by our assembler, and then executed by CUDA APIs.
-A CUDA kernel code is tested for hundreds of times, and the average time is used for accuracy.
-The assembly instructions inside CUDA kernel are replicated to cover the branch overhead while not exceeding L1 instruction cache size.
+As shown in Figure~\ref{fig:workflow}, we write GPU kernel codes in assembly and compile them into {\tt cubin} by our assembler.% and then execut by CUDA APIs.
+The kernel code is tested for hundreds of times, and the average time is used for accuracy.
+The assembly instructions inside kernel are unrolled to cover the branch overhead while not exceeding L1 instruction cache size.
 %All assembly kernel codes are designed small enough to fit into the L1 instruction cache.
 Timing ticks are recorded by {\tt S2R R0, SR\_CLOCKLO} instruction, in which
 {\tt S2R} moves the value from the special clock register {\tt SR\_CLOCKLO} to a general
@@ -14,7 +14,8 @@ purpose register.
 Time is calculated in the general register and then written into the global memory.
 %We run each benchmark program twice, disregarding the first run to avoid compulsory instruction cache misses.
 Two metrics are benchmarked: latency and throughput. 
-Latency is tested by a succession of \emph{dependent} instructions by launching only one thread block with $32$ threads/block, according to~\cite{fog}. 
+Latency is tested by a succession of \emph{dependent} instructions by launching only one thread block with $32$ threads/block.
+%, according to~\cite{fog}. 
 Throughput is tested by a succession of \emph{independent} instructions by launching enough
 threads (e.g. $26$ threads blocks with $512$ threads/block for Kepler) to make full use of CUDA cores and memory bandwidth.
 %We use similar testing method with Fog's in~\cite{fog}.
@@ -61,7 +62,7 @@ The rightmost column represents the number of register bank conflicts recorded f
 This experiment is conducted in single issue mode by setting control code to 0x20.
 Theoretically, without dual issue, the peak efficiency is $4\times32/192=66.67\%$, in which $4$ is the number of warp schedulers and $32$
 is the number of threads in a warp.
-In fact, we observe that both single- and dual-issue mode produce the same throughput behavior for bank conflicts.
+In fact, we observe that both single- and dual-issue mode produce the similar throughput behavior for bank conflicts.
  % variance of instruction throughput.
 From our experiments on Kepler architecture, we observe:
 \begin{itemize}
@@ -81,7 +82,7 @@ From our experiments on Kepler architecture, we observe:
 
 
 \begin{table}[htbp]
-    \caption{The efficiency of instruction throughput varies with different register combinations.Inst: instruction patterns, Th/SM: instruction throughput per SM, Eff: throughput efficiency,  Conf: register bank conflicts.}
+    \caption{The efficiency of instruction throughput varies with different register combinations.Inst: instruction, Th/SM: instruction throughput per SM, Eff: throughput efficiency,  Conf: register bank conflicts.}
 \centering
 \scalebox{0.8} {
 \begin{tabular}{|c|c|c|c|}
@@ -133,7 +134,7 @@ Inst &Th/SM&Eff&Conf\\
 {\em {\bf Observation 2--[Control Code]}:
 Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction issue.}
 
-Starting with the Kepler architecture, NVIDIA has been moving some control logics off the chip and into kernel
+Starting with the Kepler architecture, NVIDIA has moved some control logics off the chip and into kernel
 instructions to save power~\cite{lai,maxas}. 
 This evolution provides programmers the opportunity to
 make globally optimal scheduling decisions and other control optimizations if an assembler is available. 
@@ -235,9 +236,9 @@ instruction {\tt LDS.64} while global memory prefers the $128$-bit load instruct
 
 For GPU memory hierarchy we focus on the programmer-controllable memory resources, shared memory and global memory.
 Different memory access widths (32-, 64-, or 128-bit) and paths (through L2 cache or texture cache) exist on NVIDIA GPUs.
-NVIDIA official documents and previous studies~\cite{tan} pointed out that wider
-instructions have longer pipeline latency.
-Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
+%NVIDIA official documents and previous studies~\cite{tan} pointed out that wider
+%instructions have longer pipeline latency.
+%Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
 
 Intuitively, a wider load operation should achieve higher bandwidth.
 We test the bandwidth of shared memory instructions with different widths, i.e. {\tt LDS.32}, {\tt LDS.64}, and {\tt LDS.128}.
