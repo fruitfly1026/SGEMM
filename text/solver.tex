@@ -1,6 +1,6 @@
 \subsection{GPU ISA Encoding Solver and Assembler}
 
-The ISA encoding information that is necessary to build an assembler and public for CPUs does not released by GPU vendors.
+The ISA encoding information which is necessary to build an assembler is not released by GPU vendors.
 Previous third-party work to build GPU assemblers~\cite{decuda,asfermi,maxas} also
 involves cracking GPU ISA encodings, whereas no cracking process is explicitly reported.
 Our solver is proposed to make cracking GPU ISA encodings simple, automatic, and portable to future GPUs.
@@ -12,8 +12,8 @@ Since a number's encoding can be literally explained, the operand encoding is re
 For example, the register operand {\tt R5} can be inferred from $101$ in binary format, while the immediate value {\tt 0x9} is $1001$. 
 %Besides, the fixed lengths of these fields allow us to determine their positions \jled{and lengths, don't need to specify lengths here.} relatively easily and hence to encode them. 
 The encodings of opcodes and modifiers are mnemonic symbols which can not be literally explained,
-a heuristic algorithm on a pruned search space is designed to crack the positions of them.
-Besides, Modifiers are instruction-sensitive, modifiers in the same type may have different encodings for different instructions. 
+a heuristic algorithm is designed to crack the positions of them.
+Besides, Modifiers are instruction-specific, modifiers in the same type may have different encodings for different instructions. 
 As an example, masks of type-size modifier for instructions {\tt LD} and {\tt LDG} are in different binary positions. 
 Hence, every instruction's modifier need to be processed independently. 
 
@@ -51,7 +51,7 @@ If $\widehat{inst}$ is valid and its instruction name is changed, this bit is in
 % enumerate all the possible binary combinations after stripping out operand masks as Algorithm~\ref{algo:opcode} shows.
 
 From our results of NVIDIA Tesla K20m, we find that the highest $10$ bits and the lowest $2$ bits represent opcode on GPU Kepler architecture.
-This algorithm narrows the opcode search space from $64$ to $12$ bits with an acceptable running time of $O(64N)$, where $N$ is the number of disassembly input generated from PTX samples ($N=xx$ in our experiment)\jli{add sample number}.
+This algorithm narrows the opcode search space from $64$ to $12$ bits with an acceptable running time of $O(64N)$, where $N$ is the number of disassembly input generated from PTX samples ($N$ is around $2300$ in our experiment). %\jli{add sample number}.
 We only enumerate possible opcodes in the pruned $12$ bits and identify all valid ones.
 
 % Thus, we only enumerate these opcode bits which generate an acceptable search space. Finally, we find 
@@ -130,12 +130,12 @@ We only enumerate possible opcodes in the pruned $12$ bits and identify all vali
 Algorithm~\ref{algo:operand} shows our algorithm to crack operand encodings.
 Since each instruction may have different numbers and types of operands, we identify operand positions a tuple of its name and operand type. 
 The operand types of an instruction are represented as a string.
-For example, oprdType of the instruction {\tt IADD} R1, R2, C[0x0][0x40] is ``RRC'' and oprdType of {\tt IADD} R1, R2, 0.5 is ``RRI'', where R, C and I represents registers, constant memory and immediates respectively.
+For example, oprdType of the instruction {\tt IADD} R1, R2, C[0x0][0x40] is ``RRC'' and oprdType of {\tt IADD} R1, R2, 0x8 is ``RRI'', where R, C and I represents registers, constant memory and immediates respectively.
 For each instruction with the known opcode, we flip each undetermined bit to get a new instruction $\widehat{inst}$.
 Comparing $inst$ with $\widehat{inst}$ using a simple function ``whichChange'' we confirm which operand value is changed by its position if any, that is $p>0$.
 Otherwise, this bit doesn't belong to the operand field.
 Then the visited dictionary is marked as 1.
-Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the number of diassembly instructions with different opcodes ($N=xx$ in our experiment).\jli{add sampling number}
+Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the number of diassembly instructions with different opcodes.
 
 \begin{algorithm}[htbp]
       \caption{Operand Solver}\label{algo:operand}
@@ -152,7 +152,7 @@ Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the num
       %\State $inst \gets instMap[i]$
       %\State $enc \gets inst.enc64$
 	\LineComment {check the rest bits of $enc$ for operand by excluding opcode bits}
-      \For {$j \gets 10, \dots, 61$}
+      \For {$j \gets 2, \dots, 53$}
       %\LineComment {if bit $j$ not operand bit and its value is 0} % \jled{what about enc[j]!=0? No need to check if it is opcode?}}
       %\If {notOprd($enc[j]$) and $enc[j] = 0$}
       \LineComment {flip $j^{th}$ bit of enc}
