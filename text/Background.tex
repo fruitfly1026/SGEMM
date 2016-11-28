@@ -30,7 +30,7 @@ $M*N$ grids with $b_m \times b_k$, $b_k \times b_n$, and $b_m \times b_n$ blocks
 $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.\jli{wait for modification}}
+  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.}
   \label{gemm}
   {\footnotesize
   \begin{algorithmic}[1]
@@ -39,20 +39,26 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
 	\State $sm_A \gets$ a $b_m \times b_k$ block of $A$
 	\State $sm_B \gets$ a $b_k \times b_n$ block of $B$
 	\State \textbf{sync}
+    \State $r_A \gets sm_A[0, \dots, r_x-1][i]$
+    \State $r_B \gets sm_B[i][0, \dots, r_y-1]$
 	\Do
-    \For {$i \gets 0$ to $b_k-1$ step $2$}
+      \LineComment {shared memory double buffering}
+	\State $sm_A \gets$ another $b_m \times b_k$ block of $A$
+	\State $sm_B \gets$ another $b_k \times b_n$ block of $B$
+    \For {$i \gets 0$ to $b_k-1$ step $1$}
     \Comment {loop unrolling}
     \LineComment {Thread-local computation} 
-    \State $r_A \gets sm_A[0, \dots, r_x-1][i]$
-		\State $r_B \gets sm_B[i][0, \dots, r_y-1]$
-		\State $accum \gets accum + r_A \circ r_B$
 		\Comment {$\circ$: outer-product}
 		\State $r'_A \gets sm_A[0, \dots, r_x-1][i+1]$
 		\State $r'_B \gets sm_B[i+1][0, \dots, r_y-1]$
-		\State $accum \gets accum + r'_A \circ r'_B$
+        \If {$i$ is even} 
+        \Comment {Register double buffering}
+        \State $accum \gets accum + r_A \circ r_B$
+        \Else
+        \State $accum \gets accum + r'_A \circ r'_B$
+        \EndIf
+		%\State $accum \gets accum + r'_A \circ r'_B$
 	\EndFor
-	\State $sm_A \gets$ another $b_m \times b_k$ block of $A$
-	\State $sm_B \gets$ another $b_k \times b_n$ block of $B$
 	\State \textbf{sync}
 	\doWhile {One more valid $b_k \times b_n$ block of $B$ exists.\jli{further polish}}
 	\State \textbf{merge} $accum$ with a $b_m \times b_n$ block of $C$.
