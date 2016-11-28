@@ -130,7 +130,6 @@ Inst &Th/SM&Eff&Conf\\
 \end{table}
 
 
-
 {\em {\bf Observation 2--[Control Code]}:
 Warp scheduling and issue mode are tunable by modifying control codes which regulate instruction issue.}
 
@@ -215,7 +214,7 @@ As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA
 \begin{table}[htbp]
 \caption{Floating-point instruction throughput on Kepler}
 \centering
-\scalebox{0.9} {
+\scalebox{0.8} {
 \begin{tabular}{|c|c|c|c|}
 \hline
 Inst &operation&single issue&dual issue\\
@@ -261,7 +260,7 @@ We benchmark that a {\tt LDG.128} achieves $131$GB/s, while {\tt LD.128} only ac
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.5]{lds_bandwidth}
+\includegraphics[scale=0.4]{lds_bandwidth}
     \caption{ The bandwidth of {\tt LDS.32}, {\tt LDS.64} and {\tt LDS.128}}
 \label{fig:lds_bw}
 \end{center}
