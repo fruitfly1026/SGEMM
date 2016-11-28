@@ -30,7 +30,7 @@ $M*N$ grids with $b_m \times b_k$, $b_k \times b_n$, and $b_m \times b_n$ blocks
 $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b_n-1}{b_n} \Bigr\rfloor$.
 
 \begin{algorithm}
-  \caption{Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.}
+  \caption{ Blocked SGEMM algorithm of a $t_x \times t_y$ thread block. $b_m, b_n, b_k$ are shared memory blocking sizes, $r_x$ and $r_y$ are register blocking sizes.}
   \label{gemm}
   {\footnotesize
   \begin{algorithmic}[1]
@@ -94,19 +94,17 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
 %   \end{algorithmic}
 % \end{algorithm}
 
-Algorithm~\ref{gemm} has $2 r_x r_y b_k$ floating-point operations (flops) of each thread for one iteration of the while loop.
+Algorithm~\ref{gemm} has $2\times r_x \times r_y \times b_k$ floating-point operations (flops) of each thread for one iteration of the while loop.
 Table~\ref{tab:dm} estimates data movement volume through registers, shared memory, and global 
 memory correspondingly.
 These parameters demonstrate that SGEMM performance is determined by the hierarchical memory blocking and the unrolling factor of the inner for loop.
 Tuning of these factors relies on GPU memory bandwidth and latency. 
 According to the previous work~\cite{magma,tan}, tuning proper parameters to overcome memory bandwidth limits is relatively easy with the estimates in table~\ref{tab:dm}.
 Performance tuning for memory latency is much more difficult, since latency is closely coupled to a particular microarchitecture's features such as the instruction sequence and instruction types, which depends on a GPU toolchain and a assembler to identify. 
-
-
 \begin{table}[htbp]
-    \caption{Data movement volume of each thread for one while loop iteration.} %\jled{this table is not referred in this paper.}}
+    \caption{ Data movement volume of each thread for one while loop iteration.} %\jled{this table is not referred in this paper.}}
 \centering
-\scalebox{1.0} {
+\scalebox{0.8} {
 \begin{tabular}{|c|c|}
 \hline
     Data path& Volume (in words)\\
@@ -125,36 +123,41 @@ shared$\Rightarrow$register ({\tt LDS})& $r_x\times b_k + r_y\times b_k$\\
 \end{table}
 
 
+
 \subsection{CUDA Binary Utilities}
 \label{sec:cuda}
 
 %NVIDIA does not release its GPU assembler to public, they release other tool-chains:ptxas, nvcc.
-To our best knowledge, no official GPU assembler is publicly available.
-NVIDIA provides PTX assembly compiler {\tt PTXAS}, disassembly tools {\tt cuobjdump}, and {\tt nvdisasm}, which makes it possible to build a GPU assembler by a third party.
-Both {\tt cuobjdump} and {\tt nvdisasm} disassemble {\em cubin} files to {\em sass} files which are human-readable assembly codes for examining potential performance issues in CUDA programs. 
-For every instruction in executable code sections, these tools list its address in a hexadecimal, the mnemonics in a string, and the encoded number in another hexadecimal. 
-For example, an {\tt IADD} instruction may be recorded as follows:
-{\small
+Though no official GPU assembler is publicly available, 
+NVIDIA provides PTX assembly compiler {\tt PTXAS}, disassembly tools {\tt cuobjdump} and {\tt nvdisasm}, which makes it possible to build a GPU assembler by a third party.
+Both {\tt cuobjdump} and {\tt nvdisasm} disassemble {\em cubin} files to {\em sass} files which are human-readable disassembly for examining potential performance issues in CUDA programs. 
+Every instruction in the disassembly is composed of a instruction address
+in hexadecimal, instrunction content, and the 64-bit instruction encoding in hexadecimal. 
+For example, an {\tt IADD} instruction in disassembly is recorded as follows:
+{\footnotesize
 \begin{equation}
+%\begin{displaymath}
 \label{eq:iadd}
-/*0048*/~~~~IADD~~R0,~~R2,~~R0;~~/* 0x4800000000201c03 */
+/*0048*/~~IADD~~R0,~~R2,~~R0;~~/*0x4800000000201c03*/
 \end{equation}
+%\end{displaymath}
 }
 
-Unfortunately, programmers cannot use these tools to directly modify the read-only {\em sass} assembly codes for performance tuning, but only refine CUDA codes and then re-examine the new generated assembly codes iteratively.
+Unfortunately, programmers cannot use these tools to directly modify the read-only {\em sass} assembly codes for performance tuning, but only refine CUDA codes and then reexamine the new generated disassembly codes iteratively.
 Therefore, an assembler is desiderated to manipulate assembly codes. 
 Though NVIDIA hasn't released the internal assembler and instruction encoding format, the disassembled codes in {\em sass} files and the public pseudo assembly references~\cite{ptx2015isa} provide clues to crack its instruction format and then build our own assembler (section~\ref{sec:assembler}).
 %NVIDIA provides {\tt PTXAS} to compile PTX assembly to cubin.
 %PTX is a low-level parallel thread execution virtual machine and instruction set architecture (ISA)~\cite{}.
 %The goals for PTX include the following:
 
-
-Though NVIDIA provides its assembly language PTX and its compiler {\tt PTXAS}, PTX targets a stable machine-independent ISA that could span multiple GPU generations.
+Though NVIDIA provides its pseudo-assembly language PTX and its compiler {\tt PTXAS}, PTX targets a stable machine-independent ISA that could span multiple GPU generations.
 Its machine-independent property is convenient for compilers design but also brings several drawbacks:
 First, PTX use pseudo-registers, programmers cannot control its register allocation. 
-Second, PTX has no control code information which is used in Kepler and Maxwell GPUs to do warp scheduling.
-Therefore, even for PTX codes, we also use {\tt PTXAS} to compile them to \emph{cubin} and then use disassemble tool {\tt cuobjdump} to generate their native assembly codes. 
-This paper uses disassembled codes in {\em sass} files as the input of the GPU ISA encoding solver.
+Second, PTX has no control code information which is used in Kepler and Maxwell GPUs to optimize warp scheduling.
+%Therefore, even for PTX codes, we also use {\tt PTXAS} to compile them to
+%\emph{cubin} and then use disassemble tool {\tt cuobjdump} to generate their
+%native assembly codes. 
+This paper uses disassembly generated from PTX as the input of the GPU ISA encoding solver.
 % , it is a kind of pseudo-assembly. 
  % for compilers to target.
 % PTX defines a virtual machine and ISA for general purpose parallel thread execution.
