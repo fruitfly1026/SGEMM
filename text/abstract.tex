@@ -1,15 +1,14 @@
 \begin{abstract}
-In this paper, we present a methodology to demystify GPU's microarchitectural level features and demonstrate how to use
-them to tune SGEMM. The methodology relies on a reverse engineering approach to crack the GPU ISA instruction encoding in
-order to build a GPU assembler, and a microbenchmark suite at assembly level to correlate architecture features with
-performance factors.
-We uncover microarchitectural features, such as float instruction dual issue, memory load width,
-and register bank. 
-Based on these features, we implement the fastest SGEMM on Kepler GPU.
-The performance boost is achieved on the basis of tuning {\tt FFMA} throughput to the
-hardware peak by activating dual issue and eliminating bank conflicts, then adding other non-FFMA instructions with little
-penalty by choosing proper width of global/shared load instructions, and instruction scheduling.
-The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is 15\% higher than cuBLAS7.0 on NVIDIA Kepler K20 GPU.
-We believe that our SGEMM optimization can serve as an example of how to optimize other float computation-intensive algorithm on GPU.
+In this paper, we present a methodology to demystify GPU microarchitectural features and demonstrate the case studies by tuning SGEMM and convolutional networks performance. 
+The methodology relies on a reverse engineering approach to cracking the GPU ISA instruction encodings to build a GPU assembler.
+An assembly microbenchmark suite correlates microarchitectural features with their performance factors and uncovers float instruction dual issue, memory load width, register bank, and other microarchitectural features.
+Based on these features, we develop a faster SGEMM with $3104$Gflop/s performance and $88\%$ efficiency, which is $15\%$ higher than cuBLAS7.0 on NVIDIA Kepler K20m.
+The performance boost is achieved by tuning {\tt FFMA} throughput to the
+hardware peak by activating dual issue, eliminating register bank conflicts, adding non-FFMA instructions with little penalty, and choosing proper width of global/shared load instructions.
+Applying these optimizations on convolutional networks, the optimized implementations gains $39\%$-$62\%$ performance improvement compared to cuDNN4.0.
+The toolchain is an attempt to automatically crack different GPU ISA encodings and build a complete assembler adaptively, to explore more performance for applications on GPUs.
+% , and instruction scheduling.
+% The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is $15\%$ higher than cuBLAS7.0 on NVIDIA Kepler K20m.
+% We believe that our SGEMM optimization can serve as an example of how to optimize other float computation-intensive algorithm on GPU.
 \end{abstract}
 
