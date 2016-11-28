@@ -59,7 +59,8 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
         \EndIf
 		%\State $accum \gets accum + r'_A \circ r'_B$
 	\EndFor
-      \State $sm_A \leftrightarrow sm'_A$; $sm_B \leftrightarrow sm'_B$
+      \State $sm_A \leftrightarrow sm'_A$; $sm_B \leftrightarrow sm'_B$ 
+      \Comment {swap shared memory pointer}
       % \State {swap $sm_A$ and $sm'_A$ pointer}
       % \State {swap $sm_B$ and $sm'_B$ pointer}
 	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists.}
