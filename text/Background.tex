@@ -34,7 +34,7 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
   \label{gemm}
   {\footnotesize
   \begin{algorithmic}[1]
-	\LineComment {Shared memory variables: $sm_A$ and $sm_B$}
+	\LineComment {Shared memory variables: $sm_A$ and $sm_B$, $sm'_A$ and $sm'_B$}
 	\LineComment {Registers variables: $accum[r_x \times r_y]$, $r_A[r_x]$, $r_B[r_y]$, $r'_A[r_x]$, $r'_B[r_y]$.}
 	\State $sm_A \gets$ a $b_m \times b_k$ block of $A$
 	\State $sm_B \gets$ a $b_k \times b_n$ block of $B$
