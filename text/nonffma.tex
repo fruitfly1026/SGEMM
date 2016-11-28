@@ -2,7 +2,7 @@
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to
 assure the correct program without losing performance. To tolerate instruction latency, the
 distance of dependent instructions needs to be larger than their latency. The distance is approximated as
-{\footnotesize
+{\small
 \begin{equation}
 \label{eq:inst}
 distance = \frac{4\times\#instructions}{7}.
@@ -14,7 +14,7 @@ Therefore, if we assume two interleave instructions have a distance $L$, at leas
 Besides, the remained number of slots
 to insert these instructions is estimated as
 
-{\footnotesize
+{\small
 \begin{displaymath}
 \#slots = \frac{r_x\times r_y\times b_k}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
