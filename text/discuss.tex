@@ -35,6 +35,7 @@ general performance tuning and compiler optimizations~\cite{lam1991cache}, this 
 %For another floating-point intensive algorithm like convolution in deep learning applications, the FFMA throughput can be improved by eliminating register bank conflicts and activating dual issue. Then non-FFMA instructions are carefully scheduled without affecting the FFMA throughput. 
 
 {\em {\bf Convolutional Algorithm Performance}}:
+\jli{give one more sentence for convolutional algorithms}
 We optimize a convolution algorithm at assembly level using the method described in Section~\ref{sec:optimization}.
 Three popular convolutional neural networks, Alexnet~\cite{krizhevsky2012imagenet}, Vgg~\cite{simonyan2014very} and Overfeat~\cite{sermanet2013overfeat}, are implemented using $128\times128$ shared memory blocking and $8\times8$ register blocking. 
 We refer interested readers to these papers for detailed network configurations.
