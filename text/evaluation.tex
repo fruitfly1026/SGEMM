@@ -1,7 +1,7 @@
 \section{Evaluation}
 \label{sec:experiment}
 
-\jli{state convolution in here}
+%\jli{state convolution in here}
 In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA cuBLAS. 
 Our SGEMM achieves 15\% %$17\%\sim 25\%$ 
 performance
@@ -62,7 +62,8 @@ In contrast, [4w, w, 4w] with the finest parallelism of the four shapes has the 
 
 \subsubsection{Influence of Register Blocking Sizes}
 Table~\ref{tab:dm} summarizes data movement volume of the blocked SGEMM algorithm.
-The volume of data moving from shared memory to global memory is $r_x\times b_k+ r_y\times b_k$\jli{This is not shared to global memory, but shared to register in table~\ref{tab:dm}}, and the floating-point computation volume is $r_x\times r_y\times b_k$. 
+The volume of data moving from shared memory to register is $r_x\times b_k+ r_y\times b_k$, 
+and the floating-point computation volume is $r_x\times r_y\times b_k$. 
 The shared memory arithmetic intensity ($sAI$) is defined as the ratio between them:
 \begin{equation}
 sAI = \frac {r_x\times 
