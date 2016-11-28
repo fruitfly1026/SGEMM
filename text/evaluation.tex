@@ -64,21 +64,25 @@ Table~\ref{tab:dm} summarizes data movement volume of the blocked SGEMM algorith
 The volume of data moving from shared memory to register is $r_x\times b_k+ r_y\times b_k$, 
 and the floating-point computation volume is $r_x\times r_y\times b_k$. 
 The shared memory arithmetic intensity ($sAI$) is defined as the ratio between them:
+{\footnotesize
 \begin{equation}
 sAI = \frac {r_x\times 
 r_y\times b_k} {r_x\times b_k+ r_y\times b_k} = \frac{1}{\frac{1}{r_x} + \frac{1}{r_y}}.
     \label{equ:reg_block}
 \end{equation}
+}
 Register blocking sizes $r_x$ and $r_y$ are limited by the register counts per thread. 
 Each thread needs $r_x\times r_y$, $2r_x$ and $2r_y$ registers to store the result of a matrix block of $C$,  two columns of $A$ (double-buffered software pipelining),  two rows of $B$ (double-buffering) respectively in a single iteration of for loop in Algorithm~\ref{gemm}.
 % To hide shared memory latency, double-buffered software pipelining is used. 
 % Thus, extra $r_x$ and $r_y$ registers
 % are used to prefetch next block-column of $A$ and $B$ from shared memory. 
 Since the total number of registers must be less than the maximum register counts per thread ($256$ on Kepler), we have
+{\footnotesize
 \begin{equation}
     r_x\times r_y + 2r_x + 2r_y < 256.
 \label{equ:reg_restrict}
 \end{equation}
+}
 Equation~\ref{equ:reg_block} implies that larger register blocking yields the higher shared memory arithmetic intensity,
 and the optimal solution lies at $r_x=r_y$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
@@ -170,19 +174,22 @@ Dual issue achieves the highest improvement, i.e. $84\%$-$106\%$.
 We estimate the upper bound factors: 
 %{\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
 shared memory, global memory, and computation power. In the register blocking loop, each thread block computes $b_m \times b_n \times b_k$ and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
+{\footnotesize
 \begin{equation}
     \frac{2 b_m \times b_n \times b_k}{4 (b_m \times b_k + b_n \times b_k)} = \frac{PeakFlops}{Bandwidth_{global}}
     \label{equ:global}
 \end{equation}
+}
 According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $PeakFlops=3520$Gflop/s, so $73$GB/s is the minimal
 requirement for global memory bandwidth in order to achieve the theoretical peak $3520$Gflop/s.
 For shared memory, inside each loop, $(r_x \times b_k + r_y \times b_k) \times t_x \times t_y$ words will be read from shared memory, in which $t_x$ and
 $t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking sizes. The computation is $b_m \times b_n \times b_k$. Based on the ratio of computation to shared memory access,
+{\footnotesize
 \begin{equation}
     \frac{2 b_m \times b_k \times b_n}{4 t_x \times t_y \times (r_x \times b_k + r_y  \times b_k)}  = \frac{PeakFlops}{Bandwidth_{shared}}
     \label{equ:shared}
 \end{equation}
-
+}
 
 The minimum bandwidth requirement of SGEMM for shared memory bandwidth is
 $1173$GB/s on K20 GPU, and $1173/13=90$GB/s for each SM. The hardware provides
