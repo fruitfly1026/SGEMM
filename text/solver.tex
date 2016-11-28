@@ -65,7 +65,7 @@ modifier. The modifier difference is checked per opcode. %that the algorithm is 
 
 \begin{algorithm}[htbp]
       \caption{Opcode Solver}\label{algo:opcode}
-      {\small
+      {\footnotesize
       \begin{algorithmic}[1]
       \State \textbf {Input:} instSet, $N$ diassembly instructions generated from PTX samples
       \State \textbf {Onput:} opBits, opcode positions in the 64-bit encoding
@@ -145,7 +145,7 @@ Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the num
 
 \begin{algorithm}[htbp]
       \caption{Operand Solver}\label{algo:operand}
-      {\small
+      {\footnotesize
       \begin{algorithmic}[1]
       \State \textbf {Input:} instSet, $N$ diassembly instructions with different opcodes
       \State \textbf {Onput:} pos, operand positions for each opcode, a 2D array.

@@ -151,9 +151,11 @@ Though NVIDIA hasn't released the internal assembler and instruction encoding fo
 %The goals for PTX include the following:
 
 Though NVIDIA provides its pseudo-assembly language PTX and its compiler {\tt PTXAS}, PTX targets a stable machine-independent ISA that could span multiple GPU generations.
-Its machine-independent property is convenient for compilers design but also brings several drawbacks:
-First, PTX use pseudo-registers, programmers cannot control its register allocation. 
-Second, PTX has no control code information which is used in Kepler and Maxwell GPUs to optimize warp scheduling.
+Its machine-independent property is convenient for compilers design but also brings several performance drawbacks.
+First, PTX use pseudo-registers, programmers cannot control its register allocation, so register bank conflict cannot be avoided. 
+Second, PTX has no control code information which is used in Kepler and Maxwell
+GPUs to optimize warp scheduling, so dual-issue on Kepler and warp scheduling on both Kepler and Maxwell
+optimization can not be actived efficiently.
 %Therefore, even for PTX codes, we also use {\tt PTXAS} to compile them to
 %\emph{cubin} and then use disassemble tool {\tt cuobjdump} to generate their
 %native assembly codes. 
