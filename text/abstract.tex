@@ -1,10 +1,7 @@
 \begin{abstract}
-In this paper, we present a methodology to demystify GPU microarchitectural features and demonstrate the case studies by tuning SGEMM and convolutional networks performance. 
-The methodology relies on a reverse engineering approach to cracking the GPU ISA instruction encodings to build a GPU assembler.
-An assembly microbenchmark suite correlates microarchitectural features with their performance factors and uncovers float instruction dual issue, memory load width, register bank, and other microarchitectural features.
-Based on these features, we develop a faster SGEMM with $3104$Gflop/s performance and $88\%$ efficiency, which is $15\%$ higher than cuBLAS7.0 on NVIDIA Kepler K20m.
-The performance boost is achieved by tuning {\tt FFMA} throughput to the
-hardware peak by activating dual issue, eliminating register bank conflicts, adding non-FFMA instructions with little penalty, and choosing proper width of global/shared load instructions.
+In this paper, we present a methodology to demystify GPU microarchitectural features and demonstrate the performance tuning experience for compute-intensive kernels. The methodology relies on a reverse engineering approach to cracking the GPU ISA instruction encodings to build a GPU assembler.
+An assembly microbenchmark suite correlates microarchitectural features with their performance factors and uncovers float instruction dual issue, memory load width, register bank, and other microarchitectural features. We use SGEMM as a running example throughout this paper to show how to achieve bare-metal performance tuning. The performance boost is achieved by tuning {\tt FFMA} throughput to the hardware peak by activating dual issue, eliminating register bank conflicts, adding non-{\tt FFMA} instructions with little penalty, and choosing proper width of global/shared load instructions.
+On NVIDIA Kepler K20m, we develop a faster SGEMM with $3104$Gflop/s performance and $88\%$ efficiency, which is $15\%$ higher than cuBLAS7.0 .
 Applying these optimizations on convolutional networks, the optimized implementations gains $39\%$-$62\%$ performance improvement compared to cuDNN4.0.
 The toolchain is an attempt to automatically crack different GPU ISA encodings and build a complete assembler adaptively, to explore more performance for applications on GPUs.
 % , and instruction scheduling.
