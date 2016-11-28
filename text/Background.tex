@@ -45,22 +45,23 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
       \LineComment {shared memory double buffering}
 	\State $sm'_A \gets$ another $b_m \times b_k$ block of $A$
 	\State $sm'_B \gets$ another $b_k \times b_n$ block of $B$
-    \For {$i \gets 0$ to $b_k-1$ step $1$}
+  \LineComment {Thread-local computation}
+    \For {$i \gets 0, \dots b_k-1$ }
     \Comment {loop unrolling}
-    \LineComment {Thread-local computation} 
-		\Comment {$\circ$: outer-product}
 		\State $r'_A \gets$ a column of $sm_A$ % sm_A[0, \dots, r_x-1][i+1]$
 		\State $r'_B \gets$ a row of $sm_B$%sm_B[i+1][0, \dots, r_y-1]$
         \If {$i$ is even} 
         \Comment {Register double buffering}
         \State $accum \gets accum + r_A \circ r_B$
+        \Comment {$\circ$: outer-product}
         \Else
         \State $accum \gets accum + r'_A \circ r'_B$
         \EndIf
 		%\State $accum \gets accum + r'_A \circ r'_B$
 	\EndFor
-      \State {swap $sm_A$ and $sm'_A$ pointer}
-      \State {swap $sm_B$ and $sm'_B$ pointer}
+      \State $sm_A \leftrightarrow sm'_A$; $sm_B \leftrightarrow sm'_B$
+      % \State {swap $sm_A$ and $sm'_A$ pointer}
+      % \State {swap $sm_B$ and $sm'_B$ pointer}
 	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists.}
 	\State \textbf{merge} $accum$ with a $b_m \times b_n$ block of $C$.
   \end{algorithmic}
