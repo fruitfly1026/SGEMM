@@ -38,19 +38,19 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
 	\LineComment {Registers variables: $accum[r_x \times r_y]$, $r_A[r_x]$, $r_B[r_y]$, $r'_A[r_x]$, $r'_B[r_y]$.}
 	\State $sm_A \gets$ a $b_m \times b_k$ block of $A$
 	\State $sm_B \gets$ a $b_k \times b_n$ block of $B$
-	\State \textbf{sync}
-    \State $r_A \gets sm_A[0, \dots, r_x-1][i]$
-    \State $r_B \gets sm_B[i][0, \dots, r_y-1]$
+    \State $r_A \gets $ a column of $sm_A$%sm_A[0, \dots, r_x-1][i]$
+    \State $r_B \gets $ a row of $sm_B$%sm_B[i][0, \dots, r_y-1]$
 	\Do
+	\State \textbf{sync}
       \LineComment {shared memory double buffering}
-	\State $sm_A \gets$ another $b_m \times b_k$ block of $A$
-	\State $sm_B \gets$ another $b_k \times b_n$ block of $B$
+	\State $sm'_A \gets$ another $b_m \times b_k$ block of $A$
+	\State $sm'_B \gets$ another $b_k \times b_n$ block of $B$
     \For {$i \gets 0$ to $b_k-1$ step $1$}
     \Comment {loop unrolling}
     \LineComment {Thread-local computation} 
 		\Comment {$\circ$: outer-product}
-		\State $r'_A \gets sm_A[0, \dots, r_x-1][i+1]$
-		\State $r'_B \gets sm_B[i+1][0, \dots, r_y-1]$
+		\State $r'_A \gets$ a column of $sm_A$ % sm_A[0, \dots, r_x-1][i+1]$
+		\State $r'_B \gets$ a row of $sm_B$%sm_B[i+1][0, \dots, r_y-1]$
         \If {$i$ is even} 
         \Comment {Register double buffering}
         \State $accum \gets accum + r_A \circ r_B$
@@ -59,8 +59,9 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
         \EndIf
 		%\State $accum \gets accum + r'_A \circ r'_B$
 	\EndFor
-	\State \textbf{sync}
-	\doWhile {One more valid $b_k \times b_n$ block of $B$ exists.\jli{further polish}}
+      \State {swap $sm_A$ and $sm'_A$ pointer}
+      \State {swap $sm_B$ and $sm'_B$ pointer}
+	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists.}
 	\State \textbf{merge} $accum$ with a $b_m \times b_n$ block of $C$.
   \end{algorithmic}
   }
