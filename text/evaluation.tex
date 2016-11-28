@@ -9,11 +9,10 @@ improvement, which confirms the usefulness of the microarchitectural optimizatio
 We present 
 a quantitative analysis of the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
 
-The experiments are conducted on NVIDIA Tesla K20m GPU, xx (refer to \cite{xx}\jli{add} for detailed specification). 
-\jli{Though delete the hardware configuration figure, still need to state main parameters in words!}
-We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices \jli{not only square matrices now} for $A$, $B$
-and $C$, and the matrix sizes vary from $384$ to $12288$ with a step $384$.
-%\jled{C size? What about A and B?}
+The experiments are conducted on NVIDIA Tesla K20m GPU(refer to \cite{gk110} for detailed specification). 
+%\jli{Though delete the hardware configuration figure, still need to state main parameters in words!}
+We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices and four shapes of rectangle matrices for $A$, $B$
+and $C$. The size of square matrices varies from $384$ to $12288$ with a step $384$. The the smallest dimension of rectangle matrices varies from $192$ to $3072$ with a step $192$.
 
 \subsection{Overall Performance}
 Figure~\ref{fig:sgemm_tn} reports the performance of cuBLAS SGEMM and our optimized SGEMM.
@@ -46,18 +45,17 @@ performance.
 \end{figure}
 
 
-Figure~\ref{fig:1k2k4k}\jli{don't know why not showing number} shows SGEMM performance of four different matrix shapes, [w, 2w, 4w], [w, 4w, w], [4w, w, 4w], and [4w, 2w, w], where w values are shown on x-axis.
+Figure~\ref{fig:rect} shows SGEMM performance of four different matrix shapes, [w, 2w, 4w], [w, 4w, w], [4w, w, 4w], and [4w, 2w, w], where w values are shown on x-axis.
 The results demonstrate our $12\times12$ and $8\times8$ blocking implementations are better than cuBLAS for almost all matrix shapes, while $12\times12$ is the best one when matrix greater than $1000$.
 The performance of both cuBLAS and our SGEMM for matrix shape [w, 4w, w] fluctuates more seriously than other shapes, because its parallelism is coarser and each thread iteration is much longer (K=4w).
 In contrast, [4w, w, 4w] with the finest parallelism of the four shapes has the smoothest results.
 
-
-\begin{figure*}[!t]
+\begin{figure*}[htbp]
 \begin{center}
 \includegraphics[width=\textwidth, trim={0 6.5in 0 0}, clip]{mp4}
 \caption{Performance comparison of cuBLAS and the optimized SGEMM on rectangular matrices}
+\label{fig:rect}
 \end{center}
-\label{fig:1k2k4k}
 \end{figure*}
 
 \subsection{Performance Analysis}
@@ -85,7 +83,7 @@ Equation~\ref{equ:reg_block} implies that larger register blocking yields the hi
 and the optimal solution lies at $r_x=r_y$ with restriction~\ref{equ:reg_restrict}. 
 Because data load must be aligned in $128$-bit using 
 {\tt LDG.128}, the block sizes could be $4\times 4$, $8\times 8$ or $12\times 12$. 
-Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:sgemm_tn} and \ref{fig:1k2k4k}.
+Since $4\times 4$ leads to low data reuse in register files, we only show $8\times8$ and $12\times12$ cases in Figure~\ref{fig:sgemm_tn} and \ref{fig:rect}.
 $12\times12$ blocking has better performance than $8\times8$ blocking because $12\times12$ blocking has higher $sAI$ and instruction level parallelism. 
 With respect to instruction scheduling optimization in Table~\ref{tab:position}, it has more slots to insert {\tt non-FFMA} instructions, and latency can be better hidden.
 $12*12+4*12=192$ registers are used by {\tt LD} and {\tt FFMA} instructions, and totally $236$ registers with other address indices. 
