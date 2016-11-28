@@ -2,19 +2,23 @@
 After setting the order of {\tt FFMA}, other {\tt non-FFMA} instructions should be inserted in proper positions to
 assure the correct program without losing performance. To tolerate instruction latency, the
 distance of dependent instructions needs to be larger than their latency. The distance is approximated as
+{\footnotesize
 \begin{equation}
 \label{eq:inst}
 distance = \frac{4\times\#instructions}{7}.
 \end{equation}
+}
 A $7$-instruction scheduling block costs four clock cycles to be issued in dual issue mode.
 Therefore, if we assume two interleave instructions have a distance $L$, at least $\frac{L*7}{4}$ instructions are needed.
 % two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed.
 Besides, the remained number of slots
 to insert these instructions is estimated as
 
+{\footnotesize
 \begin{displaymath}
 \#slots = \frac{r_x\times r_y\times b_k}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
+}
 $r_x\times r_y\times b_k$ yields the total number of {\tt FFMA}s for one thread inside the register blocking loop in Algorithm~\ref{gemm}, where $r_x$ and $r_y$ are register blocking sizes and $b_k$ is the unrolling factor.
 $ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions inside one scheduling block, which is six by our
 $1$-$2$-$2$-$1$ dual issue pattern in section~\ref{sec:benchmark}.
