@@ -63,8 +63,8 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
       \Comment {swap shared memory pointers}
       % \State {swap $sm_A$ and $sm'_A$ pointer}
       % \State {swap $sm_B$ and $sm'_B$ pointer}
-	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists.}
-	\State \textbf{merge} $accum$ with a $b_m \times b_n$ block of $C$.
+	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists}
+      \State store $accum$ with $b_m \times b_n$ block of $C$ to global memory %\Comment{task of each thread block}
   \end{algorithmic}
   }
 \end{algorithm}
