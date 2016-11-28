@@ -201,7 +201,7 @@ The optimal ratio of dual issue to single issue is $2:2$ theoretically,
 \( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single and dual issue
 pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
 We choose the best {\tt 1-2-2-1} pattern in our SGEMM implementation.
-As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA} throughput to $190$ ops/cycle, which is very close to the theoretical peak $192$ ops/cycle.
+As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA} throughput to $186$ ops/cycle, which is very close to the theoretical peak $192$ ops/cycle.
 %Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
 %two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
 \begin{figure}[htbp]
