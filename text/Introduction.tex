@@ -1,28 +1,18 @@
 
 \section{Introduction}
-\jli{add convolution performance numbers}
-
-Single-precision General Matrix Multiply (SGEMM), as one 
-of the basic routines in a BLAS library~\cite{blas,intel2007intel,amd2014}, performs a multiplication of two single-precision matrices. 
-It has been extensively used in many scientific and engineering 
-computing applications. 
-Recently, increasing efforts have been made to tune the performance of SGEMM, because of its critical performance effect on deep learning applications~\cite{chetlur2014cudnn,nervana_sgemm_wiki}.
-% as it is a performance critical kernel in
-%In convolutional neural network (CNN), the most expensive fully-connected and convolution layers can be implemented using
-%SGEMM~\cite{chetlur2014cudnn}.
-%In the presence of statistical approximation and estimation errors, the computation of deep learning is not sensitive to
-%high precision~\cite{Gupta}. In this work, we focus on SGEMM optimization.
+\label{sec:intro}
 
 As GPUs provide higher peak floating-point performance and memory bandwidth than CPUs contemporarily, researchers tend to adopt GPUs to accelerate compute-intensive programs. 
 %In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
-Hardware vendors provide BLAS libraries specifically tuned for their own processors, such as Intel MKL~\cite{intel2007intel} and AMD ACML~\cite{amd2014} for multicore x86 CPUs and NVIDIA cuBLAS~\cite{intel2007intel} and AMD clMath~\cite{clmath} for GPUs. 
+Hardware vendors provide performance-critical libraries specifically tuned for their own processors, such as Intel MKL~\cite{intel2007intel} and AMD ACML~\cite{amd2014} for multicore x86 CPUs and NVIDIA cuBLAS~\cite{intel2007intel} and AMD clMath~\cite{clmath} for GPUs. 
 However, we always witness performance improvement from third-party implementations over these vendor libraries. 
 For example, OpenBLAS~\cite{wang2013augem}, based on its hand-tuned assembly codes, achieves the better performance than AMD's ACML and Intel's MLK on Intel's Sandybridge and AMD's Piledriver processors. %in most cases on a multicore x86 CPU.
 Although an OpenBLAS-like library is absent from GPUs, several % ongoing 
 efforts~\cite{tan,lai,nervana_sgemm_wiki,
 chien, volkov} have achieved better performance than cuBLAS's GEMM by tuning assembly codes on NVIDIA GPUs. 
 However, % accomplish the microarchitecture based performance tuning on every GPU generation
-the disperse work leaves two issues to be addressed for diligently tuning the SGEMM performance on the microarchitecture of every GPU generation.
+the disperse work leaves two issues to be addressed for diligently tuning the performance on the microarchitecture of every GPU generation. Since Single-precision General Matrix Multiply (SGEMM) is extensively used in many scientific \& engineering computing applications and deep learning ones as well. Throughout this paper we use SGEMM as a running example for simplicity of presentation.
+
 \begin{itemize}
 \item {\em A lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
   Unlike the general-purpose CPU community where a series of toolchains are available to tune performance in a bare-metal
@@ -36,7 +26,8 @@ the disperse work leaves two issues to be addressed for diligently tuning the SG
 % to pursue extreme performance. 
 In this paper, we develop a methodology to systematically identify 
 microarchitecture by automatically decoding instruction formats, building GPU assembler, and benchmarking.
-\item {\em A lack of comprehensive understanding of the SGEMM performance behavior in terms of the low-level GPU microarchitecture.} 
+
+\item {\em A lack of comprehensive understanding of the computational kernels performance behavior in terms of the low-level GPU microarchitecture.} 
 Most SGEMM analyses are circumscribed at CUDA or PTX level due to the short of GPU bare-metal tools. 
 Therefore, these studies cannot directly diagnose compiler deficiency or hardware 
 defects. 
@@ -52,6 +43,7 @@ throughput, register allocation, and shared/global memory transfers.
 The identified microarchitecture features help us build robust performance models of SGEMM and other programs.
 \end{itemize}
 
+
 In this paper, we propose a GPU ISA encoding solver to automatically crack GPU ISA encodings by feeding GPU disassembly,
 then we build a GPU assembler to generate binaries from hand-optimized assembly codes. %\jli{further check}%CUDA binary files. 
 %Taking the advantage of the compatible grammar of CUDA {\tt cuobjdump}~\cite{cubin2015util} with NVCC~\cite{nvcc}, we use NVCC to compile CUDA codes to a {\em cubin} file and then disassemble it to assembly codes. 
@@ -62,7 +54,7 @@ With this assembler, a microbenchmark suite is designed to
 demystify plenty of GPU microarchitecture features such as instruction
 throughput, warp scheduling, and register bank distribution, which help to
 understand and optimize the performance of a computational program. 
-We apply optimization methods corresponding to GPU microarchitecture features to improve SGEMM performance incrementally. 
+We apply optimization methods corresponding to GPU microarchitecture features to improve SGEMM performance incrementally. Besides, we also show the generality of our methodology by optimizing kernels in convolutional networks.
 More specifically, we make the following contributions:
 
 \begin{itemize}
@@ -75,8 +67,8 @@ microarchitecture features of NVIDIA GPUs, such as control codes regulating
 {\tt FFMA} instruction dual issue and register bank indices influence on
 instruction throughput, which are necessary to understand and tune GPU
 programs.
-\item We implement the SGEMM routine on a NVIDIA Kepler GPU by applying the demystified microarchitecture-level optimizations. 
-The optimized SGEMM achieves up to 88\% of the machine's peak floating-point performance, which is 15\% higher than the state-of-the-art SGEMM in cuBLAS.
+\item We implement both SGEMM routine and convolution kernels on a NVIDIA Kepler GPU by applying the demystified microarchitecture-level optimizations. 
+The optimized SGEMM achieves up to 88\% of the machine's peak floating-point performance, which is 15\% higher than cuBLAS7.0. The optimized convolution networks gains $39\%$-$62\%$ performance improvement compared to cuDNN4.0.
 \end{itemize}
 
 %Albeit Kepler is not the latest generation GPU, the {\tt FFMA} dual-issue feature will not be
