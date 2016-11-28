@@ -151,7 +151,7 @@ Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the num
       \State \textbf {Onput:} pos, operand positions for each opcode, a 2D array.
       \State {visited=\{\}}
       \Comment {A dictionary to record the visited information of an operand bit, key:$\langle$name, oprdType$\rangle$}
-      \For {$i \gets 0, \dots, N$}
+      \For {$i \gets 0, \dots, N-1$}
 	  %\LineComment {fetch an instruction from generated database \jled{what's the database?}}
       \LineComment {$inst$ structure: \{enc64, name, oprdType, oprd\}}
       \State inst = instSet[i]

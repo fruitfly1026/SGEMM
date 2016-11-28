@@ -42,7 +42,7 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
     \State $r_B \gets $ a row of $sm_B$%sm_B[i][0, \dots, r_y-1]$
 	\Do
 	\State \textbf{sync}
-      \LineComment {shared memory double buffering}
+      \LineComment {Shared memory double buffering}
 	\State $sm'_A \gets$ another $b_m \times b_k$ block of $A$
 	\State $sm'_B \gets$ another $b_k \times b_n$ block of $B$
   \LineComment {Thread-local computation}
@@ -60,7 +60,7 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
 		%\State $accum \gets accum + r'_A \circ r'_B$
 	\EndFor
       \State $sm_A \leftrightarrow sm'_A$; $sm_B \leftrightarrow sm'_B$ 
-      \Comment {swap shared memory pointer}
+      \Comment {swap shared memory pointers}
       % \State {swap $sm_A$ and $sm'_A$ pointer}
       % \State {swap $sm_B$ and $sm'_B$ pointer}
 	\doWhile {one more valid $b_k \times b_n$ block of $B$ exists.}
