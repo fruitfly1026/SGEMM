@@ -40,7 +40,7 @@ the distance between them is more than $28$ clock cycles.
 At the end, a {\tt BAR.SYNC} is inserted after {\tt STS} but before {\tt LDS} to make sure that data in shared memory is ready.
 Other instructions such as {\tt XOR}, {\tt IADD}, and {\tt ISETP} are inserted according to data dependency; they don not influence the performance because of their short latencies.
 \begin{table}[htbp]
-\caption{The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by four times. The first column
+\caption{\small The position table of {\tt Non-FFMA} instructions. The inner-loop is unrolled by four times. The first column
 records slot numbers and the first row represents iteration numbers.}
 \label{tab:position}
 \captionsetup{font=scriptsize}

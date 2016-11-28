@@ -1,9 +1,9 @@
 \section{Conclusion}
 \label{sec:conclusion}
 We presented a methodology to demystify GPU's microarchitecture level features and demonstrated its 
-application on tuning SGEMM. The methodology relies on a reverse engineering approach to crack the instruction encoding 
-of GPU architecture, and a profound microbenchmarking at assembly level to correlate architecture features with 
-performance factors. 
+application on tuning SGEMM and convolutionn algorithm. The methodology relies on a reverse engineering
+approach to crack GPU ISA encoding, and a profound microbenchmarking at
+assembly level to correlate architecture features with performance factors. 
 %These benchmarks figured out dual issue impact on float
 %arithmetic throughput, memory load width on bandwidth, register 
 %bank distribution on performance etc. 
@@ -20,7 +20,8 @@ compared to cuDNN4.0 on K20 GPU.
 Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten optimizations on
 compilers or other performance critical kernels.
 In future, we will apply our methodology to the latest Pascal GPU to reveal its microarchitecture features.
-We also try to apply our insights of GPU microarchitecture and assembly optimization to optimize code generation of open source GPU compiler
+We also try to apply our GPU microarchitectural insights and assembly
+optimization to optimize the code generation of open source GPU compiler
 GPUCC~\cite{wu2016gpucc}.
 %We also considering 
 %Our future work is to extend this methodology to FFT and integrate optimized SGEMM into deep learning algorithms, such as convolutional neural networks (CNN).

@@ -4,7 +4,7 @@
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.45]{order}
-\caption{{\tt FFMA}s instruction scheduling to compute a $12\times 12$ sub-block of matrix C.  The numbers in
+\caption{\small {\tt FFMA}s instruction scheduling to compute a $12\times 12$ sub-block of matrix C.  The numbers in
 cells denote the {\tt FFMA} execution order. Dashed ellipses across two adjacent cells mean that two adjacent {\tt FFMA} instructions are dual issued in one clock cycle.}
 \label{fig:order}
 \end{center}
@@ -13,7 +13,7 @@ cells denote the {\tt FFMA} execution order. Dashed ellipses across two adjacent
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.35]{assemlycode}
-    \caption{The comparison of compiler generated codes and our tuned assembly codes.}
+    \caption{\small The comparison of compiler generated codes and our tuned assembly codes.}
 \label{fig:assemblycode}
 \end{center}
 \end{figure}
@@ -34,7 +34,7 @@ By extending the basic $7$-instruction block (section~\ref{sec:benchmark}), we d
 % illustrates the order of $144$ {\tt FFMA}s instruction execution for calculating a $12\times 12$ subblock of matrix C.
 For example, the {\tt FFMA} to calculate $C_{00}$ is issued first.
 Then, two {\tt FFMA}s to
-compute $C_{10}$ and $C_{11}$ are simultaneously issued. We arrange all the {\tt FFMA} instructions of SGEMM according to the order in Figure~\ref{fig:order}.
+compute $C_{10}$ and $C_{11}$ are simultaneously issued. %We arrange all the {\tt FFMA} instructions of SGEMM according to the order in Figure~\ref{fig:order}.
 
 Another advantage of this execution order is less register pressure due to register reuse, which can facilitate the
 operand collector mechanism~\cite{collector}. The operand collector allows operand to be cached and reused in the subsequent instructions.

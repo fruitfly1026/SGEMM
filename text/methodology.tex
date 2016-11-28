@@ -21,14 +21,14 @@ A set of algorithms are designed to solve all fields, {\em operands}, {\em opcod
 Our assembler translates every instruction field to get 64-bit binaries and then encapsulates them with an ELF header to generate an executable cubin file.
 % which can be used by CUDA driver APIs.
 %\jli{describe microbenchmark and size: one sentence}
-In the benchmarking workflow (red arrows in Figure~\ref{fig:workflow}), assembly microbenchmarks are tuned to explore GPU architecture features such as register bank, instruction throughput, control codes, and load/store width.
+In the benchmarking workflow (arrows in Figure~\ref{fig:workflow}), assembly microbenchmarks are tuned to explore GPU architecture features such as register bank, instruction throughput, control codes, and load/store width.
 % In the end, the tuning process will lead to some practical observations on the correlation between microarchitecture and performance.
 
 
 \begin{figure}[htbp]
 \begin{center}
     \includegraphics[scale=0.4]{methodology_new}
-\caption{A schematic diagram of demystifying GPU microarchitecture features by leveraging CUDA binary tools. The black arrows
+\caption{\small A schematic diagram of demystifying GPU microarchitecture features by leveraging CUDA binary tools. The black arrows
     represent the workflow of instruction solver while the red ones represents benchmarking to find out the correlation between microarchitecture and performance.}
 \label{fig:workflow}
 \end{center}
