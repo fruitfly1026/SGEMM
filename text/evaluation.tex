@@ -36,13 +36,13 @@ The higher arithmetic intensity of larger matrices makes their performance incre
 Therefore, our microarchitecture-level optimization plays an important role on tuning SGEMM
 performance.
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.5]{tn_192}
-\caption{Performance comparison of cuBLAS and the optimized SGEMM on square matrices}
-\label{fig:sgemm_tn}
-\end{center}
-\end{figure}
+%\begin{figure}[htbp]
+%\begin{center}
+%\includegraphics[scale=0.5]{tn_192}
+%\caption{Performance comparison of cuBLAS and the optimized SGEMM on square matrices}
+%\label{fig:sgemm_tn}
+%\end{center}
+%\end{figure}
 
 
 Figure~\ref{fig:rect} shows SGEMM performance of four different matrix shapes, [w, 2w, 4w], [w, 4w, w], [4w, w, 4w], and [4w, 2w, w], where w values are shown on x-axis.
@@ -52,11 +52,12 @@ In contrast, [4w, w, 4w] with the finest parallelism of the four shapes has the 
 
 \begin{figure*}[htbp]
 \begin{center}
-\includegraphics[width=\textwidth, trim={0 6.5in 0 0}, clip]{mp4}
+\includegraphics[scale=0.65]{rectangular}
 \caption{Performance comparison of cuBLAS and the optimized SGEMM on rectangular matrices}
 \label{fig:rect}
 \end{center}
 \end{figure*}
+
 
 \subsection{Performance Analysis}
 
@@ -110,7 +111,7 @@ To examine performance gains of different optimization strategies, we construct 
 implementations by incrementally applying our microarchitectural optimizations.
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.5]{tn_prof}
+\includegraphics[scale=0.4]{tn_prof}
     \caption{Evaluation of the incremental optimizations.}
 \label{fig:th_prof}
 \end{center}
@@ -149,21 +150,21 @@ Dual issue achieves the highest improvement, i.e. $84\%$-$106\%$.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[scale=0.32]{roofline}
-    \caption{Global memory roofline model using log-log scale. ``GM Bandwidth'' means global memory's theoretical
+\includegraphics[scale=0.38]{roofline-all}
+    \caption{Memory roofline model using log-log scale. ``GM/SM Bandwidth'' means global/shared memory's theoretical
     bandwidth.} %Horizontal lines shows different Gflops.}
 \label{fig:roofline_global}
 \end{center}
 \end{figure}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[scale=0.32]{roofline_sm}
-    \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical
-    bandwidth. }% Horizontal lines shows different Gflops.}
-\label{fig:roofline_shared}
-\end{center}
-\end{figure}
+%\begin{figure}[htbp]
+%\begin{center}
+%\includegraphics[scale=0.32]{roofline_sm}
+ %   \caption{Shared memory roofline model using log-log scale. ``SM Bandwidth'' means shared memory's theoretical
+%    bandwidth. }% Horizontal lines shows different Gflops.}
+%\label{fig:roofline_shared}
+%\end{center}
+%\end{figure}
 
 
 \subsubsection{Upper Bound Analysis}

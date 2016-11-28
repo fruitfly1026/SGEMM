@@ -6,15 +6,14 @@ of GPU architecture, and a profound microbenchmarking at assembly level to corre
 performance factors. These benchmarks figured out dual issue impact on float arithmetic throughput, memory load width on bandwidth, register 
 bank distribution on performance etc. These parameters are worthwhile for both hardware and software researchers to 
 understand GPU architecture and program optimization on GPUs. 
-To our best knowledge, this is the 
-first time to describe a detailed decoding solver to crack the instruction encoding. 
+As far as we know, it is the first time to provide a GPU ISA encoding solver to crack the GPU ISA encoding automatically. 
 This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. 
 
 Based on the disclosed correlation between GPU architecture features and program performance, we implemented the
-fastest SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $15\%$ higher than CUBLAS. 
+fastest SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $15\%$ higher than cuBLAS. 
 We also build roofline models to analyze the upper bound of SGEMM. 
 Applying these optimizations on convolutional networks, the optimized implementations gains 39\%-62\% performance improvement
-compared to cuDNN4.0.
+compared to cuDNN4.0 on K20 GPU.
 Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten optimizations on
 compilers or other performance critical kernels.
 In future, we will apply our methodology to the latest Pascal GPU to reveal its microarchitecture features.
