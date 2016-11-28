@@ -39,16 +39,17 @@ However, they haven't benchmarked dual-issue mode of arithmetic instructions or 
 % No vectorized load instructions are benchmarked and too few instructions inside the loop 
 We leverage the complete assembler to crack control codes which reveal more microarchitecture details for tuning application performance.
 
-{\em {\bf Matrix Multiplication Tuning}}: With respect to GEMM optimization in microarchitectural level, some work inspires our GPU implementations. 
-For example, we adopt the proved effective optimization techniques such as shared memory/register 
-blocking and double-buffering~\cite{volkov,tan}. 
+{\em {\bf Matrix Multiplication Tuning}}: 
+With respect to GEMM optimization in microarchitectural level, some work inspires our GPU implementations. 
 Tan et al.~\cite{tan} implemented a fast DGEMM by using 
 assembly level optimization, such as software pipelining, vector memory operations, and instruction scheduling. 
 Lai et al.~\cite{lai} presented performance analysis and optimization work of SGEMM on both Fermi and GTX680 GPUs. 
-\jli{deleted, because of useless: ``However, 
-they didn't consider dual-issue mode by setting control codes, which can boost performance significantly.'' }
+%\jli{deleted, because of useless: ``However, 
+%they didn't consider dual-issue mode by setting control codes, which can boost performance significantly.'' }
 Gray~\cite{nervana_sgemm_wiki} presented SGEMM optimization in assembly on a Maxwell GPU. 
-\jli{deleted, useless: ``Since Maxwell does not support {\tt FFMA} dual issue, the optimization is not as complex as Kepler.'' }
+%\jli{deleted, useless: ``Since Maxwell does not support {\tt FFMA} dual issue, the optimization is not as complex as Kepler.'' }
+We adopt the proved effective optimization techniques such as shared memory/register 
+blocking and double-buffering~\cite{volkov,tan}.
 However, it is difficult to tune all possible microarchitectural optimizations well without a useful toolchain.
 In this work, we use our toolchain to present a more complete case study of applying microarchitectural features by combining 
 register allocation, dual issuing, memory access paths, and instruction scheduling.
