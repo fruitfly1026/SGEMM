@@ -128,10 +128,10 @@ Besides, the baseline cannot apply the dual-issue optimization either.
 %No optimization of instruction scheduling for this version.
 
 {\it +LD128:}~~Use wide global load instruction {\tt LD.128} with L2-cached.
-Though Kepler has a L1 data cache, it is designed for local rather than global memory accesses~\cite{gk110}.
+Though Kepler has a L1 data cache, it is designed for local rather than global memory access~\cite{gk110}.
 % So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~Use the faster texture cached {\tt LDG} instead of L2-cached {\tt LD} along with {\tt TEXDEPBAR} before data accesses due to the weak consistency of texture cache~\cite{lukyanov2014efficient}.
+{\it +LDG128:}~~Use the faster texture cached {\tt LDG} instead of L2-cached {\tt LD} along with {\tt TEXDEPBAR} before data access due to the weak consistency of texture cache~\cite{lukyanov2014efficient}.
 
 {\it +Dual:}~~Use the dual-issue control fully enabled by utilizing the pattern described in Section~\ref{sec:assembler}.
 %Single issue is controlled by setting control code to $0x40$. %\jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
@@ -169,17 +169,17 @@ Dual issue achieves the highest improvement $84\%$-$106\%$.
 
 We estimate the upper bound factors: 
 %{\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
-shared memory, global memory, and computation power. In the register blocking loop, each thread block computes $b_m \times b_n \times b_k$ and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
+shared memory, global memory, and computation power. In the register blocking loop\jli{inner loop of Algorithm~\ref{gemm}}, each thread block computes $b_m \times b_n \times b_k$ operations and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
 {\small
 \begin{equation}
     \frac{2 b_m \times b_n \times b_k}{4 (b_m \times b_k + b_n \times b_k)} = \frac{PeakFlops}{Bandwidth_{global}}
     \label{equ:global}
 \end{equation}
 }
-According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $PeakFlops=3520$Gflop/s, so $73$GB/s is the minimal
+According to parameters in our SGEMM implementation, $b_m=b_n=192$, $b_k=4$, $PeakFlops=3520$Gflop/s, so $73$GB/s is the minimum
 requirement for global memory bandwidth in order to achieve the theoretical peak $3520$Gflop/s.
-For shared memory, inside each loop, $(r_x \times b_k + r_y \times b_k) \times t_x \times t_y$ words will be read from shared memory, in which $t_x$ and
-$t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking sizes. The computation is $b_m \times b_n \times b_k$. Based on the ratio of computation to shared memory access,
+For shared memory, inside each loop $(r_x \times b_k + r_y \times b_k) \times t_x \times t_y$ words are read from shared memory, where $t_x$ and
+$t_y$ are thread block sizes, $r_x$ and $r_y$ are register blocking sizes. The computation flops is $b_m \times b_n \times b_k$, then the ratio of computation to shared memory access is
 {\small
 \begin{equation}
     \frac{2 b_m \times b_k \times b_n}{4 t_x \times t_y \times (r_x \times b_k + r_y  \times b_k)}  = \frac{PeakFlops}{Bandwidth_{shared}}
@@ -187,35 +187,33 @@ $t_y$ are thread blocking dimensions, $r_x$ and $r_y$ are register blocking size
 \end{equation}
 }
 
-The minimum bandwidth requirement of SGEMM for shared memory bandwidth is
-$1173$GB/s on K20 GPU, and $1173/13=90$GB/s for each SM. The hardware provides
-$200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth in
-theory, which are higher than requirements, and hence neither the bandwidth of
-shared nor global memory will be the bottleneck.
+The minimum shared memory bandwidth requirement of SGEMM is
+$1173$GB/s on Tesla K20m, which is $1173/13=90$GB/s for each SM. 
+Theoretically, hardware provides
+$200$GB/s global memory bandwidth and $2349$GB/s shared memory bandwidth, which are higher than requirements, hence neither of them would be the bottleneck.
 
-SGEMM has different computation to memory access ratio in terms of global memory and shared memory, so we demonstrate
+SGEMM has a different computation to memory access ratio in terms of global memory and shared memory, so we demonstrate
 two roofline models in Figure~\ref{fig:roofline_all}. % and~\ref{fig:roofline_shared}. 
-The slope of slant line in Figure~\ref{fig:roofline_all}(a) is global memory bandwidth. The x-axis is computation to global
-memory access ratio of an algorithm. 
-By Equation~\ref{equ:global}, the flops:bytes ratio of $192\times192$ and $128\times128$ shared 
-memory blocking of SGEMM are $48$ and $32$ respectively. The horizontal lines
-show machine's peak performance, the performance of our optimized SGEMM
-, and SGEMM performance without dual issuing.
+The slope of slant line in Figure~\ref{fig:roofline_all}(a) is global memory bandwidth. 
+The x-axis represents the flops:bytes ratios which are $48$ for $192\times192$ and $32$ for $128\times128$ shared memory blocking of SGEMM by Equation~\ref{equ:global}.
+% the computation to global memory access ratio of an algorithm. 
+% By Equation~\ref{equ:global}, the flops:bytes ratio of $192\times192$ and $128\times128$ shared memory blocking of SGEMM are $48$ and $32$ respectively. 
+Horizontal lines
+show the machine's peak performance, the performance of our optimized SGEMM with or without dual issuing.
 This figure demonstrates that SGEMM is not bounded by global memory bandwidth
 for either $128\times128$ or $192\times 192$ shared memory blockings.
-The slope of slant line in Figure~\ref{fig:roofline_all}(b) is the bandwidth of shared memory. The x-axis is computation to
-shared memory access ratio of an algorithm. 
-By Equation~\ref{equ:shared}, the flops:bytes ratio of $12\times12$, $8\times8$ register blocking SGEMM are $3$ and $2$ respectively. 
+The slope of slant line in Figure~\ref{fig:roofline_all}(b) is the bandwidth of shared memory. 
+The x-axis represents the flops:bytes ratios which are $3$ for $12\times12$ and $2$ for $8\times8$ register blocking of SGEMM by Equation~\ref{equ:shared}.
 This figure shows SGEMM is not bounded by shared memory through our {\tt LDS} optimization. 
 However, if we use {\tt LDS.128} instead of {\tt LDS.64}, SGEMM will be bounded by shared memory even for $12\times 12$ blocking.
 
 The loss of peak performance can be explained by the following reasons. As we have shown in 
-section~\ref{sec:assembler}, {\tt FFMA} throughput can achieve $97.67\%$. 
+Section~\ref{sec:assembler}, {\tt FFMA} throughput can achieve $97.67\%$. 
 The loss is about $2.33\%$, which may come 
-from the overhead of warp scheduler in {\tt FFMA} dual issue mode. The double-buffering algorithm can amortize the latency 
+from the overhead of warp scheduler in the {\tt FFMA} dual-issue mode. The double-buffering algorithm can amortize the latency 
 of {\tt LDS}.
 With $12\times12$ register blocking and $4$ times unrolling, there will be $144*4=576$ {\tt FFMA}s in the loop.
 With our designed {\tt FFMA} dual issue pattern, every six {\tt FFMA}s needs four clock cycles in the pipeline.
-It needs $4\times144\times4/6=384$ clocks for each thread, two {\tt LDG.128}s are needed.
-We observe each {\tt LDG} has $10$ clocks penalty, the total {\tt LDG} will cause $2\times10/384 = 5.2\%$ loss. Other
+It needs $4\times144\times4/6=384$ cycles for each thread, two {\tt LDG.128}s are needed.
+We observe each {\tt LDG} has $10$ cycles penalty, the total {\tt LDG} will cause $2\times10/384 = 5.2\%$ loss. Other
 penalties come from synchronization and writing $C$ matrix in the block.
