@@ -5,13 +5,14 @@
 As GPUs provide higher peak floating-point performance and memory bandwidth than CPUs contemporarily, researchers tend to adopt GPUs to accelerate compute-intensive programs. 
 %In fact, SGEMM's performance highly relies on low-level microarchitecture features. 
 Hardware vendors provide performance-critical libraries specifically tuned for their own processors, such as Intel MKL~\cite{intel2007intel} and AMD ACML~\cite{amd2014} for multicore x86 CPUs and NVIDIA cuBLAS~\cite{intel2007intel} and AMD clMath~\cite{clmath} for GPUs. 
-However, we always witness performance improvement from third-party implementations over these vendor libraries. 
-For example, OpenBLAS~\cite{wang2013augem}, based on its hand-tuned assembly codes, achieves the better performance than AMD's ACML and Intel's MLK on Intel's Sandybridge and AMD's Piledriver processors. %in most cases on a multicore x86 CPU.
+However, we always witness third-party implementations outperform these vendor libraries. 
+For example, OpenBLAS~\cite{wang2013augem}, based on its hand-tuned assembly codes, achieves better performance than AMD ACML on AMD Piledriver processor and Intel MKL on Intel Sandybridge processors. %in most cases on a multicore x86 CPU.
 Although an OpenBLAS-like library is absent from GPUs, several % ongoing 
 efforts~\cite{tan,lai,nervana_sgemm_wiki,
 chien, volkov} have achieved better performance than cuBLAS's GEMM by tuning assembly codes on NVIDIA GPUs. 
 However, % accomplish the microarchitecture based performance tuning on every GPU generation
-the disperse work leaves two issues to be addressed for diligently tuning the performance on the microarchitecture of every GPU generation. Since Single-precision General Matrix Multiply (SGEMM) is extensively used in many scientific \& engineering computing applications and deep learning ones as well. Throughout this paper we use SGEMM as a running example for simplicity of presentation.
+the disperse work leaves two issues to be addressed for diligently performance tuning on the microarchitecture of every GPU generation. 
+Since Single-precision GEneral Matrix Multiply (SGEMM) is extensively used in scientific and engineering applications and the deep learning related-domains as well. Throughout this paper we use SGEMM as a running example for a concise presentation.
 
 \begin{itemize}
 \item {\em A lack of a toolchain to identify GPU microarchitecture features and guide performance tuning.}
