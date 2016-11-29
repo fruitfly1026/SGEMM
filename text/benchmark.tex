@@ -55,21 +55,21 @@ These observations are useful to optimize program snippets of real-world applica
 Source registers may cause register bank conflicts that degrade instruction throughput.}
 
 Shared memory bank conflicts are well-known as an important performance factor for CUDA programming.
-Recent research~\cite{lai} has noticed that register bank conflicts are also innegligible.
+Recent research~\cite{lai} has noticed that register bank conflicts are also non-negligible.
 To probe register bank distribution, our microbenchmarks measure the instruction throughput for different combinations of {\tt FFMA} register operands.
 Table~\ref{tab:th} shows that different register combinations result in various efficiency and throughput.
 The rightmost column represents the number of register bank conflicts recorded from our experiments.
-This experiment is conducted in single issue mode by setting control code to 0x20.
+This experiment is conducted in single-issue mode by setting control code to 0x20.
 Theoretically, without dual issue, the peak efficiency is $4\times32/192=66.67\%$, in which $4$ is the number of warp schedulers and $32$
 is the number of threads in a warp.
-In fact, we observe that both single- and dual-issue mode produce the similar throughput behavior for bank conflicts.
+In fact, we observe that single- and dual-issue mode produce similar throughput behavior for bank conflicts.
  % variance of instruction throughput.
 From our experiments on Kepler architecture, we observe:
 \begin{itemize}
 \item The destination registers do not contribute to bank conflicts, so they are free to be assigned to any bank.% no matter which bank is assigned to.
 \item When source registers have 2-way or 3-way register bank conflicts, the throughput of float instructions will drop by 2.33\% and 17.17\% respectively in the single-issue mode.
-\item A proper register distribution is found through benchmarking to eliminate bank conflict.
-     Table~\ref{tab:reg} lists partial registers and their corresponding banks for NVIDIA Tesla K20m, which is consistent with GTX680~\cite{lai}, though K20m is different from GTX680 in maximal number of registers per thread and instruction encodings.
+\item A proper register distribution is found through benchmarking to eliminate bank conflicts.
+     Table~\ref{tab:reg} lists partial registers and their corresponding banks on NVIDIA Tesla K20m, which is consistent with the distribution on GTX680~\cite{lai}, though they have different maximal number of registers per thread and instruction encodings.
         %\\
 % bank0$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 0$) \\
 % bank2$\Leftarrow$($Ridx \% 8 < 4$ \&\& $Ridx \% 2 == 1$) \\
@@ -82,7 +82,7 @@ From our experiments on Kepler architecture, we observe:
 
 
 \begin{table}[htbp]
-    \caption{\small The efficiency of instruction throughput varies with different register combinations.Inst: instruction, Th/SM: instruction throughput per SM, Eff: throughput efficiency,  Conf: register bank conflicts.}
+    \caption{\small The efficiency of instruction throughput varies with different register combinations. Inst: instruction, Th/SM: instruction throughput per SM, Eff: throughput efficiency,  Conf: register bank conflicts.}
 \centering
 \scalebox{0.8} {
 \begin{tabular}{|c|c|c|c|}
@@ -170,23 +170,23 @@ Our microbenchmarking reveals some specific patterns of control codes:
 \begin{itemize}
 \item When the control code is set to 0x00, the scheduler suspends a warp of instructions for $16$ cycles.
 \item 0x2n means a warp is suspended for $n$ cycles before issuing the next instruction, where $n=0, 1,\dots, 15$.
-\item 0x20 means single-issue mode, while 0x04 means dual-issue mode.
+\item 0x20 means the single-issue mode, while 0x04 means the dual-issue mode.
 While two consecutive instructions are controlled by 0x04 and 0x05 respectively, the throughput could reach its maximum.
 \end{itemize}
 
 {\em {\bf Observation 3--[Arithmetic Throughput]}:
 With a proper control code pattern and register allocation, {\tt FFMA}
-instruction throughput could approach its theoretical peak in dual-issue mode.}
+instruction throughput could approach its theoretical peak in the dual-issue mode.}
 
 Tune the execution of instructions is very intricate to improve its throughput. 
 The previous work~\cite{lai} reports the maximal {\tt FFMA} throughput per SM as $132$, which is only $68.75\%$ of the theoretical throughput. 
 Our microbenchmarks reveal several key points of tuning {\tt FFMA} throughput to $97\%$ efficiency.
 First, the control codes must be set properly to dual issue adjacent instructions. 
-Second, the ratio and interval of dual issuing {\tt FFMA} instructions must be tuned into a specific pattern.
-Third, the first instruction of the core loop needs to be aligned by 8 instructions(seven
+Second, the ratio and interval of dual issued {\tt FFMA} instructions must be tuned into a specific pattern.
+Third, the first instruction of the core loop needs to be aligned by 8 instructions (seven
 normal instructions plus one scheduling instruction). This restriction
 is caused by the control code pattern in the seven normal instruction sequence.
-Last, each {\tt FFMA} requires three source registers, thus in dual-issue mode, two {\tt FFMA} require six source registers.
+Last, each {\tt FFMA} requires three source registers, thus in the dual-issue mode, two {\tt FFMA}s require six source registers.
 However, a Kepler GPU only provides four register banks.
 The instruction order must be adjusted to use Kepler's operand collector mechanism~\cite{collector,tarjan2012policy} to avoid register bank conflicts. 
 
@@ -196,11 +196,11 @@ CUDA cores in dual-issue mode on one SM. There are $32\times 6=192$ cores on
 one SM, among them $32$ cores are shared by two warp schedulers, and four warp schedulers are available per SM. 
 In the single-issue mode, each warp scheduler can issue one float instruction to $32$ cores per cycle, which yields $4\times32/192=66.67\%$ float computation efficiency. 
 In the dual-issue mode, two warp schedulers must use the shared cores alternately to avoid resource conflicts.
-The jagged white and gray blocks show a proper phase shift between two warps' executing pace for them to get access to the shared computing units in turn.
+The jagged white and gray blocks in Figure~\ref{fig:warp} show a proper phase shift between the executing pace of two warps to get access to the shared computing units in turn.
 The optimal ratio of dual issue to single issue is $2:2$ theoretically, 
-\( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single and dual issue
-pattern inside a $7$ instructions scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
-We choose the best {\tt 1-2-2-1} pattern in our SGEMM implementation.
+\( \begin{pmatrix} 4 \\ 2 \end{pmatrix} \) $=6$ combinations for mixed single- and dual-issue
+pattern inside a $7$-instruction scheduling block (Figure~\ref{fig:control_code}(\subref{fig:control_pattern})).
+We choose the best {\tt 1-2-2-1} pattern for our SGEMM implementation.
 As shown in Table~\ref{tab:ffma}, these optimizations together improve {\tt FFMA} throughput to $186$ ops/cycle, which is very close to the theoretical peak $192$ ops/cycle.
 %Since each SM of extra computing unit is shared among two warps, when all threads are trying to fully dual issue every
 %two adjacent {\tt FFMA}s, half of the scheduler would stall due to computing resource conflict.
@@ -231,15 +231,14 @@ Inst &operation&single issue&dual issue\\
 \label{tab:ffma}
 \end{table}
 
-{\em {\bf Observation 4--[Memory]}: For high memory bandwidth, shared memory prefers the $64$-bit load
-instruction {\tt LDS.64} while global memory prefers the $128$-bit load instruction with texture cache {\tt LDG.128}.}
+{\em {\bf Observation 4--[Memory]}: For high memory bandwidth, shared memory prefers $64$-bit load
+instruction {\tt LDS.64} while global memory prefers $128$-bit load instruction with texture cache {\tt LDG.128}.}
 
 For GPU memory hierarchy we focus on the programmer-controllable memory resources, shared memory and global memory.
-Different memory access widths (32-, 64-, or 128-bit) and paths (through L2 cache or texture cache) exist on NVIDIA GPUs.
+Different memory access widths (32-, 64-, or 128-bit) and paths (through L2 or texture cache) exist on NVIDIA GPUs.
 %NVIDIA official documents and previous studies~\cite{tan} pointed out that wider
 %instructions have longer pipeline latency.
 %Our benchmarking confirms this phenomenon and also identifies several bandwidth issues for memory optimization.
-
 Intuitively, a wider load operation should achieve higher bandwidth.
 We test the bandwidth of shared memory instructions with different widths, i.e. {\tt LDS.32}, {\tt LDS.64}, and {\tt LDS.128}.
 The instructions are arranged to avoid shared memory bank conflicts.
@@ -248,7 +247,8 @@ The instructions are arranged to avoid shared memory bank conflicts.
 %then $2N$ {\tt LDS.64} or $4N$ {\tt LDS.32} instructions are needed.
 Figure~\ref{fig:lds_bw} compares the sequential memory access bandwidth of the three instructions by increasing the data volume.
 {\tt LDS.64} achieves the highest bandwidth $137$GB/s, which is about $76\%$ of the peak shared memory bandwidth\footnote{The
-theoretical shared memory bandwidth for an SM is calculated as Bandwidth = $f_{core} \times$ Width $\times$ Warpsize in bytes, where $f_{core}$ is the CUDA core frequency, Width is the bank width, Warpsize is the warp size.}.
+theoretical shared memory bandwidth of an SM is calculated as $Bandwidth = f_{core} \times Width \times Warpsize$ in bytes, where $f_{core}$ is the CUDA core frequency, $Width$ is the bank width.}.
+% , $Warpsize$ is the warp size
 
 % global memory
 Two paths are used to load data from global memory, through L2 cache by {\tt
