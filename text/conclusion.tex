@@ -1,8 +1,8 @@
 \section{Conclusion}
 \label{sec:conclusion}
-We presented a methodology to demystify GPU's microarchitecture level features and demonstrated its 
-application on tuning SGEMM and convolutionn algorithm. 
-The methdology includes our GPU ISA solver to crack GPU ISA encoding, GPU
+We presented a methodology to demystify GPU microarchitectural features and demonstrated its 
+application on tuning SGEMM and convolutionn algorithms. 
+The methdology includes a GPU ISA solver to crack its ISA encoding, a GPU
 assembler and microbenchmarks at assembly level to correlate architectural
 features with performance.
 %The methodology relies on a reverse engineering
@@ -16,15 +16,16 @@ features with performance.
 %As far as we know, it is the first time to provide a GPU ISA encoding solver to crack the GPU ISA encoding automatically. 
 %This solver is not limited to Kepler GPU, it can be easily applied to other GPU architectures. 
 Based on the disclosed insights, we implemented the
-fastest SGEMM,  $3104$Gflop/s with $88\%$ efficiency on Kepler GPU, which is $15\%$ higher than cuBLAS. 
-We also build roofline models to analyze the upper bound of SGEMM. 
-Applying these optimizations on convolutional networks, the optimized implementations gains 39\%-62\% performance improvement
-compared to cuDNN4.0 on K20 GPU.
-Our work opens a door to optimize NVIDIA GPU code at native machine level, which may enlighten optimizations on
+fastest SGEMM,  $3104$Gflop/s with $88\%$ efficiency on a NVIDIA Tesla K20m, which is $15\%$ higher than cuBLAS. 
+We also build roofline models to analyze its performance upper bound. 
+Applying these optimizations on convolutional networks, the optimized implementations outperform cuDNN4.0 by 39\%-62\% on Tesla K20m.
+Our work broadens GPU optimizations to a deeper native machine level,
+% to optimize NVIDIA GPU code at native machine level, 
+which may enlighten developments on
 compilers or other performance critical kernels.
-In future, we will apply our methodology to the latest Pascal GPU to reveal its microarchitecture features.
-We also try to apply our GPU microarchitectural insights and assembly
-optimization to optimize the code generation of open source GPU compiler
+In the future, we will apply our methodology to the latest Pascal GPU to reveal its microarchitectural features.
+We also intend to apply our GPU microarchitectural insights and assembly
+optimization to optimize the code generation of the open source GPU compiler
 GPUCC~\cite{wu2016gpucc}.
 %We also considering 
 %Our future work is to extend this methodology to FFT and integrate optimized SGEMM into deep learning algorithms, such as convolutional neural networks (CNN).
