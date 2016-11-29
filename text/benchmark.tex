@@ -2,11 +2,11 @@
 \label{sec:benchmark}
 
 
-We design a microbenchmark suite to explore NVIDIA GPU microarchitecture features.
+We design a microbenchmark suite to explore NVIDIA GPU microarchitectural features.
 % Our following observations are drawn from analyzing the execution time of the microbenchmarks.
-As shown in Figure~\ref{fig:workflow}, we write GPU kernel codes in assembly and compile them into {\tt cubin} by our assembler.% and then execut by CUDA APIs.
+As shown in Figure~\ref{fig:workflow}, we write GPU kernel codes in assembly and compile them into {\tt cubin} by our assembler. % and then execut by CUDA APIs.
 The kernel code is tested for hundreds of times, and the average time is used for accuracy.
-The assembly instructions inside kernel are unrolled to cover the branch overhead while not exceeding L1 instruction cache size.
+The assembly instructions inside the kernel are unrolled to cover the branch overhead while not exceeding L1 instruction cache size.
 %All assembly kernel codes are designed small enough to fit into the L1 instruction cache.
 Timing ticks are recorded by {\tt S2R R0, SR\_CLOCKLO} instruction, in which
 {\tt S2R} moves the value from the special clock register {\tt SR\_CLOCKLO} to a general
@@ -21,7 +21,7 @@ threads (e.g. $26$ threads blocks with $512$ threads/block for Kepler) to make f
 %We use similar testing method with Fog's in~\cite{fog}.
 
 % we tune the assembly codes of our microbench- marks using our assembler.
-In this benchmarking process, we correlate microarchitecture features with the benchmark performance and get some meaningful observations in four microarchitecture features: register bank, 
+In this benchmarking process, we correlate microarchitectural features with the benchmark performance and get some meaningful observations in four microarchitectural features: register bank, 
 control code, arithmetic throughput, and memory operation. 
 These observations are useful to optimize program snippets of real-world applications.
 

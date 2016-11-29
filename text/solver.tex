@@ -136,12 +136,12 @@ modifier. The modifier difference is checked for each opcode. %that the algorith
 \subsubsection{Operand Solver}
 % \subsubsection{Operand Position Solver}
 Algorithm~\ref{algo:operand} shows our algorithm to crack operand encodings.
-Since each instruction may have different numbers and types of operands, we identify operand positions a tuple of its name and operand type. 
+Since each instruction may have different numbers and types of operands, we identify operand positions as a tuple of its name and operand type. 
 The operand types of an instruction are represented as a string.
 For example, oprdType of the instruction {\tt IADD} R1, R2, C[0x0][0x40] is ``RRC'' and oprdType of {\tt IADD} R1, R2, 0x8 is ``RRI'', where R, C and I represents registers, constant memory and immediates respectively.
 For each instruction with the known opcode, we flip each undetermined bit to get a new instruction $\widehat{inst}$.
-Comparing $inst$ with $\widehat{inst}$ using a simple function ``whichChange'' . This function confirm which operand value is changed by its position if any, otherwise, return a negetive integer.
-Then the visited dictionary is marked as 1.
+Comparing $inst$ with $\widehat{inst}$ using a simple function ``whichChange'' . This function confirms which operand value is changed by its position if any; otherwise, returns a negative integer.
+A visited dictionary entry is marked as 1.
 Algorithm~\ref{algo:operand}'s time complexity is $O(52N)$, where $N$ is the number of diassembly instructions with different opcodes.
 
 \begin{algorithm}[htbp]
