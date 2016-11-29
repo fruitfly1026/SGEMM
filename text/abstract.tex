@@ -1,9 +1,11 @@
 \begin{abstract}
 In this paper, we present a methodology to demystify GPU microarchitectural features and demonstrate the performance tuning experience for compute-intensive kernels. The methodology relies on a reverse engineering approach to cracking the GPU ISA instruction encodings to build a GPU assembler.
-An assembly microbenchmark suite correlates microarchitectural features with their performance factors and uncovers float instruction dual issue, memory load width, register bank, and other microarchitectural features. We use SGEMM as a running example throughout this paper to show how to achieve bare-metal performance tuning. The performance boost is achieved by tuning {\tt FFMA} throughput to the hardware peak by activating dual issue, eliminating register bank conflicts, adding non-{\tt FFMA} instructions with little penalty, and choosing proper width of global/shared load instructions.
-On NVIDIA Kepler K20m, we develop a faster SGEMM with $3104$Gflop/s performance and $88\%$ efficiency, which is $15\%$ higher than cuBLAS7.0 .
+An assembly microbenchmark suite correlates microarchitectural features with their performance factors to uncover instruction-level and memory hierarchy preferences.
+% and uncovers float instruction dual issue, memory load width, register bank, and other 
+We use SGEMM as a running example throughout this paper to show how to achieve bare-metal performance tuning. The performance boost is achieved by tuning {\tt FFMA} throughput to the hardware peak by activating dual issue, eliminating register bank conflicts, adding non-{\tt FFMA} instructions with little penalty, and choosing proper width of global/shared load instructions.
+On NVIDIA Kepler K20m, we develop a faster SGEMM with $3104$Gflop/s performance and $88\%$ efficiency, which is $15\%$ higher than cuBLAS7.0.
 Applying these optimizations on convolutional networks, the optimized implementations gains $39\%$-$62\%$ performance improvement compared to cuDNN4.0.
-The toolchain is an attempt to automatically crack different GPU ISA encodings and build a complete assembler adaptively, to explore more performance for applications on GPUs.
+The toolchain is an attempt to automatically crack different GPU ISA encodings and build a complete assembler adaptively, to explore higher performance for applications on GPUs.
 % , and instruction scheduling.
 % The optimized SGEMM achieves $3104$ Gflop/s and its efficiency is $88\%$, which is $15\%$ higher than cuBLAS7.0 on NVIDIA Kepler K20m.
 % We believe that our SGEMM optimization can serve as an example of how to optimize other float computation-intensive algorithm on GPU.
