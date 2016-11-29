@@ -169,7 +169,7 @@ Dual issue achieves the highest improvement $84\%$-$106\%$.
 
 We estimate the upper bound factors: 
 %{\tt LDS}, {\tt LDG} and {\tt FFMA} which correspond to three kinds of resources respectively, 
-shared memory, global memory, and computation power. In the innnermost loop of Algorithm~\ref{gemm}, each thread block computes $b_m \times b_n \times b_k$ operations and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
+shared memory, global memory, and computation power. In the innermost loop of Algorithm~\ref{gemm}, each thread block computes $b_m \times b_n \times b_k$ operations and reads $b_m \times b_k+b_n \times b_k$ words. The upper bound of global memory bandwidth can be modeled as:
 {\small
 \begin{equation}
     \frac{2 b_m \times b_n \times b_k}{4 (b_m \times b_k + b_n \times b_k)} = \frac{PeakFlops}{Bandwidth_{global}}
