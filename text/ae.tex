@@ -77,7 +77,7 @@ $ sudo make install
 Run SGEMM algorithm to evaluate performance, the script "./sgemm.sh" will compile assembly to Cubin and run the experiments. The output is ppopp\_time.txt which contains Gflop/s of our SGEMM and cuBLAS SGEMM.
 The executable "sgemm" will compare the result of our SGEMM with cuBLAS's SGEMM to make sure that our implementation is correct.
 
-$12\times12$ blocking SGEMM performance vs. cuBLAS peformance.
+$12\times12$ blocking SGEMM performance vs. cuBLAS performance.
 \begin{lstlisting} [frame=tb, basicstyle=\ttfamily\footnotesize] 
 $ cd SGEMM/12x12
 $ ./sgemm.sh
@@ -90,7 +90,7 @@ $ ./sgemm.sh
 \end{lstlisting}
 
 Solver is composed of opcode solver, modifier solver and operand solver.
-The output ISA encoding infomration will be used to build a GPU assembler.
+The output ISA encoding information will be used to build a GPU assembler.
 \begin{lstlisting} [frame=tb, basicstyle=\ttfamily\footnotesize] 
 $ cd Solver/
 $ ./solver.sh
@@ -110,5 +110,5 @@ Third, we expect the solver to crack ISA encodings automatically, and to generat
 \subsection{Notes}
 The KeplerAs compiler installation time and SGEMM evaluation time are short.
 The solver might run a little bit long. Running opcode solver, modifier solver and
-operand solver would take 10 miniutes, 30 miniutes and 20 miniutes respectively on
-Intel(R) Xeon(R) CPU E5-2670. If you have any problem in validiating the above, please contact me.
+operand solver would take 10 minutes, 30 minutes and 20 minutes respectively on
+Intel(R) Xeon(R) CPU E5-2670. If you have any problem in validating the above, please contact me.
