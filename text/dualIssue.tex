@@ -1,6 +1,3 @@
-\subsection{FFMA Dual Issue}
-\label{sec:ffma-dual}
-
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[scale=0.45]{order}
@@ -17,6 +14,8 @@ cells denote the {\tt FFMA} execution order. Dashed ellipses across two adjacent
 \label{fig:assemblycode}
 \end{center}
 \end{figure}
+\subsection{FFMA Dual Issue}
+\label{sec:ffma-dual}
 
 It is unrealistic to keep warp schedulers dual issue the same kinds of arithmetic instructions (i.e., {\tt FFMA}) all
 the time. Because on Kepler architecture, each warp is assigned $32$ cores privately, four warp schedulers will consume
