@@ -2,16 +2,15 @@
 \label{sec:optimization}
 
 
-The demystified GPU microarchitecture features provide us a larger tuning space for computational kernels.
+The demystified GPU microarchitectural features provide us a larger tuning space for computational kernels.
 We apply
 a series of incremental optimizations to improve SGEMM performance on Kepler architecture. The optimization strategies
-go through the architectural hierarchy from CUDA core and register to memory. All the optimization strategies are
-inspired by the observations from our benchmarking.
+go through the architectural hierarchy from CUDA cores and registers to memory. All the optimization strategies are
+inspired by the observations from the benchmarking in Section~\ref{sec:benchmark}.
 \begin{itemize}
-\item At the core level, we promote {\tt FFMA} instruction throughput to approach the peak through dual issue by setting control code.
+\item At the GPU core level, we promote {\tt FFMA} instruction throughput to approach its peak through dual issue by setting proper control codes.
 \item At the register level, we meticulously map operands to registers to avoid bank conflicts in the inner loop of Algorithm~\ref{gemm}.
-\item At the memory level, we select appropriate shared memory load/store width and global memory data path to mitigate
-latencies.
+\item At the memory level, we select appropriate shared memory load/store width and global memory data path to mitigate their latencies.
 \end{itemize}
 \input{text/register}
 \input{text/dualIssue}
