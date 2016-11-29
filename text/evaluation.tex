@@ -1,21 +1,20 @@
 \section{Evaluation}
 \label{sec:experiment}
 
-%\jli{state convolution in here}
 In this section, we compare the optimized SGEMM performance in Gflop/s with NVIDIA cuBLAS. 
 Our SGEMM achieves 15\% %$17\%\sim 25\%$ 
 performance
-improvement, which confirms the usefulness of the microarchitectural optimization on GPU. 
+improvement, which confirms the usefulness of the microarchitectural optimizations on GPUs. 
 We present 
-a quantitative analysis of the effect of each optimization strategy and an estimation of the upper bound performance using a roofline model.
+a quantitative analysis of the effect of each optimization strategy and an estimation of the performance upper bound using a roofline model.
 
-The experiments are conducted on NVIDIA Tesla K20m GPU(refer to \cite{gk110} for detailed specification). 
+The experiments are conducted on NVIDIA Tesla K20m GPU (refer to \cite{gk110} for detailed specifications). 
 %\jli{Though delete the hardware configuration figure, still need to state main parameters in words!}
-We compare with cuBLAS from CUDA $7.0$. In our experiments, we choose square matrices and four shapes of rectangle matrices for $A$, $B$
-and $C$. The size of square matrices varies from $384$ to $12288$ with a step $384$. The the smallest dimension of rectangle matrices varies from $192$ to $3072$ with a step $192$.
+We compare with cuBLAS from CUDA $7.0$ on square matrices and rectangle matrices in four shapes for $A$, $B$, and $C$. 
+The size of square matrices varies from $384$ to $12288$ with a step $384$. The smallest dimension of rectangle matrices varies from $192$ to $3072$ with a step $192$.
 
 \subsection{Overall Performance}
-Figure~\ref{fig:rect} shows SGEMM performance of five different matrix shapes, [W, W, W], [W, 2W, 4W], [W, 4W, W], [4W, W, 4W], and [4W, 2W, W], where W values are shown on x-axis.
+Figure~\ref{fig:rect} shows SGEMM performance of five different matrix shapes, [W, W, W], [W, 2W, 4W], [W, 4W, W], [4W, W, 4W], and [4W, 2W, W], where W values are shown on the x-axis.
 The results demonstrate that our $12\times12$ and $8\times8$ blocking implementations are better than cuBLAS for almost all matrix shapes, while $12\times12$ is the best one when matrix greater than $1000$.
 The performance of both cuBLAS and our SGEMM for matrix shape [W, 4W, W] fluctuates more seriously than other shapes, because its parallelism is coarser and each thread iteration is much longer (K=4W).
 In contrast, [4W, W, 4W] with the finest parallelism of the four shapes has the smoothest results.
@@ -119,34 +118,31 @@ implementations by incrementally applying our microarchitectural optimizations.
 \end{center}
 \end{figure}
 
-{\it Baseline:}~~The baseline includes conventional optimizations including register blocking, global
-memory double buffering, shared memory double buffering and unrolling, without assembly level optimization.
+{\it Baseline:}~~The baseline has adopted conventional optimizations including register blocking, global and shared memory double buffering, and unrolling, but without assembly-level optimizations.
 For example, the baseline uses default $32$-bit {\tt LD} rather than $128$-bit {\tt LDG} instruction to load data from global memory.
-Registers are allocated orderly first for $C$, from $0$ to $143$, then for $A$ and $B$. 
+Registers are allocated orderly first for $C$ from $0$ to $143$, then for $A$ and $B$. 
 In this case, {\tt FFMA}s have $368/(144*4)=63.89\%$ 2-way bank conflicts and $64/(144*4)=11.11\%$ 3-way bank conflicts. 
-Besides, the baseline cannot apply dual issue optimization either.
+Besides, the baseline cannot apply the dual-issue optimization either.
 
-{\it +Reg:}~~The register allocation pattern described in section~\ref{sec:register} is applied to eliminate register bank conflict. 
+{\it +Reg:}~~The register allocation pattern described in Section~\ref{sec:register} is applied to eliminate register bank conflicts. 
 %No optimization of instruction scheduling for this version.
 
-{\it +LD128:}~~Use wider global load instruction {\tt LD.128} with L2-cached.
-Though Kepler has a L1 data cache, it is designed for local rather than global memory access~\cite{gk110}.
+{\it +LD128:}~~Use wide global load instruction {\tt LD.128} with L2-cached.
+Though Kepler has a L1 data cache, it is designed for local rather than global memory accesses~\cite{gk110}.
 % So {\tt LDx} will not be L1-cached, it can be L2-cached.
 
-{\it +LDG128:}~~Use the texture cached {\tt LDG} which is faster than L2-cached {\tt LD}. 
-When {\tt LDG} is used, {\tt TEXDEPBAR} is required before the data access due to the weak consistency of texture cache~\cite{lukyanov2014efficient}.
+{\it +LDG128:}~~Use the faster texture cached {\tt LDG} instead of L2-cached {\tt LD} along with {\tt TEXDEPBAR} before data accesses due to the weak consistency of texture cache~\cite{lukyanov2014efficient}.
 
-{\it +Dual:}~~Use dual issue control, which is fully enabled by utilizing the pattern described in section~\ref{sec:assembler}.
+{\it +Dual:}~~Use the dual-issue control fully enabled by utilizing the pattern described in Section~\ref{sec:assembler}.
 %Single issue is controlled by setting control code to $0x40$. %\jled{different from section~\ref{sec:benchmark}. The left sentence is useless.}. 
-In dual issued mode, {\tt NOP} may be inserted for 7-instruction alignment.
+In the dual-issue mode, {\tt NOP} may be inserted for the 7-instruction alignment.
 
-Figure~\ref{fig:th_prof} illustrates performance gains of each optimization method.
+Figure~\ref{fig:th_prof} illustrates performance gains of each optimization strategy.
 As long as the number of instructions changes, instruction rescheduling is needed to achieve good performance.
 Compared with the baseline implementation, SGEMM gains up to $2.6\times$ speedup by applying all the optimizations.
-Register bank conflict eliminating improves around $10\%$ performance. 
-Wider load instruction {\tt LD.128} contributes $27\%$-$35\%$ performance, texture cached
-load instruction {\tt LDG.128} improves $5\%$-$12\%$.
-Dual issue achieves the highest improvement, i.e. $84\%$-$106\%$.
+Eliminating register bank conflicts improves around $10\%$ performance. 
+Wide load instruction {\tt LD.128} contributes $27\%$-$35\%$ to the performance, texture-cached load instruction {\tt LDG.128} improves $5\%$-$12\%$.
+Dual issue achieves the highest improvement $84\%$-$106\%$.
 %improves the most, $84\%-106\%$.
 
 
