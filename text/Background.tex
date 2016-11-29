@@ -1,7 +1,7 @@
 \section{Background}
 \label{sec:background}
 
-This section first highlights tunable factors that determine SGEMM performance on the GPU architecture, then introduces some CUDA binary utilities related to SGEMM optimization at assembly level for self-containment. 
+This section first highlights tunable factors that determine SGEMM performance on the GPU architecture, then introduces some CUDA binary utilities related to SGEMM optimizations at assembly level for self-containment. 
 % Since we seek to optimize SGEMM at assembly-level, this section introduces some CUDA binary utilities used in our work. 
 
 
@@ -11,7 +11,7 @@ This section first highlights tunable factors that determine SGEMM performance o
 %through memory hierarchy. On GPUs, we should consider both shared memory blocking and register blocking. For the 
 %purpose of completeness, we describe a blocking algorithm which is similar to that in other 
 %literature~\cite{magma,nervana_sgemm_wiki,lai,tan}.
-The state-of-the-art SGEMM implementation on GPUs~\cite{magma,nervana_sgemm_wiki,lai,tan} uses two-level blocking,
+The state-of-the-art SGEMM implementations on GPUs~\cite{magma,nervana_sgemm_wiki,lai,tan} use two-level blocking,
 register and shared memory blocking, to exploit the data reuse through GPU memory hierarchy.
 %SGEMM is to evaluate the product $C = C + AB$, where $A$, $B$ and $C$ are $m\times k$, $k\times n$ and $m\times n$
 The SGEMM routine computes a scalar-matrix-matrix product and updates the result plus
@@ -95,12 +95,12 @@ $K=\Bigl\lfloor \frac{k+b_k-1}{b_k} \Bigr\rfloor$, and $N=\Bigl\lfloor \frac{n+b
 % \end{algorithm}
 
 Algorithm~\ref{gemm} has $2\times r_x \times r_y \times b_k$ floating-point operations (flops) of each thread for one iteration of the while loop.
-Table~\ref{tab:dm} estimates data movement volume through registers, shared memory, and global 
+Table~\ref{tab:dm} estimates the data movement volume through registers, shared memory, and global 
 memory correspondingly.
 These parameters demonstrate that SGEMM performance is determined by the hierarchical memory blocking and the unrolling factor of the inner for loop.
 Tuning of these factors relies on GPU memory bandwidth and latency. 
-According to the previous work~\cite{magma,tan}, tuning proper parameters to overcome memory bandwidth limits is relatively easy with the estimates in table~\ref{tab:dm}.
-Performance tuning for memory latency is much more difficult, since latency is closely coupled to a particular microarchitecture's features such as the instruction sequence and instruction types, which depends on a GPU toolchain and a assembler to identify. 
+According to the previous work~\cite{magma,tan}, tuning proper parameters to overcome memory bandwidth limits is relatively easy with the estimates in Table~\ref{tab:dm}.
+Performance tuning for memory latency is much more difficult, since latency is closely coupled to a particular microarchitectural features such as the instruction sequence and instruction types\jli{instruction order and types}, which depends on a GPU toolchain and an assembler to identify. 
 \begin{table}[htbp]
     \caption{ Data movement volume of each thread for one while loop iteration.} %\jled{this table is not referred in this paper.}}
 \centering
