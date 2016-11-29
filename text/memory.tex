@@ -5,7 +5,7 @@ and {\tt LDS.64} to load data from shared memory.
 Additional reasons to adopt them in SGEMM kernel are:
 First, {\tt LDG.128} reduces load instructions, hence reduces {\tt non-FFMA}s. %\jled{use load instead of non-FFMA. Use non-FFMA seems complicated.}
 In the inner loop of Algorithm~\ref{gemm}, we need three {\tt LDG.128}s instead of twelve {\tt LDG.32}s to read twelve
-words from a $A$ column. Second, the shared memory transaction\jli{transfer} size is at most
+words from a $A$ column. Second, the shared memory transaction size of a warp is at most
 $256$ bytes, which forces {\tt LDS.128} memory requests being split into
-multiple transactions\jli{transfers}.
+multiple transactions.
 As we analyzed in Section~\ref{sec:experiment}, {\tt LDS.128} has a lower bandwidth than {\tt LDS.64}, which bounds SGEMM performance.

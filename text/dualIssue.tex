@@ -33,7 +33,7 @@ By extending the basic $7$-instruction block (Section~\ref{sec:benchmark}), we d
 The {\tt FFMA} to calculate $C_{00}$ is issued first, then two {\tt FFMA}s to
 compute $C_{10}$ and $C_{11}$ are simultaneously issued. %We arrange all the {\tt FFMA} instructions of SGEMM according to the order in Figure~\ref{fig:order}.
 
-Another advantage of this execution order is less register pressure due to the reuse \jli{by facilitating} the operand collector mechanism~\cite{collector}. The operand collector allows operands to be cached and reused in the subsequent instructions.
+Another advantage of this execution order is less register pressure due to the register reuse by facilitating the operand collector mechanism~\cite{collector}. The operand collector allows operands to be cached and reused in the subsequent instructions.
 %is a storage element coupled with register file and
 %provides inputs to the data path of the processor core for executing an instruction. %\jled{This is not the first occurrence of Operand collector.}
 The assembly code in Figure~\ref{fig:assemblycode} lists the instructions calculating $C_{32},C_{22}, C_{21}, C_{30},

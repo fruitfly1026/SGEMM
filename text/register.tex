@@ -15,12 +15,12 @@ correctness, no bank conflict, and tight register indices.
 {\tt LDG.128} restricts four words alignment for registers.
 Since NVIDIA GPU does not have $128$-bit registers, 
 four consecutive $32$-bit registers {\tt RN}, {\tt RN+1}, {\tt RN+2}, and {\tt RN+3} will be an equivalence for a 128-bit
-register.
+register, where N is register index.
 %a $128$-bit load instruction ({\tt LDG.128}) writes the data to four consecutive $32$-bit registers {\tt RN}, {\tt RN+1}, {\tt RN+2}, and {\tt RN+3} given one destination register $RN$.
 % in order to use $128$-bit load, one destination register $RN$ is given,
 % results will be written to
 % four $32$-bit registers: {\tt RN}, {\tt RN+1}, {\tt RN+2}, {\tt RN+3}.
-We discover an undocumented restriction that \jli{$N$ must be dividable by $4$, what's N?},
+We discover an undocumented restriction that $N$ must be dividable by $4$,
 % $N\mod4=0$
 otherwise illegal instruction errors will be reported.
 % It's not hard to understand this restriction,

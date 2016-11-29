@@ -100,7 +100,7 @@ memory correspondingly.
 These parameters demonstrate that SGEMM performance is determined by the hierarchical memory blocking and the unrolling factor of the inner for loop.
 Tuning of these factors relies on GPU memory bandwidth and latency. 
 According to the previous work~\cite{magma,tan}, tuning proper parameters to overcome memory bandwidth limits is relatively easy with the estimates in Table~\ref{tab:dm}.
-Performance tuning for memory latency is much more difficult, since latency is closely coupled to a particular microarchitectural features such as the instruction sequence and instruction types\jli{instruction order and types}, which depends on a GPU toolchain and an assembler to identify. 
+Performance tuning for memory latency is much more difficult, since latency is closely coupled to a particular microarchitectural features such as the instruction sequence and instruction types, which depends on a GPU toolchain and an assembler to identify. 
 \begin{table}[htbp]
     \caption{ Data movement volume of each thread for one while loop iteration.} %\jled{this table is not referred in this paper.}}
 \centering

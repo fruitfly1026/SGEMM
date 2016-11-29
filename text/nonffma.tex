@@ -8,17 +8,17 @@ distance of dependent instructions needs to be larger than their latency. The di
 distance = \frac{4\times\#instructions}{7}.
 \end{equation}
 }
-A $7$-instruction scheduling block costs four clock cycles \jli{delete: to be issued} in the dual-issue mode.
+A $7$-instruction scheduling block costs four clock cycles in the dual-issue mode.
 Therefore, given the distance $L$ of two interleave instructions, at least $\frac{L*7}{4}$ instructions are needed.
 % two instructions of $L$ distance, then $\frac{L*7}{4}$ instructions are needed.
-Besides, the number of the rest slots to insert these \jli{{\tt non-FFMA}} instructions is estimated as
+Besides, the number of the rest slots to insert these {\tt non-FFMA} instructions is estimated as
 
 {\small
 \begin{displaymath}
 \#slots = \frac{r_x\times r_y\times b_k}{ffmas\_in\_schedule\_block}=\frac{12\times 12\times 4}{6}=24\times 4.
 \end{displaymath}
 }
-$r_x\times r_y\times b_k$ yields the total number of {\tt FFMA}s for one thread inside the register blocking loop \jli{inner for loop} in Algorithm~\ref{gemm}, where $r_x$ and $r_y$ are register blocking sizes and $b_k$ is the unrolling factor.
+$r_x\times r_y\times b_k$ yields the total number of {\tt FFMA}s for one thread inside the innermost loop in Algorithm~\ref{gemm}, where $r_x$ and $r_y$ are register blocking sizes and $b_k$ is the unrolling factor.
 $ffmas\_in\_schedule\_block$ is the number of {\tt FFMA} instructions of one scheduling block, which is six by our
 $1$-$2$-$2$-$1$ dual-issue pattern in Section~\ref{sec:benchmark}.
 According to these principles, we first arrange {\tt LDS}, {\tt STS}, {\tt LDG} because of their long latencies. The
